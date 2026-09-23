@@ -1,3 +1,0 @@
----
-net_domain: sbbh.cloud
-net_domain_loc: "int.{{ net_domain }}"

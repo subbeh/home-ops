@@ -1,7 +1,0 @@
----
-- name: Install required Python packages
-  apt:
-    name: 
-      - python3-pip
-      - python3-proxmoxer
-    state: present 

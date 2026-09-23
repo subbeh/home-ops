@@ -1,4 +1,0 @@
----
-- name: Reboot system
-  ansible.builtin.reboot:
-  listen: reboot

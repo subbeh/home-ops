@@ -1,5 +1,0 @@
-# Full admin access policy
-path "*" {
-  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-}
-
