@@ -1,0 +1,23 @@
+[settings]
+experimental = true
+
+[settings.pipx]
+
+[env]
+MISE_DIR = 1
+ANSIBLE_CONFIG            = "{{config_root}}/ansible/ansible.cfg"
+ANSIBLE_HOME              = "{{config_root}}/ansible"
+ANSIBLE_PLAYBOOK_DIR      = "{{config_root}}/ansible/playbooks"
+ANSIBLE_COLLECTIONS_PATH  = "{{config_root}}/.cache/ansible/collections"
+ANSIBLE_ROLES_PATH        = "{{config_root}}/.cache/ansible/roles:{{config_root}}/ansible/roles"
+ANSIBLE_LOCAL_TEMP        = "{{config_root}}/.cache/ansible/tmp"
+ANSIBLE_LOG_PATH          = "{{config_root}}/.cache/ansible/ansible.log"
+ANSIBLE_GALAXY_TOKEN_PATH = "{{config_root}}/.cache/ansible/galaxy_token"
+ANSIBLE_GALAXY_CACHE_DIR  = "{{config_root}}/.cache/ansible/galaxy_cache"
+ANSIBLE_PERSISTENT_CONTROL_PATH_DIR = "{{config_root}}/.cache/ansible/pc"
+KUBECONFIG                = "{{config_root}}/kubeconfig"
+
+
+[tools]
+"pipx:ansible-core" = { version = "latest", uvx_args = "--with bitwarden-sdk" }
+just = "latest"
