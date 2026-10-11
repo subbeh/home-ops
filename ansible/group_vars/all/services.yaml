@@ -1,0 +1,28 @@
+---
+services_root: "{{ inventory_dir }}/services"
+services_data_dir: /opt/data
+services_user: apps
+services_uid: 2000
+services_gid: 2000
+services_timezone: Australia/Melbourne
+services_network: services
+
+services_container_defaults:
+  state: started
+  pull: always
+  recreate: true
+  restart_policy: unless-stopped
+  security_opts:
+    - "no-new-privileges:true"
+  log_driver: json-file
+  log_options:
+    max-size: 10m
+    max-file: "3"
+  volumes:
+    - /etc/localtime:/etc/localtime:ro
+  env:
+    PUID: "{{ services_uid | string }}"
+    PGID: "{{ services_gid | string }}"
+    TZ: "{{ services_timezone }}"
+  networks:
+    - name: "{{ services_network }}"

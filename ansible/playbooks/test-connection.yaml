@@ -1,0 +1,54 @@
+---
+- name: Test Ansible connectivity and configuration
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Ping test
+      ansible.builtin.ping:
+      register: ping_result
+
+    - name: Display ping result
+      ansible.builtin.debug:
+        msg: "✓ Host {{ inventory_hostname }} is reachable"
+
+    - name: Test privilege escalation
+      ansible.builtin.command: whoami
+      become: true
+      register: whoami_result
+      changed_when: false
+
+    - name: Display privilege escalation result
+      ansible.builtin.debug:
+        msg:
+          "✓ Privilege escalation works - running as {{ whoami_result.stdout }}"
+
+    - name: Gather and display key facts
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "Kernel: {{ ansible_kernel }}"
+          - "Architecture: {{ ansible_architecture }}"
+          - "Python: {{ ansible_python_version }}"
+          - "Hostname: {{ ansible_hostname }}"
+          - "FQDN: {{ ansible_fqdn }}"
+
+    - name: Display network information
+      ansible.builtin.debug:
+        msg:
+          - "Default IPv4: {{ ansible_default_ipv4.address | default('N/A') }}"
+          - "All IPv4 addresses: {{ ansible_all_ipv4_addresses | join(', ') }}"
+
+    - name: Display group membership
+      ansible.builtin.debug:
+        msg: "Groups: {{ group_names | join(', ') }}"
+
+    - name: Test file system access
+      ansible.builtin.stat:
+        path: /etc/os-release
+      register: os_release
+
+    - name: Display filesystem test result
+      ansible.builtin.debug:
+        msg: "✓ Filesystem access verified"
+      when: os_release.stat.exists

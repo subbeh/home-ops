@@ -1,0 +1,23 @@
+---
+- name: "{{ service.name }} | Validate containers"
+  ansible.builtin.assert:
+    that:
+      - service.containers | length == 1 or service.containers | selectattr('name', 'defined') | list | length == service.containers | length
+      - service.containers | map(attribute='name', default=service.name) | unique | list | length == service.containers | length
+    fail_msg: "{{ service.name }}: every container needs a unique name when a service has more than one"
+    quiet: true
+
+- name: "{{ service.name }} | Containers"
+  community.docker.docker_container: "{{ _container }}"
+  no_log: "{{ service.no_log | default(false) }}"
+  loop: "{{ service.containers }}"
+  loop_control:
+    loop_var: container
+    label: "{{ container.name | default(service.name) }}"
+  vars:
+    # Splatting a recursive combine() directly drops keys in ansible-core 2.21; going through a var doesn't.
+    _container: "{{ _base | combine(container, recursive=true, list_merge='append_rp') | combine({'name': container.name | default(service.name)}) }}"
+    # A custom network_mode (e.g. host) can't be combined with the default networks.
+    _base: >-
+      {{ services_container_defaults if container.network_mode is not defined
+         else services_container_defaults | dict2items | rejectattr('key', 'equalto', 'networks') | items2dict }}

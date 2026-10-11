@@ -1,0 +1,2 @@
+---
+_services_steps: [pre-tasks, files, containers, post-tasks]

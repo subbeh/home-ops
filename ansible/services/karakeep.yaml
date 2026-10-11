@@ -1,0 +1,49 @@
+---
+karakeep:
+  no_log: true
+
+  vars:
+    karakeep_url: "http://{{ networks.tailnet.host }}:3000"
+    karakeep_meili_master_key:
+      "{{ lookup('bitwarden.secrets.lookup',
+      'REPLACE-WITH-MEILI-MASTER-KEY-SECRET-ID') }}"
+    karakeep_nextauth_secret:
+      "{{ lookup('bitwarden.secrets.lookup',
+      'REPLACE-WITH-NEXTAUTH-SECRET-SECRET-ID') }}"
+
+  files:
+    - dest: "{{ services_data_dir }}/karakeep/data"
+    - dest: "{{ services_data_dir }}/karakeep/meilisearch"
+
+  containers:
+    - name: karakeep
+      image: ghcr.io/karakeep-app/karakeep:0.33.2
+      ports:
+        - "{{ networks.tailnet.addr }}:3000:3000"
+      volumes:
+        - "{{ services_data_dir }}/karakeep/data:/data"
+      env:
+        DATA_DIR: /data
+        NEXTAUTH_URL: "{{ karakeep_url }}"
+        NEXTAUTH_SECRET: "{{ karakeep_nextauth_secret }}"
+        MEILI_ADDR: http://karakeep-meilisearch:7700
+        MEILI_MASTER_KEY: "{{ karakeep_meili_master_key }}"
+        BROWSER_WEB_URL: http://karakeep-chrome:9222
+
+    - name: karakeep-chrome
+      image: ghcr.io/karakeep-app/karakeep-chrome:release
+      init: true
+      command:
+        - --disable-gpu
+        - --disable-dev-shm-usage
+        - --hide-scrollbars
+        - --disable-blink-features=AutomationControlled
+        - --window-size=1440,900
+
+    - name: karakeep-meilisearch
+      image: getmeili/meilisearch:v1.41.0
+      volumes:
+        - "{{ services_data_dir }}/karakeep/meilisearch:/meili_data"
+      env:
+        MEILI_NO_ANALYTICS: "true"
+        MEILI_MASTER_KEY: "{{ karakeep_meili_master_key }}"

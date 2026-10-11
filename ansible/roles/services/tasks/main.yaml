@@ -1,0 +1,107 @@
+---
+- name: Load service definitions
+  ansible.builtin.include_vars:
+    dir: "{{ services_root }}"
+    files_matching: '\.ya?ml$'
+    depth: 1
+    name: services_configs
+
+- name: Validate assigned services
+  ansible.builtin.assert:
+    that:
+      - _undefined | length == 0
+      - _reserved | length == 0
+      - _unknown_tags | length == 0
+      - _requested | length > 0 or 'all' in ansible_run_tags
+    fail_msg: >-
+      Undefined services: {{ _undefined }}.
+      Service names clashing with step tags: {{ _reserved }}.
+      Tags that are neither a service nor a step: {{ _unknown_tags }}.
+      Pass --tags <service> or --tags all to select which services to deploy.
+    quiet: true
+  vars:
+    _undefined: "{{ services | default([]) | difference(services_configs.keys() | list) }}"
+    _reserved: "{{ services_configs.keys() | list | intersect(['all', 'always'] + _services_steps) }}"
+    _unknown_tags: "{{ ansible_run_tags | difference(['all'] + _services_steps + services_configs.keys() | list) }}"
+    _requested: "{{ ansible_run_tags | intersect(services_configs.keys() | list) }}"
+
+# Only hosts matter here, not --limit: a service assigned to a single host is safe
+# to run everywhere, since "Skip hosts without selected services" below no-ops the rest.
+- name: Require an explicit host limit when a service spans multiple hosts
+  ansible.builtin.assert:
+    that: ansible_limit is defined or _affected_hosts | length <= 1
+    fail_msg: >-
+      Refusing to run without --limit <host>: {{ _tag_services | join(', ') }} is
+      assigned to multiple hosts ({{ _affected_hosts | join(', ') }}).
+    quiet: true
+  vars:
+    _tag_services: "{{ services_configs.keys() | list if 'all' in ansible_run_tags else ansible_run_tags | intersect(services_configs.keys() | list) }}"
+    _affected_hosts: >-
+      {{ ansible_play_hosts_all
+         | map('extract', hostvars, 'services')
+         | map('default', [], true)
+         | map('intersect', _tag_services)
+         | map('length')
+         | zip(ansible_play_hosts_all)
+         | selectattr('0', 'greaterthan', 0)
+         | map(attribute='1')
+         | list }}
+
+# --tags all selects every assigned service; --tags <service> selects just that one.
+- name: Select services and steps
+  ansible.builtin.set_fact:
+    services_selected: "{{ _assigned if 'all' in ansible_run_tags else _assigned | intersect(_requested) }}"
+    services_steps: "{{ _services_steps if _steps | length == 0 else _steps }}"
+  vars:
+    _assigned: "{{ services | default([]) }}"
+    _requested: "{{ ansible_run_tags | intersect(services_configs.keys() | list) }}"
+    _steps: "{{ ansible_run_tags | intersect(_services_steps) }}"
+
+- name: Skip hosts without selected services
+  ansible.builtin.meta: end_host
+  when: services_selected | length == 0
+
+- name: Check whether Docker is needed
+  ansible.builtin.set_fact:
+    services_need_docker: >-
+      {{ 'containers' in services_steps and
+         services_selected | map('extract', services_configs) | map(attribute='containers', default=[]) | flatten | length > 0 }}
+
+- name: Create service group
+  ansible.builtin.group:
+    name: "{{ services_user }}"
+    gid: "{{ services_gid }}"
+
+- name: Create service user
+  ansible.builtin.user:
+    name: "{{ services_user }}"
+    uid: "{{ services_uid }}"
+    group: "{{ services_user }}"
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Docker preflight
+  when: services_need_docker
+  block:
+    - name: Check Docker daemon and Python SDK
+      community.docker.docker_host_info:
+  rescue:
+    - name: Fail with preflight message
+      ansible.builtin.fail:
+        msg: "Docker or the Docker Python SDK is not available on {{ inventory_hostname }}: {{ ansible_failed_result.msg }}"
+
+- name: Create default Docker network
+  community.docker.docker_network:
+    name: "{{ services_network }}"
+  when: services_need_docker
+
+- name: Deploy services
+  ansible.builtin.include_tasks:
+    file: service.yaml
+    apply:
+      tags: [always]
+  loop: "{{ services_selected }}"
+  loop_control:
+    loop_var: services_name
+  vars:
+    service: "{{ services_configs[services_name] | default({}, true) | combine({'name': services_name}) }}"

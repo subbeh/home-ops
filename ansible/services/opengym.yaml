@@ -1,0 +1,28 @@
+---
+# Passkey login needs HTTPS (or exactly http://localhost), which this tailnet-only,
+# plain-http deployment can't offer, so password sign-in is enabled as the fallback.
+# See https://opengym.ch/docs.html#selfhost
+opengym:
+  files:
+    - dest: "{{ services_data_dir }}/opengym/data"
+
+  containers:
+    - name: opengym-api
+      image: ghcr.io/duartesantos8/opengym-api:1.4.1
+      volumes:
+        - "{{ services_data_dir }}/opengym/data:/data"
+      env:
+        PORT: "3000"
+        DATA_DIR: /data
+        TRUST_PROXY: "1"
+        RP_ID: "{{ networks.tailnet.host }}"
+        ORIGIN: "http://{{ networks.tailnet.host }}:8080"
+        PASSWORD_LOGIN: "1"
+
+    - name: opengym-web
+      image: ghcr.io/duartesantos8/opengym-web:1.4.1
+      ports:
+        - "{{ networks.tailnet.addr }}:8080:80"
+      env:
+        BACKEND: opengym-api
+        PORT: "3000"

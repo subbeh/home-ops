@@ -1,0 +1,16 @@
+---
+# Run `docker run --rm -v /opt/data/aven/data:/data ghcr.io/raine/aven:0.1.46 setup --url http://vps.tailnet-7233.ts.net:3746 --invitation-only`
+# once by hand (docker run --rm, not managed here) to initialize the database and print the invitation for the first device.
+# See https://aventasks.dev/sync/#run-with-docker
+aven:
+  files:
+    - dest: "{{ services_data_dir }}/aven/data"
+      owner: 65532
+      group: 65532
+
+  containers:
+    - image: ghcr.io/raine/aven:0.1.46
+      ports:
+        - "{{ networks.tailnet.addr }}:3746:3746"
+      volumes:
+        - "{{ services_data_dir }}/aven/data:/data"

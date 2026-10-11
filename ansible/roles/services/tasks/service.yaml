@@ -1,0 +1,62 @@
+---
+- name: "{{ service.name }} | Set service vars"
+  ansible.builtin.set_fact:
+    "{{ item.key }}": "{{ item.value }}"
+  no_log: "{{ service.no_log | default(false) }}"
+  loop: "{{ service.vars | default({}) | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: "{{ service.name }} | Create data dir"
+  ansible.builtin.file:
+    path: "{{ services_data_dir }}/{{ service.name }}"
+    state: directory
+    owner: "{{ services_uid }}"
+    group: "{{ services_gid }}"
+    mode: "0755"
+  when: service.files is defined or service.containers is defined
+
+- name: "{{ service.name }} | Pre-tasks"
+  ansible.builtin.include_tasks:
+    file: "{{ services_root }}/tasks/{{ services_task }}"
+    apply:
+      tags: [always]
+  loop: "{{ service.tasks.pre | default([]) }}"
+  loop_control:
+    loop_var: services_task
+  when: "'pre-tasks' in services_steps"
+
+- name: "{{ service.name }} | Files"
+  ansible.builtin.include_tasks:
+    file: file.yaml
+    apply:
+      tags: [always]
+  loop: "{{ service.files | default([]) }}"
+  loop_control:
+    loop_var: file
+    label: "{{ file.dest | default(file) }}"
+  when: "'files' in services_steps"
+  vars:
+    _src: "{{ services_root ~ '/data/' ~ file.src if file.src is defined else '' }}"
+    # Only paths below the data dir default to the service user.
+    _owned: "{{ file.dest is defined and file.dest.startswith(services_data_dir ~ '/') }}"
+    _parent_owned: "{{ file.dest is defined and (file.dest | dirname).startswith(services_data_dir ~ '/') }}"
+
+- name: "{{ service.name }} | Containers"
+  ansible.builtin.include_tasks:
+    file: containers.yaml
+    apply:
+      tags: [always]
+  when:
+    - service.containers is defined
+    - "'containers' in services_steps"
+
+- name: "{{ service.name }} | Post-tasks"
+  ansible.builtin.include_tasks:
+    file: "{{ services_root }}/tasks/{{ services_task }}"
+    apply:
+      tags: [always]
+  loop: "{{ service.tasks.post | default([]) }}"
+  loop_control:
+    loop_var: services_task
+  when: "'post-tasks' in services_steps"

@@ -1,0 +1,40 @@
+---
+all:
+  vars:
+    ansible_user: sysadm
+    network_ranges:
+      tailnet: 100.64.0.0/10
+
+# Location groups
+remote:
+  hosts:
+    vps:
+      ansible_user: root
+      networks:
+        tailnet:
+          addr: 100.77.96.125
+          host: vps.tailnet-7233.ts.net
+      services: [syncthing, karakeep, aven, opengym]
+
+local:
+  hosts: {}
+
+# OS groups
+debian:
+  hosts:
+    vps:
+
+# Functional groups
+pve:
+  children: {}
+
+vm:
+  hosts: {}
+
+k8s:
+  hosts: {}
+  vars:
+    cluster_endpoint: ""
+    cluster_endpoint_addr: ""
+    cluster_cidr: ""
+    management_cidr: ""

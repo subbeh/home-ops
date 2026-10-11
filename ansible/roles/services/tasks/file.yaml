@@ -1,0 +1,73 @@
+---
+- name: "{{ service.name }} | Validate {{ file.dest | default('file entry') }}"
+  ansible.builtin.assert:
+    that:
+      - file.dest is defined
+      - "['src', 'content', 'url'] | select('in', file) | list | length <= 1"
+      - _src == '' or _src is exists
+    fail_msg: "{{ service.name }}: file entries need a dest, at most one of src/content/url, and an existing src ({{ file }})"
+    quiet: true
+
+- name: "{{ service.name }} | Create parent dir of {{ file.dest }}"
+  ansible.builtin.file:
+    path: "{{ file.dest | dirname }}"
+    state: directory
+    owner: "{{ services_uid if _parent_owned else omit }}"
+    group: "{{ services_gid if _parent_owned else omit }}"
+    mode: "{{ file.dir_mode | default('0755') }}"
+  when: file.src is defined or file.content is defined or file.url is defined
+
+- name: "{{ service.name }} | Template {{ file.dest }}"
+  ansible.builtin.template:
+    src: "{{ _src }}"
+    dest: "{{ file.dest }}"
+    owner: "{{ file.owner | default(services_uid if _owned else omit) }}"
+    group: "{{ file.group | default(services_gid if _owned else omit) }}"
+    mode: "{{ file.mode | default(omit) }}"
+    force: "{{ file.force | default(true) }}"
+  no_log: "{{ service.no_log | default(false) }}"
+  when: _src is file and _src.endswith('.j2')
+
+- name: "{{ service.name }} | Copy {{ file.dest }}"
+  ansible.builtin.copy:
+    src: "{{ _src ~ '/' if _src is directory else _src }}"
+    dest: "{{ file.dest }}"
+    owner: "{{ file.owner | default(services_uid if _owned else omit) }}"
+    group: "{{ file.group | default(services_gid if _owned else omit) }}"
+    mode: "{{ file.mode | default(omit) }}"
+    force: "{{ file.force | default(true) }}"
+  when: _src is directory or (_src is file and not _src.endswith('.j2'))
+
+- name: "{{ service.name }} | Write {{ file.dest }}"
+  ansible.builtin.copy:
+    content: "{{ file.content }}"
+    dest: "{{ file.dest }}"
+    owner: "{{ file.owner | default(services_uid if _owned else omit) }}"
+    group: "{{ file.group | default(services_gid if _owned else omit) }}"
+    mode: "{{ file.mode | default(omit) }}"
+    force: "{{ file.force | default(true) }}"
+  no_log: "{{ service.no_log | default(false) }}"
+  when: file.content is defined
+
+- name: "{{ service.name }} | Download {{ file.dest }}"
+  ansible.builtin.get_url:
+    url: "{{ file.url }}"
+    dest: "{{ file.dest }}"
+    checksum: "{{ file.checksum | default(omit) }}"
+    owner: "{{ file.owner | default(services_uid if _owned else omit) }}"
+    group: "{{ file.group | default(services_gid if _owned else omit) }}"
+    mode: "{{ file.mode | default(omit) }}"
+    force: "{{ file.force | default(omit) }}"
+  when: file.url is defined
+  # Fails in check mode when the parent dir wasn't really created.
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "{{ service.name }} | Create {{ file.dest }}"
+  ansible.builtin.file:
+    path: "{{ file.dest }}"
+    state: "{{ file.state | default('directory') }}"
+    owner: "{{ file.owner | default(services_uid if _owned else omit) }}"
+    group: "{{ file.group | default(services_gid if _owned else omit) }}"
+    mode: "{{ file.mode | default(omit) }}"
+    recurse: "{{ file.recurse | default(false) }}"
+  when: file.src is not defined and file.content is not defined and file.url is not defined
