@@ -1,4 +1,3 @@
 ---
 collections:
   - name: community.docker
-  - name: bitwarden.secrets

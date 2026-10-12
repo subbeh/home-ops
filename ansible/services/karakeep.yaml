@@ -4,12 +4,8 @@ karakeep:
 
   vars:
     karakeep_url: "http://{{ networks.tailnet.host }}:3000"
-    karakeep_meili_master_key:
-      "{{ lookup('bitwarden.secrets.lookup',
-      'REPLACE-WITH-MEILI-MASTER-KEY-SECRET-ID') }}"
-    karakeep_nextauth_secret:
-      "{{ lookup('bitwarden.secrets.lookup',
-      'REPLACE-WITH-NEXTAUTH-SECRET-SECRET-ID') }}"
+    karakeep_meili_master_key: "{{ bws_secrets.KARAKEEP_MEILI_MASTER_KEY }}"
+    karakeep_nextauth_secret: "{{ bws_secrets.KARAKEEP_NEXTAUTH_SECRET }}"
 
   files:
     - dest: "{{ services_data_dir }}/karakeep/data"
