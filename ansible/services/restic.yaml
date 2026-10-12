@@ -1,0 +1,79 @@
+---
+# Backs up /opt/data to a dedicated Hetzner Storage Box sub-account over SFTP, using
+# mazzolino/restic (https://github.com/djmaze/resticker). Create the sub-account in
+# the Hetzner Robot console (keep it separate from the laptop's); its login, SSH key
+# and the repository password reach Secrets Manager through the dotfiles bws sync.
+restic:
+  no_log: true
+
+  vars:
+    restic_ssh_user: "{{ bws_secrets.RESTIC_VPS_SSH_USER }}"
+    restic_ssh_key: "{{ bws_secrets.RESTIC_VPS_SSH_KEY }}"
+    restic_password: "{{ bws_secrets.RESTIC_VPS_PASSWORD }}"
+    restic_host: "{{ bws_secrets.RESTIC_VPS_SSH_USER }}.your-storagebox.de"
+
+  files:
+    - dest: "{{ services_data_dir }}/restic/ssh/id_ed25519"
+      # OpenSSH rejects a private key without its trailing newline.
+      content: "{{ restic_ssh_key | trim }}\n"
+      mode: "0600"
+    - dest: "{{ services_data_dir }}/restic/ssh/config"
+      content: |
+        Host storagebox
+          HostName {{ restic_host }}
+          User {{ restic_ssh_user }}
+          Port 23
+          IdentityFile /run/secrets/.ssh/id_ed25519
+          IdentitiesOnly yes
+          # No password fallback: every failed login counts towards the Storage Box's IP block.
+          BatchMode yes
+          # The VPS has no IPv6 route; a doomed v6 attempt hides the real error.
+          AddressFamily inet
+          StrictHostKeyChecking accept-new
+          UserKnownHostsFile /run/secrets/.ssh/known_hosts
+      mode: "0600"
+
+  containers:
+    # BACKUP_CRON, PRUNE_CRON and CHECK_CRON are mutually exclusive within one
+    # resticker container, so backup+forget, prune and check run as separate
+    # containers against the same repository. Prune and check need an exclusive
+    # lock, so they start at :30, clear of the hourly backup at :00.
+    - name: restic-backup
+      image: mazzolino/restic:1.8.2
+      volumes:
+        - "/opt/data:/data:ro"
+        - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
+      env:
+        RESTIC_REPOSITORY: sftp:storagebox:restic/vps
+        RESTIC_PASSWORD: "{{ restic_password }}"
+        RESTIC_BACKUP_SOURCES: /data
+        # Excludes this service's own ssh key/known_hosts from the backup.
+        RESTIC_BACKUP_ARGS:
+          "--one-file-system --exclude-caches --exclude /data/restic"
+        # Forget is cheap and runs after every backup; restic-prune reclaims the space.
+        RESTIC_FORGET_ARGS:
+          "--keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
+        # go-cron, with a leading seconds field: every hour, on the hour.
+        BACKUP_CRON: "0 0 * * * *"
+
+    - name: restic-prune
+      image: mazzolino/restic:1.8.2
+      volumes:
+        - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
+      env:
+        RESTIC_REPOSITORY: sftp:storagebox:restic/vps
+        RESTIC_PASSWORD: "{{ restic_password }}"
+        SKIP_INIT: "true"
+        PRUNE_CRON: "0 30 4 * * *"
+
+    - name: restic-check
+      image: mazzolino/restic:1.8.2
+      volumes:
+        - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
+      env:
+        RESTIC_REPOSITORY: sftp:storagebox:restic/vps
+        RESTIC_PASSWORD: "{{ restic_password }}"
+        # Only restic-backup is allowed to initialize the repository.
+        SKIP_INIT: "true"
+        RESTIC_CHECK_ARGS: "--read-data-subset=5%"
+        CHECK_CRON: "0 30 5 1 * *"
