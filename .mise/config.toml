@@ -16,8 +16,10 @@ ANSIBLE_GALAXY_TOKEN_PATH = "{{config_root}}/.cache/ansible/galaxy_token"
 ANSIBLE_GALAXY_CACHE_DIR  = "{{config_root}}/.cache/ansible/galaxy_cache"
 ANSIBLE_PERSISTENT_CONTROL_PATH_DIR = "{{config_root}}/.cache/ansible/pc"
 KUBECONFIG                = "{{config_root}}/kubeconfig"
+_.file                    = "{{config_root}}/.env"
 
 
 [tools]
-"pipx:ansible-core" = { version = "latest", uvx_args = "--with bitwarden-sdk" }
+"pipx:ansible-core" = { version = "latest" }
 just = "latest"
+bitwarden-secrets-manager = "latest"
