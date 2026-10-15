@@ -3,7 +3,7 @@ karakeep:
   no_log: true
 
   vars:
-    karakeep_url: "http://{{ networks.tailnet.host }}:3000"
+    karakeep_url: "https://karakeep.{{ services_domain }}"
     karakeep_meili_master_key: "{{ bws_secrets.KARAKEEP_MEILI_MASTER_KEY }}"
     karakeep_nextauth_secret: "{{ bws_secrets.KARAKEEP_NEXTAUTH_SECRET }}"
 
@@ -14,8 +14,9 @@ karakeep:
   containers:
     - name: karakeep
       image: ghcr.io/karakeep-app/karakeep:0.33.2
-      ports:
-        - "{{ networks.tailnet.addr }}:3000:3000"
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.karakeep.loadbalancer.server.port: "3000"
       volumes:
         - "{{ services_data_dir }}/karakeep/data:/data"
       env:

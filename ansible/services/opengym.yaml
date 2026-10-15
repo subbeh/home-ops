@@ -1,7 +1,6 @@
 ---
-# Passkey login needs HTTPS (or exactly http://localhost), which this tailnet-only,
-# plain-http deployment can't offer, so password sign-in is enabled as the fallback.
-# See https://opengym.ch/docs.html#selfhost
+# Served over HTTPS by traefik, so passkey login works; password sign-in stays on
+# for accounts created before that. See https://opengym.ch/docs.html#selfhost
 opengym:
   files:
     - dest: "{{ services_data_dir }}/opengym/data"
@@ -15,14 +14,16 @@ opengym:
         PORT: "3000"
         DATA_DIR: /data
         TRUST_PROXY: "1"
-        RP_ID: "{{ networks.tailnet.host }}"
-        ORIGIN: "http://{{ networks.tailnet.host }}:8080"
+        RP_ID: "opengym.{{ services_domain }}"
+        ORIGIN: "https://opengym.{{ services_domain }}"
         PASSWORD_LOGIN: "1"
 
     - name: opengym-web
       image: ghcr.io/duartesantos8/opengym-web:1.4.1
-      ports:
-        - "{{ networks.tailnet.addr }}:8080:80"
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.opengym.rule: "Host(`opengym.{{ services_domain }}`)"
+        traefik.http.services.opengym.loadbalancer.server.port: "80"
       env:
         BACKEND: opengym-api
         PORT: "3000"

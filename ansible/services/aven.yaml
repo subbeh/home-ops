@@ -10,6 +10,9 @@ aven:
 
   containers:
     - image: ghcr.io/raine/aven:0.1.46
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.aven.loadbalancer.server.port: "3746"
       ports:
         - "{{ networks.tailnet.addr }}:3746:3746"
       volumes:

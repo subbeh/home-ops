@@ -60,8 +60,9 @@ gatus:
 
   containers:
     - image: ghcr.io/twin/gatus:v5.37.0
-      ports:
-        - "{{ networks.tailnet.addr }}:8081:8080"
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.gatus.loadbalancer.server.port: "8080"
       volumes:
         - "{{ services_data_dir }}/gatus/config.yaml:/config/config.yaml"
         - "{{ services_data_dir }}/gatus/data:/data"

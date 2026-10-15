@@ -8,6 +8,9 @@ syncthing:
     - image: ghcr.io/syncthing/syncthing:2.0.9
       network_mode: host
       userns_mode: host
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.syncthing.loadbalancer.server.port: "8384"
       volumes:
         - "{{ services_data_dir }}/syncthing/config:/var/syncthing/config"
         - "{{ services_data_dir }}/syncthing/data:/var/syncthing/data"

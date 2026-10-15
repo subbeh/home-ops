@@ -1,0 +1,68 @@
+---
+# Reverse proxy for https://<container>.vps.sbbh.cloud, tailnet-only: the wildcard record
+# in terraform/cloudflare points at the tailnet IP, and the wildcard cert comes from a
+# Let's Encrypt DNS-01 challenge. TRAEFIK_CF_DNS_API_TOKEN is a Cloudflare API token
+# with Zone:DNS:Edit on sbbh.cloud. See https://doc.traefik.io/traefik/https/acme/
+#
+# Containers opt in with labels; the hostname defaults to the container name:
+#   traefik.enable: "true"
+#   traefik.http.services.<name>.loadbalancer.server.port: "<port>"
+#   traefik.http.routers.<name>.rule: "Host(`other.{{ services_domain }}`)"  # optional override
+traefik:
+  no_log: true
+
+  files:
+    - dest: "{{ services_data_dir }}/traefik/data"
+    - dest: "{{ services_data_dir }}/traefik/config.yaml"
+      content: |
+        log:
+          level: INFO
+
+        entryPoints:
+          web:
+            address: ":80"
+            http:
+              redirections:
+                entryPoint:
+                  to: websecure
+                  scheme: https
+          websecure:
+            address: ":443"
+            http:
+              tls:
+                certResolver: letsencrypt
+                domains:
+                  - main: "*.{{ services_domain }}"
+
+        certificatesResolvers:
+          letsencrypt:
+            acme:
+              storage: /data/acme.json
+              dnsChallenge:
+                provider: cloudflare
+                # The host resolver goes through MagicDNS; ask Cloudflare directly.
+                resolvers: ["1.1.1.1:53", "1.0.0.1:53"]
+
+        providers:
+          docker:
+            exposedByDefault: false
+            network: "{{ services_network }}"
+            # Go template, evaluated by traefik per container.
+            defaultRule: "Host(`{% raw %}{{ normalize .ContainerName }}{% endraw %}.{{ services_domain }}`)"
+
+  containers:
+    - image: traefik:v3.7.14
+      ports:
+        - "{{ networks.tailnet.addr }}:80:80"
+        - "{{ networks.tailnet.addr }}:443:443"
+      # Where traefik reaches network_mode: host containers such as syncthing.
+      etc_hosts:
+        host.docker.internal: host-gateway
+      volumes:
+        - "{{ services_data_dir }}/traefik/config.yaml:/etc/traefik/traefik.yaml:ro"
+        - "{{ services_data_dir }}/traefik/data:/data"
+        # ponytail: read-only mount still grants the full Docker API (root-equivalent);
+        # put a docker-socket-proxy in front if traefik is ever exposed beyond the tailnet.
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+      env:
+        CF_DNS_API_TOKEN: "{{ bws_secrets.CLOUDFLARE_API_TOKEN }}"
