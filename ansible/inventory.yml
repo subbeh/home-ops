@@ -14,7 +14,7 @@ remote:
         tailnet:
           addr: 100.77.96.125
           host: vps.tailnet-7233.ts.net
-      services: [syncthing, karakeep, aven, opengym, restic]
+      services: [syncthing, karakeep, aven, opengym, restic, gatus]
 
 local:
   hosts: {}

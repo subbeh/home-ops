@@ -55,6 +55,15 @@ restic:
           "--keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
         # go-cron, with a leading seconds field: every hour, on the hour.
         BACKUP_CRON: "0 0 * * * *"
+        # Gatus's dead-man's-switch for this schedule; see gatus.yaml.
+        GATUS_TOKEN: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
+        # "|| true": this runs under `set -e`, and a failed push must never be able
+        # to stop the script before it clears /run/lock/backup.lock, or every run
+        # after a Gatus hiccup silently skips as "already running" forever.
+        POST_COMMANDS_SUCCESS: |-
+          curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "http://gatus:8080/api/v1/endpoints/backups_restic-backup/external?success=true" || true
+        POST_COMMANDS_FAILURE: |-
+          curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "http://gatus:8080/api/v1/endpoints/backups_restic-backup/external?success=false&error=backup+failed" || true
 
     - name: restic-prune
       image: mazzolino/restic:1.8.2

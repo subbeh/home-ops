@@ -1,0 +1,67 @@
+---
+# Status dashboard, plus a dead-man's-switch for restic's hourly backup: restic
+# pushes to the "external endpoint" below after every run, and Gatus alerts if a
+# push doesn't arrive within the heartbeat interval. See https://github.com/TwiN/gatus
+gatus:
+  no_log: true
+
+  files:
+    - dest: "{{ services_data_dir }}/gatus/data"
+    - dest: "{{ services_data_dir }}/gatus/config.yaml"
+      content: |
+        storage:
+          type: sqlite
+          path: /data/data.db
+
+        alerting:
+          pushover:
+            application-token: "{{ bws_secrets.GATUS_PUSHOVER_APP_TOKEN }}"
+            user-key: "{{ bws_secrets.GATUS_PUSHOVER_USER_KEY }}"
+
+        endpoints:
+          - name: tailscale-dns
+            group: tailscale
+            url: "icmp://100.100.100.100"
+            interval: 1m
+            conditions:
+              - "[CONNECTED] == true"
+            alerts:
+              - type: pushover
+                send-on-resolved: true
+          - name: openwrt-home
+            group: tailscale
+            url: "icmp://gl-router-home"
+            interval: 5m
+            conditions:
+              - "[CONNECTED] == true"
+            alerts:
+              - type: pushover
+                send-on-resolved: true
+          - name: openwrt-wollert
+            group: tailscale
+            url: "icmp://gl-router-wollert"
+            interval: 5m
+            conditions:
+              - "[CONNECTED] == true"
+            alerts:
+              - type: pushover
+                send-on-resolved: true
+
+        external-endpoints:
+          - name: restic-backup
+            group: backups
+            token: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
+            heartbeat:
+              interval: 1h
+            alerts:
+              - type: pushover
+                description: "restic hourly backup hasn't checked in"
+                send-on-resolved: true
+
+  containers:
+    - image: ghcr.io/twin/gatus:v5.37.0
+      ports:
+        - "{{ networks.tailnet.addr }}:8081:8080"
+      volumes:
+        - "{{ services_data_dir }}/gatus/config.yaml:/config/config.yaml"
+        - "{{ services_data_dir }}/gatus/data:/data"
