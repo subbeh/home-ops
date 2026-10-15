@@ -1,3 +1,6 @@
 .cache
 .env
 kubeconfig
+.terraform
+*.tfstate
+*.tfstate.*
