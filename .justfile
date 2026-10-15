@@ -11,6 +11,10 @@ set shell := ['bash', '-euo', 'pipefail', '-c']
 [group('ansible')]
 mod ansible "ansible"
 
+# Terraform Recipes
+[group('tf')]
+mod tf "terraform"
+
 [private]
 log lvl msg *args:
     gum log -t rfc3339 -s -l "{{ lvl }}" "{{ msg }}" {{ args }}
