@@ -1,0 +1,46 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  packageRules: [
+    {
+      // Merging a Service image deploys it (.github/workflows/deploy.yaml), which
+      // looks up the merged PR: these must stay PR automerges, never branch.
+      description: "Auto merge Service image digests and patches",
+      matchFileNames: ["ansible/services/**"],
+      matchDatasources: ["docker"],
+      automerge: true,
+      automergeType: "pr",
+      matchUpdateTypes: ["patch", "digest"],
+      minimumReleaseAge: "3 days",
+      // Digests and some registries have no release timestamp; don't hold those forever.
+      minimumReleaseAgeBehaviour: "timestamp-optional",
+    },
+    {
+      description: "Auto merge GitHub Actions",
+      matchManagers: ["github-actions"],
+      automerge: true,
+      automergeType: "pr",
+      matchUpdateTypes: ["minor", "patch", "digest"],
+      minimumReleaseAge: "3 days",
+    },
+    {
+      description: "Auto merge mise tools",
+      matchManagers: ["mise"],
+      automerge: true,
+      automergeType: "branch",
+      matchUpdateTypes: ["minor", "patch"],
+    },
+    {
+      description: "Auto merge Terraform providers",
+      matchManagers: ["terraform"],
+      automerge: true,
+      automergeType: "pr",
+      matchUpdateTypes: ["minor", "patch"],
+    },
+    {
+      // Semaphore is never Auto-deployed: merge its PRs together with a manual Deploy.
+      description: "Never auto merge Semaphore",
+      matchFileNames: ["ansible/services/semaphore.yaml"],
+      automerge: false,
+    },
+  ],
+}

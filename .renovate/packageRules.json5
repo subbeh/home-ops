@@ -1,0 +1,18 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  packageRules: [
+    {
+      // The sdk-sm repo also tags SDK releases; only bws-v* are CLI releases.
+      description: "Bitwarden Secrets Manager CLI versions",
+      matchPackageNames: ["bitwarden/sdk-sm"],
+      extractVersion: "^bws-v(?<version>.+)$",
+    },
+    {
+      description: "Reduce Terraform lock file update frequency",
+      matchManagers: ["terraform"],
+      matchUpdateTypes: ["lockFileMaintenance"],
+      schedule: ["* * 1 * *"],
+      commitMessageAction: "Update Terraform lock files",
+    },
+  ],
+}

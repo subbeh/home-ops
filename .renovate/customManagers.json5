@@ -1,0 +1,34 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  customManagers: [
+    {
+      // The built-in ansible manager only matches `image:` at the start of a line,
+      // missing the `- image:` list entries.
+      customType: "regex",
+      description: "Process Service container images",
+      managerFilePatterns: ["/(^|/)ansible/services/[^/]+\\.ya?ml$/"],
+      matchStrings: [
+        "image:\\s*(?<depName>[^\\s:@]+):(?<currentValue>[^\\s@]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?",
+      ],
+      datasourceTemplate: "docker",
+      autoReplaceStringTemplate: "image: {{{depName}}}:{{{newValue}}}{{#if newDigest}}@{{{newDigest}}}{{/if}}",
+    },
+    {
+      customType: "regex",
+      description: "Process annotated dependencies",
+      managerFilePatterns: [
+        "/\\.env(?:\\.j2)?$/",
+        "/\\.sh(?:\\.j2)?$/",
+        "/\\.yaml(?:\\.j2)?$/",
+      ],
+      matchStrings: [
+        // # renovate: datasource=github-releases depName=foo/bar
+        // foobar_version: v1.0.0
+        // # renovate: datasource=docker depName=ghcr.io/foo/bar
+        // FOOBAR_VERSION=v1.0.0
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n.+(:\\s*|=)(&\\S+\\s)?(?<currentValue>\\S+)",
+      ],
+      datasourceTemplate: "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+    },
+  ],
+}

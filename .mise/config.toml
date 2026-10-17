@@ -20,7 +20,7 @@ _.file                    = "{{config_root}}/.env"
 
 
 [tools]
-"pipx:ansible-core" = { version = "latest" }
-just = "latest"
-bitwarden-secrets-manager = "latest"
-terraform = "latest"
+"pipx:ansible-core" = "2.21.4"
+just = "1.58.0"
+bitwarden-secrets-manager = "2.1.0"
+terraform = "1.16.6"
