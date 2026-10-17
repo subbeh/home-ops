@@ -14,15 +14,18 @@ opengym:
         PORT: "3000"
         DATA_DIR: /data
         TRUST_PROXY: "1"
-        RP_ID: "opengym.{{ services_domain }}"
-        ORIGIN: "https://opengym.{{ services_domain }}"
+        RP_ID: "gym.{{ services_domain }}"
+        ORIGIN: "https://gym.{{ services_domain }}"
         PASSWORD_LOGIN: "1"
 
     - name: opengym-web
       image: ghcr.io/duartesantos8/opengym-web:1.4.1
+      # The image checks every 5m, and traefik skips containers until they're healthy.
+      healthcheck:
+        interval: 30s
       labels:
         traefik.enable: "true"
-        traefik.http.routers.opengym.rule: "Host(`opengym.{{ services_domain }}`)"
+        traefik.http.routers.opengym.rule: "Host(`gym.{{ services_domain }}`)"
         traefik.http.services.opengym.loadbalancer.server.port: "80"
       env:
         BACKEND: opengym-api
