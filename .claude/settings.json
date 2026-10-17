@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(just --list)",
+      "Bash(just docs)",
+      "Bash(just docs-test)",
+      "Bash(just ansible::playbook * --check*)",
+      "Bash(ansible-playbook --syntax-check *)",
+      "Bash(ansible-playbook * --check*)",
+      "Bash(ansible-inventory *)",
+      "Bash(terraform fmt*)",
+      "Bash(terraform -chdir=* fmt*)",
+      "Bash(terraform -chdir=* validate*)",
+      "Bash(pre-commit run *)",
+      "Bash(git status*)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ],
+    "ask": [
+      "Bash(terraform apply*)",
+      "Bash(terraform -chdir=* apply*)",
+      "Bash(terraform destroy*)",
+      "Bash(terraform -chdir=* destroy*)",
+      "Bash(just tf::apply*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.bws.yaml)",
+      "Read(./**/*.tfstate*)"
+    ]
+  }
+}
