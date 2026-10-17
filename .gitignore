@@ -1,5 +1,6 @@
 .cache
 .env
+.bws.yaml
 kubeconfig
 .terraform
 *.tfstate
