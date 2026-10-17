@@ -1,0 +1,56 @@
+---
+# Runs the services playbook for Auto-deploys (.github/workflows/deploy.yaml). Never deployed by
+# itself: recreating the container kills the task doing the deploy, so run
+# `just ansible::playbook services --tags semaphore` from the laptop instead.
+#
+# One-time setup in the UI (https://semaphore.vps.sbbh.cloud):
+#   0. Project settings: max parallel tasks 1, so Auto-deploys queue instead of racing.
+#   1. Key Store: an SSH key whose public half is in root's authorized_keys on the VPS.
+#   2. Repository: https://github.com/subbeh/home-ops.git, branch main, no key.
+#   3. Inventory: type File, path ansible/inventory.yml, the SSH key from 1.
+#   4. Variable Group: environment {"ANSIBLE_CONFIG": "ansible/ansible.cfg"}, plus a
+#      secret of type env, BWS_ACCESS_TOKEN, from a dedicated Bitwarden machine account.
+#   5. Template "services": playbook ansible/playbooks/services.yaml, the inventory,
+#      repository and variable group above, and under Ansible prompts tick "Tags".
+#   6. API token (User > Tokens) for the deploy workflow: GitHub secret SEMAPHORE_API_TOKEN,
+#      variables SEMAPHORE_PROJECT_ID and SEMAPHORE_TEMPLATE_ID.
+semaphore:
+  no_log: true
+
+  vars:
+    # renovate: datasource=github-releases depName=bitwarden/sdk-sm
+    semaphore_bws_version: 2.1.0
+
+  tasks:
+    pre: [semaphore-bws.yaml]
+
+  files:
+    - dest: "{{ services_data_dir }}/semaphore/config"
+      owner: 1001
+      group: 0
+    - dest: "{{ services_data_dir }}/semaphore/data"
+      owner: 1001
+      group: 0
+
+  containers:
+    - image: semaphoreui/semaphore:v2.19.16
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.semaphore.loadbalancer.server.port: "3000"
+      # Pins the inventory's ansible_host, so SSH doesn't depend on MagicDNS in containers.
+      # An expression, since Ansible doesn't template dict keys.
+      etc_hosts: "{{ {networks.tailnet.host: networks.tailnet.addr} }}"
+      volumes:
+        - "{{ services_data_dir }}/semaphore/config:/etc/semaphore"
+        - "{{ services_data_dir }}/semaphore/data:/var/lib/semaphore"
+        - "{{ services_data_dir }}/semaphore/bin/bws:/usr/local/bin/bws:ro"
+      env:
+        SEMAPHORE_DB_DIALECT: sqlite
+        SEMAPHORE_WEB_ROOT: "https://semaphore.{{ services_domain }}"
+        # The admin is only created on first start.
+        SEMAPHORE_ADMIN: admin
+        SEMAPHORE_ADMIN_NAME: Admin
+        SEMAPHORE_ADMIN_EMAIL: admin@localhost
+        SEMAPHORE_ADMIN_PASSWORD: "{{ bws_secrets.SEMAPHORE_ADMIN_PASSWORD }}"
+        # head -c32 /dev/urandom | base64; encrypts the Key Store, so never rotate it casually.
+        SEMAPHORE_ACCESS_KEY_ENCRYPTION: "{{ bws_secrets.SEMAPHORE_ACCESS_KEY_ENCRYPTION }}"

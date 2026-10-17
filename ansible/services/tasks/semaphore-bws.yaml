@@ -1,0 +1,17 @@
+---
+# The playbook loads secrets with the bws CLI, which the Semaphore image doesn't ship.
+# Runs before the container step, so the bind-mount source exists on first start.
+- name: semaphore | Create bws dir
+  ansible.builtin.file:
+    path: "{{ services_data_dir }}/semaphore/bin"
+    state: directory
+    mode: "0755"
+
+# musl build: the Semaphore image is Alpine.
+- name: semaphore | Install bws {{ semaphore_bws_version }}
+  ansible.builtin.unarchive:
+    src: "https://github.com/bitwarden/sdk-sm/releases/download/bws-v{{ semaphore_bws_version }}/bws-x86_64-unknown-linux-musl-{{ semaphore_bws_version }}.zip"
+    dest: "{{ services_data_dir }}/semaphore/bin"
+    remote_src: true
+    include: [bws]
+    mode: "0755"

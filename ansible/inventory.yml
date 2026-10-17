@@ -10,12 +10,13 @@ remote:
   hosts:
     vps:
       ansible_user: root
+      ansible_host: "{{ networks.tailnet.host }}"
       networks:
         tailnet:
           addr: 100.77.96.125
           host: vps.tailnet-7233.ts.net
       services_domain: vps.sbbh.cloud
-      services: [traefik, syncthing, karakeep, aven, opengym, restic, gatus]
+      services: [traefik, syncthing, karakeep, aven, opengym, restic, gatus, semaphore]
 
 local:
   hosts: {}
