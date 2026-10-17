@@ -1,0 +1,75 @@
+---
+# Auto-deploys the Services touched by a merged Renovate PR via Semaphore on the VPS.
+# Hand edits are never deployed from here.
+# ponytail: Semaphore clones main when the task starts, not $GITHUB_SHA; a hand edit pushed
+# in those seconds rides along. Pin the commit if that ever bites.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths: ["ansible/services/*.yaml"]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  SEMAPHORE_URL: https://semaphore.vps.sbbh.cloud
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Service file names match their top-level key. Semaphore is never Auto-deployed:
+      # recreating it would kill this very task.
+      - name: Select Services
+        id: select
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq '[.[] | select(.user.login == "renovate[bot]")][0].number // empty')
+          if [ -z "$pr" ]; then
+            echo "Not a Renovate PR merge, nothing to deploy."
+            exit 0
+          fi
+          files=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$pr/files" --jq '.[].filename')
+          services=$(sed -nE 's#^ansible/services/([^/]+)\.yaml$#\1#p' <<< "$files" \
+            | { grep -vx semaphore || true; } | paste -sd, -)
+          echo "Renovate PR #$pr, Services: ${services:-none}"
+          echo "services=$services" >> "$GITHUB_OUTPUT"
+
+      - name: Join tailnet
+        if: steps.select.outputs.services != ''
+        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4.2.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      # Only the status goes in the log: this repo is public, task output stays in Semaphore.
+      # Semaphore runs one task at a time (project setting), so parallel runs just queue.
+      - name: Deploy via Semaphore
+        if: steps.select.outputs.services != ''
+        env:
+          SERVICES: ${{ steps.select.outputs.services }}
+          TOKEN: ${{ secrets.SEMAPHORE_API_TOKEN }}
+          PROJECT: ${{ vars.SEMAPHORE_PROJECT_ID }}
+          TEMPLATE: ${{ vars.SEMAPHORE_TEMPLATE_ID }}
+        run: |
+          api="$SEMAPHORE_URL/api/project/$PROJECT/tasks"
+          body=$(jq -nc --argjson t "$TEMPLATE" --arg s "$SERVICES" --arg m "Auto-deploy $GITHUB_SHA" \
+            '{template_id: $t, message: $m, params: {tags: ($s | split(","))}}')
+          task=$(curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d "$body" "$api" | jq -r .id)
+          echo "Task: $SEMAPHORE_URL/project/$PROJECT/history?t=$task"
+          while :; do
+            # Polls through traefik, which is briefly down while it deploys itself.
+            status=$(curl -fsS -H "Authorization: Bearer $TOKEN" "$api/$task" | jq -r .status) || status=unreachable
+            case "$status" in
+              success) echo "Deployed $SERVICES"; exit 0 ;;
+              error|stopped) echo "::error::Semaphore task $task: $status"; exit 1 ;;
+            esac
+            sleep 10
+          done

@@ -1,0 +1,35 @@
+---
+name: Check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # Same config Semaphore uses: no mise env on the runner.
+      ANSIBLE_CONFIG: ansible/ansible.cfg
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Same version as the laptop, from the mise pin.
+      - name: Install Ansible
+        run: |
+          pipx install "ansible-core==$(sed -nE 's/^"pipx:ansible-core" = "(.+)"$/\1/p' .mise/config.toml)"
+          ansible-galaxy collection install -r requirements.yml
+
+      - name: Syntax check services playbook
+        run: ansible-playbook --syntax-check ansible/playbooks/services.yaml
+
+      # The playbook loads these at runtime, so --syntax-check never parses them.
+      - name: Load Service definitions
+        run: >-
+          ansible localhost -m ansible.builtin.include_vars
+          -a '{"dir": "ansible/services", "files_matching": "\\.ya?ml$", "depth": 1}'
+
+      - name: Validate Renovate config
+        run: npx --yes --package renovate@latest -- renovate-config-validator --strict .renovaterc.json5 .renovate/*.json5
