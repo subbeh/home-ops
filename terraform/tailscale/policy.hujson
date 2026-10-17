@@ -1,0 +1,37 @@
+// vi: ft=json
+{
+  "tagOwners": {
+    // Ephemeral GitHub Actions nodes (.github/workflows/deploy.yaml).
+    "tag:ci": ["autogroup:admin"],
+  },
+
+  "hosts": {
+    "vps": "100.77.96.125",
+  },
+
+  // Access Control Lists
+  "acls": [
+    // Allow all connections between your own devices. Not "*": that would include tag:ci.
+    {"action": "accept", "src": ["autogroup:member"], "dst": ["*:*"]},
+    // CI only reaches Semaphore, through traefik.
+    {"action": "accept", "src": ["tag:ci"], "dst": ["vps:443"]},
+  ],
+
+  // Define users and devices that can use Tailscale SSH.
+  "ssh": [
+    {
+      "action": "check",
+      "src":    ["autogroup:member"],
+      "dst":    ["autogroup:self"],
+      "users":  ["autogroup:nonroot", "root"],
+    },
+  ],
+
+  // Checked by Tailscale on every plan.
+  "tests": [
+    {"src": "tag:ci", "accept": ["vps:443"], "deny": ["vps:22", "vps:80"]},
+  ],
+
+  // https://tailscale.com/kb/1097/install-opnsense#static-nat-port-mapping
+  "randomizeClientPort": true,
+}

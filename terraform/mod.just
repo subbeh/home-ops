@@ -1,5 +1,8 @@
 terraform_dir := justfile_directory() / "terraform"
 
-# Run terraform apply for a stack, e.g. `just tf::apply cloudflare`
+# Apply a locally executed stack, e.g. `just tf::apply tfe-admin`; the others apply in TFC on merge
+[script]
 apply stack *args:
-    bws run -- terraform -chdir={{ terraform_dir }}/{{ stack }} apply {{ args }}
+    export BW_ACCESS_TOKEN="$BWS_ACCESS_TOKEN"
+    export BW_ORGANIZATION_ID="$(bws project list | jq -r '.[0].organizationId')"
+    terraform -chdir={{ terraform_dir }}/{{ stack }} apply {{ args }}
