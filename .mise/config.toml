@@ -21,6 +21,7 @@ _.file                    = "{{config_root}}/.env"
 
 [tools]
 "pipx:ansible-core" = "2.21.4"
+"pipx:pre-commit" = "4.7.0"
 just = "1.58.0"
 bitwarden-secrets-manager = "2.1.0"
 terraform = "1.16.6"

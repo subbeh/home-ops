@@ -3,6 +3,8 @@
 # once by hand (docker run --rm, not managed here) to initialize the database and print the invitation for the first device.
 # See https://aventasks.dev/sync/#run-with-docker
 aven:
+  description: Sync server for the Aven task manager
+
   files:
     - dest: "{{ services_data_dir }}/aven/data"
       owner: 65532

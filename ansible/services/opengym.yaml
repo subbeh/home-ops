@@ -2,6 +2,8 @@
 # Served over HTTPS by traefik, so passkey login works; password sign-in stays on
 # for accounts created before that. See https://opengym.ch/docs.html#selfhost
 opengym:
+  description: Workout tracker
+
   files:
     - dest: "{{ services_data_dir }}/opengym/data"
 

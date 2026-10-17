@@ -1,5 +1,7 @@
 ---
 karakeep:
+  description: Bookmark manager with full-text search and page archiving
+
   no_log: true
 
   vars:

@@ -3,6 +3,8 @@
 # pushes to the "external endpoint" below after every run, and Gatus alerts if a
 # push doesn't arrive within the heartbeat interval. See https://github.com/TwiN/gatus
 gatus:
+  description: Status dashboard, plus the dead-man's switch for restic backups
+
   no_log: true
 
   files:

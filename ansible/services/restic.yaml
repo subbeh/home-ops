@@ -4,6 +4,8 @@
 # the Hetzner Robot console (keep it separate from the laptop's); its login, SSH key
 # and the repository password reach Secrets Manager through the dotfiles bws sync.
 restic:
+  description: Hourly encrypted backups of /opt/data to a Hetzner Storage Box
+
   no_log: true
 
   vars:

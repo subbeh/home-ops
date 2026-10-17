@@ -9,6 +9,8 @@
 #   traefik.http.services.<name>.loadbalancer.server.port: "<port>"
 #   traefik.http.routers.<name>.rule: "Host(`other.{{ services_domain }}`)"  # optional override
 traefik:
+  description: Reverse proxy with a wildcard TLS cert for tailnet-only Services
+
   no_log: true
 
   files:

@@ -31,5 +31,11 @@ jobs:
           ansible localhost -m ansible.builtin.include_vars
           -a '{"dir": "ansible/services", "files_matching": "\\.ya?ml$", "depth": 1}'
 
+      # The docs-generate hook can be bypassed (--no-verify, web edits); this can't.
+      - name: Check generated docs are current
+        run: |
+          ansible-playbook ansible/playbooks/docs.yaml
+          git add -N docs/ && git diff --exit-code -- docs/
+
       - name: Validate Renovate config
         run: npx --yes --package renovate@latest -- renovate-config-validator --strict .renovaterc.json5 .renovate/*.json5

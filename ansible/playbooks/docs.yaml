@@ -1,0 +1,62 @@
+---
+# Writes the generated pages in docs/ from the inventory, the Service definitions and the
+# Terraform stacks; run with `just docs`. Connects to no Host and reads no secrets: only
+# fields that never reference bws_secrets (description, container names, labels) are rendered.
+- name: Generate docs
+  hosts: all
+  gather_facts: false
+  become: false
+  vars:
+    docs_repo: "{{ playbook_dir | dirname | dirname }}"
+  tasks:
+    - name: Load service definitions
+      ansible.builtin.include_vars:
+        dir: "{{ services_root }}"
+        files_matching: '\.ya?ml$'
+        depth: 1
+        name: services_configs
+
+    - name: Require a description on every Service
+      ansible.builtin.assert:
+        that: _missing | length == 0
+        fail_msg: "Services without a description: key: {{ _missing | join(', ') }}"
+        quiet: true
+      run_once: true
+      vars:
+        _missing: "{{ services_configs | dict2items | rejectattr('value.description', 'defined') | map(attribute='key') | list }}"
+
+    # Per Host, since labels template services_domain in that Host's context. Mirrors traefik's
+    # defaultRule in services/traefik.yaml: a router rule's Host() wins, else <container>.<domain>.
+    - name: Collect Service URLs
+      ansible.builtin.set_fact:
+        docs_urls: >-
+          {%- set urls = [] -%}
+          {%- for name in services | default([]) -%}
+          {%- for c in services_configs[name].containers | default([]) -%}
+          {%- set labels = c.labels | default({}) -%}
+          {%- if labels['traefik.enable'] | default('') == 'true' -%}
+          {%- set rule = labels | dict2items | selectattr('key', 'match', 'traefik\.http\.routers\.[^.]+\.rule$') | map(attribute='value') | first | default('') -%}
+          {%- set _ = urls.append({'service': name, 'url': 'https://' ~ (rule | regex_search('Host\(`([^`]+)`\)', '\\1') | first if rule else (c.name | default(name)) ~ '.' ~ services_domain)}) -%}
+          {%- endif -%}
+          {%- endfor -%}
+          {%- endfor -%}
+          {{ urls }}
+
+    - name: Find Terraform stacks
+      ansible.builtin.find:
+        paths: "{{ docs_repo }}/terraform"
+        patterns: main.tf
+        recurse: true
+        depth: 2
+      register: docs_stacks
+      run_once: true
+      delegate_to: localhost
+
+    - name: Write generated pages
+      ansible.builtin.template:
+        src: "docs/{{ item }}.j2"
+        dest: "{{ docs_repo }}/docs/{{ item }}"
+        mode: "0644"
+      loop: [services/README.md, hosts.md, terraform-stacks.md]
+      run_once: true
+      delegate_to: localhost

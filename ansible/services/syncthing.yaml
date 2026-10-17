@@ -1,5 +1,7 @@
 ---
 syncthing:
+  description: File sync between devices
+
   files:
     - dest: "{{ services_data_dir }}/syncthing/config"
     - dest: "{{ services_data_dir }}/syncthing/data"
