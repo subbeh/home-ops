@@ -5,7 +5,7 @@ karakeep:
   no_log: true
 
   vars:
-    karakeep_url: "bookmarks.{{ services_domain }}"
+    karakeep_url: "karakeep.{{ services_domain }}"
     karakeep_meili_master_key: "{{ bws_secrets.KARAKEEP_MEILI_MASTER_KEY }}"
 
   files:
