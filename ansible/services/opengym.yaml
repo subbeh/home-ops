@@ -19,6 +19,7 @@ opengym:
         RP_ID: "gym.{{ services_domain }}"
         ORIGIN: "https://gym.{{ services_domain }}"
         PASSWORD_LOGIN: "1"
+        ADMIN_UIDS: "IR5d1HqhGAGj2mqy"
 
     - name: opengym-web
       image: ghcr.io/duartesantos8/opengym-web:1.4.1@sha256:e32cae9d2f4aad0c5e1b7888c9bfc712b2306ddfe3c65bc4cfefd4b0002e86d3
