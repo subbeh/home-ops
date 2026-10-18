@@ -46,9 +46,10 @@ After `just ansible::playbook services --tags semaphore`, at `https://semaphore.
 
 Org `sbbh-cloud`.
 
-- [ ] Install the HCP Terraform GitHub App on `subbeh/home-ops`.
-- [ ] User API token (User Settings → Tokens) → `TFC_API_TOKEN` in `.bws.yaml`. No `terraform login`: the `just tf::` recipes export it for Terraform and the tfe provider.
-- [ ] `just tf::init tfe-admin` (creates the `tfe-admin` workspace).
+- [x] Install the HCP Terraform GitHub App (https://github.com/apps/terraform-cloud) on the personal account `subbeh`, only `home-ops`.
+- [x] User Settings → Tokens → GitHub App OAuth Token: create and authorize it. No organization grants needed. `tfe-admin` finds the installation by name through it.
+- [x] User API token (User Settings → Tokens) → `TFC_API_TOKEN` in `.bws.yaml`. No `terraform login`: the `just tf::` recipes export it for Terraform and the tfe provider.
+- [x] `just tf::init tfe-admin` (creates the `tfe-admin` workspace).
 - [ ] `tfe-admin` workspace → Settings → General → Execution Mode: **Local**.
 - [ ] `just tf::apply tfe-admin`: creates the `cloudflare` and `tailscale` workspaces and `SEMAPHORE_API_TOKEN` in GitHub.
 - [ ] `tailscale` workspace: start a run (workspaces don't run on creation) and **Confirm** it. Adds `tag:ci` and creates the CI client.
