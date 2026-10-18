@@ -14,7 +14,7 @@ covers:
 
 1. **Scope**: work out which Services changed and which Hosts they're assigned to (`docs/hosts.md`). A Service on more than one Host needs `--limit <host>`.
 2. **Preview**: run `just ansible::playbook services --tags <services> [--limit <host>] --check --diff`. Done when it ends with no failed tasks. Summarize the changes for the user; Services with `no_log` show none, so say so.
-3. **Deploy**: only when the user asked for a real Deploy in the current turn. Run the same command without `--check --diff`, and report the recap.
+3. **Deploy**: only when the user asked for a real Deploy in the current turn. `/deploy <services>` is that ask; `--check` or "preview" means stop after step 2. Run the same command without `--check --diff`, and report the recap.
 
 ## Gotchas
 

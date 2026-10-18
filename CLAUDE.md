@@ -13,7 +13,7 @@ Ansible deploys self-hosted Services as Docker containers onto Hosts. Terraform 
 - **Terms**: [CONTEXT.md](CONTEXT.md) is the glossary. Use its words (Host, Service, Assignment, Step, Deploy, Version Bump, Auto-deploy) in code, docs and commit messages.
 - **Current state**: `docs/`, starting at [docs/README.md](docs/README.md). `.specs/` is design history; where it disagrees with the code or `docs/`, the code and `docs/` win.
 - **Commands**: `just --list`. mise (`.mise/config.toml`) pins the tools, sets the Ansible env and loads `.env`.
-- **Without mise**: CI and Semaphore run with only `ANSIBLE_CONFIG=ansible/ansible.cfg`, so new Ansible paths must resolve relative to that file or the playbook. mise also sets `ANSIBLE_PLAYBOOK_DIR`, which changes where relative `include_vars` paths resolve; prefix commands copied from CI with `env -u ANSIBLE_PLAYBOOK_DIR`.
+- **Without mise**: CI and Semaphore run with only `ANSIBLE_CONFIG=ansible/ansible.cfg`, so new Ansible paths must resolve relative to that file or the playbook. `just check` runs the PR check's Ansible steps that way; mise's `ANSIBLE_PLAYBOOK_DIR` moves relative `include_vars` paths, so CI commands copied as-is fail locally.
 
 ## Safety
 

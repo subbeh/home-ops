@@ -13,6 +13,15 @@ repos:
         files: ^(ansible/(inventory\.yml|services/|playbooks/docs\.yaml|playbooks/templates/docs/)|terraform/|docs/services/[^/]+\.md$)
         stages: [pre-commit]
 
+      # The PR check's syntax and Service load steps, caught before the push.
+      - id: ansible-check
+        name: Check Ansible
+        entry: just check
+        language: system
+        pass_filenames: false
+        files: ^ansible/
+        stages: [pre-commit]
+
       - id: docs-covers
         name: Check covering docs are staged
         entry: scripts/docs-covers.sh
