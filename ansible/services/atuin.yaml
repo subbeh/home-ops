@@ -15,9 +15,6 @@ atuin:
 
   no_log: true
 
-  vars:
-    atuin_openai_api_key: "{{ bws_secrets.ATUIN_OPENAI_API_KEY }}"
-
   files:
     # The image runs as atuin (1000), and creates the SQLite db here.
     - dest: "{{ services_data_dir }}/atuin/config"
@@ -65,4 +62,4 @@ atuin:
       volumes:
         - "{{ services_data_dir }}/atuin/ai-config.toml:/etc/atuin-ai/config.toml"
       env:
-        OPENAI_API_KEY: "{{ atuin_openai_api_key }}"
+        OPENAI_API_KEY: "{{ bws_secrets.ATUIN_OPENAI_API_KEY }}"

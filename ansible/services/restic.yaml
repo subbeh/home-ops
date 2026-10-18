@@ -9,21 +9,18 @@ restic:
   no_log: true
 
   vars:
-    restic_ssh_user: "{{ bws_secrets.RESTIC_VPS_SSH_USER }}"
-    restic_ssh_key: "{{ bws_secrets.RESTIC_VPS_SSH_KEY }}"
     restic_password: "{{ bws_secrets.RESTIC_VPS_PASSWORD }}"
-    restic_host: "{{ bws_secrets.RESTIC_VPS_SSH_USER }}.your-storagebox.de"
 
   files:
     - dest: "{{ services_data_dir }}/restic/ssh/id_ed25519"
       # OpenSSH rejects a private key without its trailing newline.
-      content: "{{ restic_ssh_key | trim }}\n"
+      content: "{{ bws_secrets.RESTIC_VPS_SSH_KEY | trim }}\n"
       mode: "0600"
     - dest: "{{ services_data_dir }}/restic/ssh/config"
       content: |
         Host storagebox
-          HostName {{ restic_host }}
-          User {{ restic_ssh_user }}
+          HostName {{ bws_secrets.RESTIC_VPS_SSH_USER }}.your-storagebox.de
+          User {{ bws_secrets.RESTIC_VPS_SSH_USER }}
           Port 23
           IdentityFile /run/secrets/.ssh/id_ed25519
           IdentitiesOnly yes

@@ -29,9 +29,6 @@ The schema is the services role (`ansible/roles/services/tasks/`). Existing Serv
 
   no_log: true                # only when it references bws_secrets
 
-  vars:                       # secrets fetched once; prefix with the Service name
-    <name>_secret: "{{ bws_secrets.<NAME>_SECRET }}"
-
   files:
     - dest: "{{ services_data_dir }}/<name>/data"
 
@@ -43,13 +40,14 @@ The schema is the services role (`ansible/roles/services/tasks/`). Existing Serv
       volumes:
         - "{{ services_data_dir }}/<name>/data:/data"
       env:
-        SECRET: "{{ <name>_secret }}"
+        SECRET: "{{ bws_secrets.<NAME>_SECRET }}"
 ```
 
 ## Gotchas
 
 - **`image:`**: write it as `image: repo:tag` on one line. That's the only form Renovate's regex manager tracks. Leave the digest off: Renovate's pin-digest PR adds it. Registry tags often drop the release's `v` (atuin: `18.24.1`).
 - **Several containers**: each needs a unique `name`. That name is also its default hostname and how the containers reach each other on the `services` network (`http://karakeep-meilisearch:7700`).
+- **`vars:`**: only for a value used more than once (karakeep's meili key and URL, restic's password). Name it with the Service as prefix: vars become host-wide facts that outlive the Service. Use a value needed only once inline as `bws_secrets.<KEY>`.
 - **Defaults**: `services_container_defaults` already sets PUID, PGID, TZ, restart, logging and the network. Add only what differs.
 - **`network_mode: host`**: the container leaves the `services` network, and Traefik reaches it through `host.docker.internal`.
 - **Image runs as a fixed UID**: give its data dir that `owner`/`group` in `files:` (aven: 65532). Find it on the Host, since the laptop's Docker is usually off: `ssh <host> docker run --rm --entrypoint id <image>`.
