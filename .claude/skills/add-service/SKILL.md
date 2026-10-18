@@ -15,7 +15,7 @@ The schema is the services role (`ansible/roles/services/tasks/`). Existing Serv
 1. **Gather** from the upstream self-hosting docs: the image with an exact tag, the port, the paths that need to persist, the env vars, and which of them are secrets. Ask the user for the Host and any hostname other than `<container name>.<services_domain>`. Done when every field of the template below has a value.
 2. **Write** `ansible/services/<name>.yaml` from the template. Done when the PR check's load step passes:
    `env -u ANSIBLE_PLAYBOOK_DIR ansible localhost -m ansible.builtin.include_vars -a '{"dir": "ansible/services", "files_matching": "\\.ya?ml$", "depth": 1}'`
-3. **Secrets**: name them `<SERVICE>_<PURPOSE>` (e.g. `KARAKEEP_NEXTAUTH_SECRET`) and list them for the user to add to Bitwarden Secrets Manager. The role fails a Deploy on any missing key.
+3. **Secrets**: name them `<SERVICE>_<PURPOSE>` (e.g. `KARAKEEP_NEXTAUTH_SECRET`) and list them for the user to add to `.bws.yaml` (the dotfiles bws sync creates them in Secrets Manager; don't read the file). The role fails a Deploy on any missing key.
 4. **Assign**: append `<name>` to the Host's `services:` in `ansible/inventory.yml`.
 5. **Docs**: run `just docs` and stage the generated pages. One-time manual setup (first-run commands, UI steps) goes in the Service file's header comment, as in aven and semaphore.
 6. **Verify**: run `ansible-playbook --syntax-check ansible/playbooks/services.yaml`. To Deploy, hand over to the deploy skill.

@@ -32,7 +32,7 @@ just ansible::playbook services --tags karakeep
 
 - **semaphore**: always deployed by hand, with `--tags semaphore`, and never while an Auto-deploy task is running, since recreating it kills the task.
 - **traefik**: every Service's URL is briefly down while it's recreated.
-- **New Service with secrets**: add the secrets to Bitwarden Secrets Manager first; the role fails on any missing `bws_secrets.<KEY>`.
+- **New Service with secrets**: add the secrets to `.bws.yaml` first, which the dotfiles bws sync creates in Secrets Manager; the role fails on any missing `bws_secrets.<KEY>`.
 - **Rollback**: revert the commit, then deploy the Service again.
 
 ## Connectivity check
