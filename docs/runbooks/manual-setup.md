@@ -51,8 +51,8 @@ Org `sbbh-cloud`.
 - [x] `just tf::init tfe-admin` (creates the `tfe-admin` workspace).
 - [x] `tfe-admin` workspace → Settings → General → Execution Mode: **Local**.
 - [x] `just tf::apply tfe-admin`: creates the `cloudflare` and `tailscale` workspaces and `SEMAPHORE_API_TOKEN` in GitHub.
-- [ ] `tailscale` workspace: start a run (workspaces don't run on creation) and **Confirm** it. Adds `tag:ci` and creates the CI client.
-- [ ] `just tf::apply tfe-admin` again: copies the CI client into GitHub as `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET`.
+- [x] `tailscale` workspace: start a run (workspaces don't run on creation) and **Confirm** it. Adds `tag:ci` and creates the CI client.
+- [x] `just tf::apply tfe-admin` again: copies the CI client into GitHub as `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET`.
 - [ ] `cloudflare` workspace: start a run; it imports the existing wildcard record. Then delete the `import` block in `terraform/cloudflare/main.tf` and the laptop's old `terraform/cloudflare/terraform.tfstate`.
 
 ## Renovate
