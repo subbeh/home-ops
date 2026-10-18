@@ -27,7 +27,7 @@ Secrets reach Secrets Manager through `.bws.yaml`: each key points at a vault it
 ## Tailscale
 
 - [x] Seed `terraform/tailscale/policy.hujson` from the admin console's policy (only when the tailnet existed before this repo managed it).
-- [ ] OAuth client for Terraform: Settings → OAuth clients → Generate, scopes **Policy File: Write**, **OAuth Keys: Write** and **Auth Keys: Write** with tag `tag:ci`. The `tailscale` stack creates the CI client, and an OAuth client can only grant scopes and tags it holds itself (otherwise: `actor cannot set scopes (403)`). `tag:ci` only exists once the policy is applied, so on a fresh tailnet apply the policy first, then add Auth Keys.
+- [x] OAuth client for Terraform: Settings → OAuth clients → Generate, scopes **Policy File: Write**, **OAuth Keys: Write** and **Auth Keys: Write** with tag `tag:ci`. The `tailscale` stack creates the CI client, and an OAuth client can only grant scopes and tags it holds itself (otherwise: `actor cannot set scopes (403)`). `tag:ci` only exists once the policy is applied, so on a fresh tailnet apply the policy first, then add Auth Keys.
 
 ## Semaphore
 
