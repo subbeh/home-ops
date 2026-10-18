@@ -7,7 +7,7 @@ syncthing:
     - dest: "{{ services_data_dir }}/syncthing/data"
 
   containers:
-    - image: ghcr.io/syncthing/syncthing:2.0.9@sha256:e1bc00b65c67e3d76f455af8bab01f95a380cd1962dd3bdfa52a702f07f0a5d0
+    - image: ghcr.io/syncthing/syncthing:2.1.6@sha256:4d0281bdcb4ed9baf503d251d0544ddd856f49fce3f114056257ae172b7fb670
       network_mode: host
       userns_mode: host
       labels:
