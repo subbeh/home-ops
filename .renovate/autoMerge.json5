@@ -28,6 +28,8 @@
       automerge: true,
       automergeType: "branch",
       matchUpdateTypes: ["minor", "patch"],
+      // Checks only run on PRs, so a branch would wait for them forever.
+      ignoreTests: true,
     },
     {
       description: "Auto merge Terraform providers",

@@ -20,7 +20,7 @@ The hosted Mend Renovate GitHub App reads `.renovaterc.json5`, which extends the
 | Semaphore (image and annotated `bws` version) | same, plus the annotated-dependency regex manager | never |
 | GitHub Actions | built-in, digests pinned | minor, patch and digest, as a PR, after 3 days |
 | Terraform providers | built-in; lock files refreshed monthly | minor + patch, as a PR |
-| mise tools (`.mise/config.toml`) | built-in | minor + patch, straight to `main` (no PR) |
+| mise tools (`.mise/config.toml`) | built-in | minor + patch, straight to `main` (no PR, no checks: those only run on PRs) |
 
 Anything not listed (e.g. minor or major image bumps) waits for a manual merge. To annotate a pinned version so Renovate tracks it, put this comment on the line above the version:
 
