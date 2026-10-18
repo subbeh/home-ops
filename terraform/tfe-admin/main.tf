@@ -120,9 +120,9 @@ data "bitwarden-secrets_secret" "semaphore_api_token" {
 }
 
 resource "github_actions_secret" "semaphore_api_token" {
-  repository      = "home-ops"
-  secret_name     = "SEMAPHORE_API_TOKEN"
-  plaintext_value = data.bitwarden-secrets_secret.semaphore_api_token.value
+  repository  = "home-ops"
+  secret_name = "SEMAPHORE_API_TOKEN"
+  value       = data.bitwarden-secrets_secret.semaphore_api_token.value
 }
 
 # The tailscale workspace only has its CI client after its first apply, so the
@@ -141,15 +141,15 @@ locals {
 }
 
 resource "github_actions_secret" "ts_oauth_client_id" {
-  count           = local.ts_ci_client_id == null ? 0 : 1
-  repository      = "home-ops"
-  secret_name     = "TS_OAUTH_CLIENT_ID"
-  plaintext_value = local.ts_ci_client_id
+  count       = local.ts_ci_client_id == null ? 0 : 1
+  repository  = "home-ops"
+  secret_name = "TS_OAUTH_CLIENT_ID"
+  value       = local.ts_ci_client_id
 }
 
 resource "github_actions_secret" "ts_oauth_secret" {
-  count           = local.ts_ci_client_id == null ? 0 : 1
-  repository      = "home-ops"
-  secret_name     = "TS_OAUTH_SECRET"
-  plaintext_value = data.tfe_outputs.tailscale[0].values.ci_oauth_client_secret
+  count       = local.ts_ci_client_id == null ? 0 : 1
+  repository  = "home-ops"
+  secret_name = "TS_OAUTH_SECRET"
+  value       = data.tfe_outputs.tailscale[0].values.ci_oauth_client_secret
 }
