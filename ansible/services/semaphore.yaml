@@ -8,8 +8,7 @@
 #   1. Key Store: an SSH key whose public half is in root's authorized_keys on the VPS.
 #   2. Repository: https://github.com/subbeh/home-ops.git, branch main, no key.
 #   3. Inventory: type File, path ansible/inventory.yml, the SSH key from 1.
-#   4. Variable Group: environment {"ANSIBLE_CONFIG": "ansible/ansible.cfg"}, plus a
-#      secret of type env, BWS_ACCESS_TOKEN, from a dedicated Bitwarden machine account.
+#   4. Variable Group: an empty one (templates require one; env comes from below).
 #   5. Template "services": playbook ansible/playbooks/services.yaml, the inventory,
 #      repository and variable group above, and under Ansible prompts tick "Tags".
 #   6. API token (User > Tokens) for the deploy workflow: GitHub secret SEMAPHORE_API_TOKEN,
@@ -56,3 +55,8 @@ semaphore:
         SEMAPHORE_ADMIN_PASSWORD: "{{ bws_secrets.SEMAPHORE_ADMIN_PASSWORD }}"
         # head -c32 /dev/urandom | base64; encrypts the Key Store, so never rotate it casually.
         SEMAPHORE_ACCESS_KEY_ENCRYPTION: "{{ bws_secrets.SEMAPHORE_ACCESS_KEY_ENCRYPTION }}"
+        # Tasks don't inherit the server env; these reach every task.
+        SEMAPHORE_ENV_VARS: '{"ANSIBLE_CONFIG": "ansible/ansible.cfg"}'
+        SEMAPHORE_FORWARDED_ENV_VARS: '["BWS_ACCESS_TOKEN"]'
+        # Token of a dedicated Bitwarden machine account that can read the Service secrets.
+        BWS_ACCESS_TOKEN: "{{ bws_secrets.SEMAPHORE_BWS_ACCESS_TOKEN }}"
