@@ -61,7 +61,7 @@ gatus:
                 send-on-resolved: true
 
   containers:
-    - image: ghcr.io/twin/gatus:v5.37.0
+    - image: ghcr.io/twin/gatus:v5.37.0@sha256:094eb186e55235db367e90e9d56140e5897b7044c41de23cde4cc18e6da1242e
       labels:
         traefik.enable: "true"
         traefik.http.services.gatus.loadbalancer.server.port: "8080"

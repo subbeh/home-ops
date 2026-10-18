@@ -53,7 +53,7 @@ traefik:
             defaultRule: "Host(`{% raw %}{{ normalize .ContainerName }}{% endraw %}.{{ services_domain }}`)"
 
   containers:
-    - image: traefik:v3.7.14
+    - image: traefik:v3.7.14@sha256:575fa15b135078fe5e50aa847987d96dbddd7b093c172429618404df73f3fa7c
       ports:
         - "{{ networks.tailnet.addr }}:80:80"
         - "{{ networks.tailnet.addr }}:443:443"

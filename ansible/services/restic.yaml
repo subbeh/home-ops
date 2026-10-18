@@ -41,7 +41,7 @@ restic:
     # containers against the same repository. Prune and check need an exclusive
     # lock, so they start at :30, clear of the hourly backup at :00.
     - name: restic-backup
-      image: mazzolino/restic:1.8.2
+      image: mazzolino/restic:1.8.2@sha256:685293a0bc77eb054b74b207561e7d2eda6cfc910984c5a93db8f253055118e2
       volumes:
         - "/opt/data:/data:ro"
         - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
@@ -68,7 +68,7 @@ restic:
           curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "http://gatus:8080/api/v1/endpoints/backups_restic-backup/external?success=false&error=backup+failed" || true
 
     - name: restic-prune
-      image: mazzolino/restic:1.8.2
+      image: mazzolino/restic:1.8.2@sha256:685293a0bc77eb054b74b207561e7d2eda6cfc910984c5a93db8f253055118e2
       volumes:
         - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
       env:
@@ -78,7 +78,7 @@ restic:
         PRUNE_CRON: "0 30 4 * * *"
 
     - name: restic-check
-      image: mazzolino/restic:1.8.2
+      image: mazzolino/restic:1.8.2@sha256:685293a0bc77eb054b74b207561e7d2eda6cfc910984c5a93db8f253055118e2
       volumes:
         - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
       env:
