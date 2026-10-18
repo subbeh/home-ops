@@ -22,12 +22,12 @@ Secrets reach Secrets Manager through `.bws.yaml`: each key points at a vault it
 - [x] `SEMAPHORE_ACCESS_KEY_ENCRYPTION`: `head -c32 /dev/urandom | base64` (44 characters). Never change it once Semaphore holds keys: its Key Store becomes unreadable.
 - [x] `SEMAPHORE_BWS_ACCESS_TOKEN`: Secrets Manager → Machine accounts → New (`semaphore`) → Projects: Can read on the Service secrets → Access tokens → Create.
 - [x] `TAILSCALE_TERRAFORM_OAUTH_CLIENT_ID` / `_SECRET`: see Tailscale below.
-- [ ] `SEMAPHORE_API_TOKEN`: see Semaphore below.
+- [x] `SEMAPHORE_API_TOKEN`: see Semaphore below.
 
 ## Tailscale
 
 - [x] Seed `terraform/tailscale/policy.hujson` from the admin console's policy (only when the tailnet existed before this repo managed it).
-- [ ] OAuth client for Terraform: Settings → OAuth clients → Generate, scopes **Policy File: Write** and **OAuth Keys: Write**. The CI client is created by the `tailscale` stack, so this one needs both. If the console can't add a scope to the existing client, generate a new one and update the two vault fields.
+- [x] OAuth client for Terraform: Settings → OAuth clients → Generate, scopes **Policy File: Write** and **OAuth Keys: Write**. The CI client is created by the `tailscale` stack, so this one needs both. If the console can't add a scope to the existing client, generate a new one and update the two vault fields.
   > TODO(you): if the first `tailscale` apply fails on creating the CI client because of tag ownership, add the needed scope or tag here.
 
 ## Semaphore
@@ -40,7 +40,7 @@ After `just ansible::playbook services --tags semaphore`, at `https://semaphore.
 - [x] Inventory: File, `ansible/inventory.yml`, **User Credentials**: the SSH key. Without it the task can't log in.
 - [x] Variable group: an empty one.
 - [x] Template `services`: playbook `ansible/playbooks/services.yaml`, Ansible prompts: Tags. Its project and template IDs are in `.github/workflows/deploy.yaml`.
-- [ ] API token (User → Tokens) → `SEMAPHORE_API_TOKEN` in `.bws.yaml`.
+- [x] API token (User → Tokens) → `SEMAPHORE_API_TOKEN` in `.bws.yaml`.
 
 ## Terraform Cloud
 
