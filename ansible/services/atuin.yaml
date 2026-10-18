@@ -54,7 +54,7 @@ atuin:
 
     # shortcut: upstream publishes only latest/main tags, pin a version once it tags releases.
     - name: atuin-ai-server
-      image: ghcr.io/atuinsh/atuin-ai-server:latest
+      image: ghcr.io/atuinsh/atuin-ai-server:latest@sha256:3d11028588ebfddb0685169e35cbc7121d3577b6eee3831e845fbe5c28e48d92
       labels:
         traefik.enable: "true"
         traefik.http.routers.atuin-ai-server.rule: "Host(`atuin-ai.{{ services_domain }}`)"
