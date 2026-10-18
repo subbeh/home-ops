@@ -9,7 +9,7 @@ opengym:
 
   containers:
     - name: opengym-api
-      image: ghcr.io/duartesantos8/opengym-api:1.4.1
+      image: ghcr.io/duartesantos8/opengym-api:1.4.1@sha256:4bc07fe7d1f05a57c0fa25da3563d54dfe27223506637d67fc64088a2a2f140b
       volumes:
         - "{{ services_data_dir }}/opengym/data:/data"
       env:
@@ -21,7 +21,7 @@ opengym:
         PASSWORD_LOGIN: "1"
 
     - name: opengym-web
-      image: ghcr.io/duartesantos8/opengym-web:1.4.1
+      image: ghcr.io/duartesantos8/opengym-web:1.4.1@sha256:e32cae9d2f4aad0c5e1b7888c9bfc712b2306ddfe3c65bc4cfefd4b0002e86d3
       # The image checks every 5m, and traefik skips containers until they're healthy.
       healthcheck:
         interval: 30s
