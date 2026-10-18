@@ -8,6 +8,14 @@
       extractVersion: "^bws-v(?<version>.+)$",
     },
     {
+      // Meilisearch won't open an older index without --upgrade-db, and karakeep pins
+      // the version it tests in its compose file: upgrade on purpose, together.
+      description: "Meilisearch minor/major updates need dashboard approval",
+      matchPackageNames: ["getmeili/meilisearch"],
+      matchUpdateTypes: ["minor", "major"],
+      dependencyDashboardApproval: true,
+    },
+    {
       description: "Reduce Terraform lock file update frequency",
       matchManagers: ["terraform"],
       matchUpdateTypes: ["lockFileMaintenance"],

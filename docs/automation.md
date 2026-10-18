@@ -22,7 +22,7 @@ The hosted Mend Renovate GitHub App ("Renovate Only", mode "Scan and Alert") rea
 | Terraform providers | built-in; lock files refreshed monthly | minor + patch, as a PR |
 | mise tools (`.mise/config.toml`) | built-in | minor + patch, straight to `main` (no PR, no checks: those only run on PRs) |
 
-Anything not listed (e.g. minor or major image bumps) waits for a manual merge. A merged Renovate PR Auto-deploys no matter who merged it.
+Anything not listed (e.g. minor or major image bumps) waits for a manual merge. Meilisearch minor and major bumps don't even open a PR until you tick them under "Pending Approval" on the dashboard: an upgrade needs one start with `--upgrade-db`, and should follow the version karakeep's compose file pins. A merged Renovate PR Auto-deploys no matter who merged it.
 
 - **Release age**: updates younger than 3 days wait on the dashboard under "Pending Status Checks"; the PR's `renovate/stability-days` check turns green once they're old enough. Releases without a timestamp (most digests) aren't held.
 - **Pin digest PRs** ("pin dependencies") add `@sha256:` to new or unpinned images. They never automerge. Merging one Auto-deploys every Service it touches (but never Semaphore), which recreates their containers with the same image.
