@@ -50,7 +50,7 @@ Org `sbbh-cloud`.
 - [x] User Settings → Tokens → GitHub App OAuth Token: create and authorize it. No organization grants needed. `tfe-admin` finds the installation by name through it.
 - [x] User API token (User Settings → Tokens) → `TFC_API_TOKEN` in `.bws.yaml`. No `terraform login`: the `just tf::` recipes export it for Terraform and the tfe provider.
 - [x] `just tf::init tfe-admin` (creates the `tfe-admin` workspace).
-- [ ] `tfe-admin` workspace → Settings → General → Execution Mode: **Local**.
+- [x] `tfe-admin` workspace → Settings → General → Execution Mode: **Local**.
 - [ ] `just tf::apply tfe-admin`: creates the `cloudflare` and `tailscale` workspaces and `SEMAPHORE_API_TOKEN` in GitHub.
 - [ ] `tailscale` workspace: start a run (workspaces don't run on creation) and **Confirm** it. Adds `tag:ci` and creates the CI client.
 - [ ] `just tf::apply tfe-admin` again: copies the CI client into GitHub as `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET`.
