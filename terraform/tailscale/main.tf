@@ -17,7 +17,8 @@ terraform {
 }
 
 # Reads TAILSCALE_OAUTH_CLIENT_ID and TAILSCALE_OAUTH_CLIENT_SECRET from the
-# workspace (see terraform/tfe-admin); the client needs the policy_file and oauth_keys scopes.
+# workspace (see terraform/tfe-admin). The client needs policy_file and oauth_keys, plus
+# auth_keys with tag:ci: Tailscale only lets it grant scopes and tags it holds itself.
 provider "tailscale" {}
 
 # Owns the whole tailnet policy file; edit policy.hujson, never the admin console.
