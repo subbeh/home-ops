@@ -64,7 +64,7 @@ Org `sbbh-cloud`.
 ## Renovate
 
 - [x] Install the Mend Renovate GitHub App (https://github.com/apps/renovate): plan **Renovate Only** (the other one is the paid Mend platform), **Only select repositories** → `home-ops`, mode **Scan and Alert** (Scan Only is silent: no PRs).
-- [ ] Merge the "pin dependencies" PR. It Auto-deploys every Service it touches; deploy Semaphore by hand afterwards for its pin to take effect.
+- [x] Merge the "pin dependencies" PR. It Auto-deploys every Service it touches; deploy Semaphore by hand afterwards for its pin to take effect.
 
 ## Moving from the archive
 
