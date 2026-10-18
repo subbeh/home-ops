@@ -17,7 +17,7 @@ terraform {
 }
 
 # Reads TAILSCALE_OAUTH_CLIENT_ID and TAILSCALE_OAUTH_CLIENT_SECRET from the
-# workspace (see terraform/tfe-admin); the client needs the policy_file scope.
+# workspace (see terraform/tfe-admin); the client needs the policy_file and oauth_keys scopes.
 provider "tailscale" {}
 
 # Owns the whole tailnet policy file; edit policy.hujson, never the admin console.
@@ -25,4 +25,21 @@ resource "tailscale_acl" "policy" {
   acl = file("${path.module}/policy.hujson")
   # Seeded from the live policy, so no import is needed.
   overwrite_existing_content = true
+}
+
+# For .github/workflows/deploy.yaml; terraform/tfe-admin copies it into GitHub secrets.
+resource "tailscale_oauth_client" "ci" {
+  scopes = ["auth_keys"]
+  tags   = ["tag:ci"]
+  # tag:ci only exists once the policy defines it.
+  depends_on = [tailscale_acl.policy]
+}
+
+output "ci_oauth_client_id" {
+  value = tailscale_oauth_client.ci.id
+}
+
+output "ci_oauth_client_secret" {
+  value     = tailscale_oauth_client.ci.key
+  sensitive = true
 }

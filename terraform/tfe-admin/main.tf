@@ -1,5 +1,6 @@
-# Creates the VCS-driven workspaces for the other stacks and their secrets, read from
-# Bitwarden Secrets Manager so it stays the only place they live. Runs on the laptop
+# Creates the VCS-driven workspaces for the other stacks and their secrets, plus the
+# deploy workflow's GitHub secrets, read from Bitwarden Secrets Manager (or, for the
+# Tailscale CI client, the tailscale workspace) so nothing is copied by hand. Runs on the laptop
 # (execution mode Local, state in TFC) with `just tf::apply tfe-admin`.
 #
 # Bootstrap, once:
@@ -18,6 +19,10 @@ terraform {
       source  = "bitwarden/bitwarden-secrets"
       version = "~> 1.0"
     }
+    github = {
+      source  = "integrations/github"
+      version = "~> 6.13"
+    }
   }
 
   cloud {
@@ -33,10 +38,14 @@ provider "tfe" {
   organization = "sbbh-cloud"
 }
 
-# BW_ACCESS_TOKEN and BW_ORGANIZATION_ID are set by terraform/mod.just.
+# BW_ACCESS_TOKEN, BW_ORGANIZATION_ID and GITHUB_TOKEN are set by terraform/mod.just.
 provider "bitwarden-secrets" {
   api_url      = "https://api.bitwarden.com"
   identity_url = "https://identity.bitwarden.com"
+}
+
+provider "github" {
+  owner = "subbeh"
 }
 
 locals {
@@ -101,4 +110,44 @@ resource "tfe_variable" "env" {
   key          = each.value.name
   value        = data.bitwarden-secrets_secret.env[each.key].value
   sensitive    = true
+}
+
+# Deploy workflow secrets (.github/workflows/deploy.yaml).
+data "bitwarden-secrets_secret" "semaphore_api_token" {
+  id = local.secret_ids["SEMAPHORE_API_TOKEN"]
+}
+
+resource "github_actions_secret" "semaphore_api_token" {
+  repository      = "home-ops"
+  secret_name     = "SEMAPHORE_API_TOKEN"
+  plaintext_value = data.bitwarden-secrets_secret.semaphore_api_token.value
+}
+
+# The tailscale workspace only has its CI client after its first apply, so the
+# first `just tf::apply tfe-admin` skips these; run it again once tailscale applied.
+data "tfe_workspace_ids" "all" {
+  names = ["*"]
+}
+
+data "tfe_outputs" "tailscale" {
+  count     = contains(keys(data.tfe_workspace_ids.all.ids), "tailscale") ? 1 : 0
+  workspace = "tailscale"
+}
+
+locals {
+  ts_ci_client_id = try(data.tfe_outputs.tailscale[0].nonsensitive_values.ci_oauth_client_id, null)
+}
+
+resource "github_actions_secret" "ts_oauth_client_id" {
+  count           = local.ts_ci_client_id == null ? 0 : 1
+  repository      = "home-ops"
+  secret_name     = "TS_OAUTH_CLIENT_ID"
+  plaintext_value = local.ts_ci_client_id
+}
+
+resource "github_actions_secret" "ts_oauth_secret" {
+  count           = local.ts_ci_client_id == null ? 0 : 1
+  repository      = "home-ops"
+  secret_name     = "TS_OAUTH_SECRET"
+  plaintext_value = data.tfe_outputs.tailscale[0].values.ci_oauth_client_secret
 }

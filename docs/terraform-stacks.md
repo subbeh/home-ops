@@ -7,4 +7,4 @@ One stack per directory in [`terraform/`](../terraform/). All keep their state i
 |---|---|---|
 | [cloudflare](../terraform/cloudflare/main.tf) | TFC, VCS-driven from `main` | cloudflare/cloudflare |
 | [tailscale](../terraform/tailscale/main.tf) | TFC, VCS-driven from `main` | tailscale/tailscale |
-| [tfe-admin](../terraform/tfe-admin/main.tf) | locally: `just tf::apply tfe-admin` | hashicorp/tfe, bitwarden/bitwarden-secrets |
+| [tfe-admin](../terraform/tfe-admin/main.tf) | locally: `just tf::apply tfe-admin` | hashicorp/tfe, bitwarden/bitwarden-secrets, integrations/github |

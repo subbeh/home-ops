@@ -12,17 +12,19 @@ Each directory in `terraform/` is a stack with its state in Terraform Cloud (org
 - **VCS-driven stacks** run in TFC from `main`. PRs get speculative plans, which post their own PR checks; merging applies.
   - `cloudflare` applies automatically.
   - `tailscale` waits for a manual confirm in the TFC UI, since a bad policy can cut off the tailnet.
-- **`tfe-admin`** creates those workspaces and their sensitive env vars. It runs on the laptop (execution mode Local, state in TFC):
+- **`tfe-admin`** creates those workspaces and their sensitive env vars, and the deploy workflow's GitHub secrets. It runs on the laptop (execution mode Local, state in TFC):
 
   ```sh
   just tf::apply tfe-admin
   ```
 
-  The recipe sets `BW_ACCESS_TOKEN` and `BW_ORGANIZATION_ID` for the Bitwarden provider from your `BWS_ACCESS_TOKEN`. The one-time bootstrap is at the top of `terraform/tfe-admin/main.tf`.
+  The recipe sets `BW_ACCESS_TOKEN` and `BW_ORGANIZATION_ID` for the Bitwarden provider from your `BWS_ACCESS_TOKEN`, and `GITHUB_TOKEN` from `gh auth token`. The one-time bootstrap is in [runbooks/manual-setup.md](runbooks/manual-setup.md).
 
 ## Secrets
 
 Workspaces read provider credentials from env vars that `tfe-admin` copies from Bitwarden Secrets Manager. The mapping is the `env` map in `locals.workspaces`, from variable name to Bitwarden key. To rotate a secret, change it in Bitwarden, then run `just tf::apply tfe-admin`.
+
+GitHub secrets come from Bitwarden too, except the Tailscale CI client: the `tailscale` stack creates it and `tfe-admin` reads it from that workspace's outputs. Until `tailscale` has applied once, `tfe-admin` skips those two secrets, so run it again afterwards.
 
 ## Adding a stack
 

@@ -7,12 +7,13 @@
 #   0. Project settings: max parallel tasks 1, so Auto-deploys queue instead of racing.
 #   1. Key Store: an SSH key whose public half is in root's authorized_keys on the VPS.
 #   2. Repository: https://github.com/subbeh/home-ops.git, branch main, no key.
-#   3. Inventory: type File, path ansible/inventory.yml, the SSH key from 1.
+#   3. Inventory: type File, path ansible/inventory.yml, User Credentials: the SSH key from 1.
 #   4. Variable Group: an empty one (templates require one; env comes from below).
 #   5. Template "services": playbook ansible/playbooks/services.yaml, the inventory,
 #      repository and variable group above, and under Ansible prompts tick "Tags".
-#   6. API token (User > Tokens) for the deploy workflow: GitHub secret SEMAPHORE_API_TOKEN,
-#      variables SEMAPHORE_PROJECT_ID and SEMAPHORE_TEMPLATE_ID.
+#   6. API token (User > Tokens) for the deploy workflow: add it to .bws.yaml as
+#      SEMAPHORE_API_TOKEN; terraform/tfe-admin puts it in GitHub. Project and template
+#      IDs are in .github/workflows/deploy.yaml.
 semaphore:
   description: Ansible UI that runs Auto-deploys
 

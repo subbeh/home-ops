@@ -52,10 +52,12 @@ Known limits:
 - Semaphore clones `main` when the task starts, so a push that lands in between rides along.
 - There's no automatic rollback: revert the PR and deploy by hand.
 
-GitHub settings it needs:
+GitHub secrets it needs, all written by `terraform/tfe-admin` ([terraform.md](terraform.md)):
 
-- Secrets: `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET`, `SEMAPHORE_API_TOKEN`.
-- Variables: `SEMAPHORE_PROJECT_ID`, `SEMAPHORE_TEMPLATE_ID`.
+- `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET`: the `tag:ci` OAuth client, created by the `tailscale` stack.
+- `SEMAPHORE_API_TOKEN`: from Bitwarden.
+
+The Semaphore project and template IDs aren't secret; they're in the workflow's `env`.
 
 ## Semaphore
 
