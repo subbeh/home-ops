@@ -18,7 +18,7 @@ Each directory in `terraform/` is a stack with its state in Terraform Cloud (org
   just tf::apply tfe-admin
   ```
 
-  The recipe sets `BW_ACCESS_TOKEN` and `BW_ORGANIZATION_ID` for the Bitwarden provider from your `BWS_ACCESS_TOKEN`, and `GITHUB_TOKEN` from `gh auth token`. The one-time bootstrap is in [runbooks/manual-setup.md](runbooks/manual-setup.md).
+  The recipe sets `TF_TOKEN_app_terraform_io` and `TFE_TOKEN` from Bitwarden's `TFC_API_TOKEN` (so no `terraform login`), `BW_ACCESS_TOKEN` and `BW_ORGANIZATION_ID` for the Bitwarden provider from your `BWS_ACCESS_TOKEN`, and `GITHUB_TOKEN` from `gh auth token`. `just tf::init <stack>` sets only the TFC token. The one-time bootstrap is in [runbooks/manual-setup.md](runbooks/manual-setup.md).
 
 ## Secrets
 

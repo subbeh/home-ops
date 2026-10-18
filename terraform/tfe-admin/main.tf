@@ -5,7 +5,8 @@
 #
 # Bootstrap, once:
 #   1. Install the HCP Terraform GitHub App on subbeh/home-ops.
-#   2. `terraform login`, then `terraform -chdir=terraform/tfe-admin init` creates this workspace.
+#   2. A TFC user API token in Bitwarden as TFC_API_TOKEN, then `just tf::init tfe-admin`
+#      creates this workspace.
 #   3. Set its Execution Mode to Local in the TFC UI, then `just tf::apply tfe-admin`.
 terraform {
   required_version = ">= 1.13"
@@ -33,17 +34,18 @@ terraform {
   }
 }
 
-# Uses the `terraform login` token.
+# TFE_TOKEN is set by terraform/mod.just.
 provider "tfe" {
   organization = "sbbh-cloud"
 }
 
-# BW_ACCESS_TOKEN, BW_ORGANIZATION_ID and GITHUB_TOKEN are set by terraform/mod.just.
+# BW_ACCESS_TOKEN and BW_ORGANIZATION_ID are set by terraform/mod.just.
 provider "bitwarden-secrets" {
   api_url      = "https://api.bitwarden.com"
   identity_url = "https://identity.bitwarden.com"
 }
 
+# GITHUB_TOKEN is set by terraform/mod.just.
 provider "github" {
   owner = "subbeh"
 }
