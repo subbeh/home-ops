@@ -15,3 +15,5 @@
     remote_src: true
     include: [bws]
     mode: "0755"
+  # Fails in check mode when the dir wasn't really created.
+  ignore_errors: "{{ ansible_check_mode }}"
