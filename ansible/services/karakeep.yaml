@@ -5,7 +5,7 @@ karakeep:
   no_log: true
 
   vars:
-    karakeep_url: "https://karakeep.{{ services_domain }}"
+    karakeep_url: "bookmarks.{{ services_domain }}"
     karakeep_meili_master_key: "{{ bws_secrets.KARAKEEP_MEILI_MASTER_KEY }}"
     karakeep_nextauth_secret: "{{ bws_secrets.KARAKEEP_NEXTAUTH_SECRET }}"
     karakeep_openai_api_key: "{{ bws_secrets.KARAKEEP_OPENAI_API_KEY }}"
@@ -19,12 +19,13 @@ karakeep:
       image: ghcr.io/karakeep-app/karakeep:0.34.0@sha256:151cdd6b5f2e21635645983e126f411675bfa35becb02c028c1a727f45f899c6
       labels:
         traefik.enable: "true"
+        traefik.http.routers.karakeep.rule: "Host(`{{ karakeep_url }}`)"
         traefik.http.services.karakeep.loadbalancer.server.port: "3000"
       volumes:
         - "{{ services_data_dir }}/karakeep/data:/data"
       env:
         DATA_DIR: /data
-        NEXTAUTH_URL: "{{ karakeep_url }}"
+        NEXTAUTH_URL: "https://{{ karakeep_url }}"
         NEXTAUTH_SECRET: "{{ karakeep_nextauth_secret }}"
         MEILI_ADDR: http://karakeep-meilisearch:7700
         MEILI_MASTER_KEY: "{{ karakeep_meili_master_key }}"
