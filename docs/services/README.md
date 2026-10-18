@@ -5,7 +5,7 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 
 | Service | Description | Host(s) | URL | Notes |
 |---|---|---|---|---|
-| [atuin](../../ansible/services/atuin.yaml) | Sync server for Atuin shell history | vps | [atuin.vps.sbbh.cloud](https://atuin.vps.sbbh.cloud) |  |
+| [atuin](../../ansible/services/atuin.yaml) | Sync server for Atuin shell history, plus an Atuin AI server backed by OpenAI | vps | [atuin.vps.sbbh.cloud](https://atuin.vps.sbbh.cloud)<br>[atuin-ai.vps.sbbh.cloud](https://atuin-ai.vps.sbbh.cloud) |  |
 | [aven](../../ansible/services/aven.yaml) | Sync server for the Aven task manager | vps | [aven.vps.sbbh.cloud](https://aven.vps.sbbh.cloud) |  |
 | [gatus](../../ansible/services/gatus.yaml) | Status dashboard, plus the dead-man's switch for restic backups | vps | [gatus.vps.sbbh.cloud](https://gatus.vps.sbbh.cloud) |  |
 | [karakeep](../../ansible/services/karakeep.yaml) | Bookmark manager with full-text search and page archiving | vps | [karakeep.vps.sbbh.cloud](https://karakeep.vps.sbbh.cloud) |  |

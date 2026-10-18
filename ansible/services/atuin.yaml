@@ -3,17 +3,47 @@
 # On the first device: `atuin register -u <user> -e <email>`, with sync_address set to
 # https://atuin.vps.sbbh.cloud in ~/.config/atuin/config.toml; on the others `atuin login`
 # with the key from `atuin key`. See https://docs.atuin.sh/self-hosting/docker/
+#
+# atuin-ai-server runs Atuin AI (the `?` chat in the shell) against OpenAI instead of the
+# hosted service. No AUTH_TOKEN, for the same tailnet-only reason, so only tailnet devices
+# can spend the OpenAI key. On each device, add to ~/.config/atuin/config.toml:
+#   [ai]
+#   endpoint = "https://atuin-ai.vps.sbbh.cloud"
+# See https://docs.atuin.sh/latest/ai/self-hosting/ and https://github.com/atuinsh/atuin-ai-server
 atuin:
-  description: Sync server for Atuin shell history
+  description: Sync server for Atuin shell history, plus an Atuin AI server backed by OpenAI
+
+  no_log: true
+
+  vars:
+    atuin_openai_api_key: "{{ bws_secrets.ATUIN_OPENAI_API_KEY }}"
 
   files:
     # The image runs as atuin (1000), and creates the SQLite db here.
     - dest: "{{ services_data_dir }}/atuin/config"
       owner: 1000
       group: 1000
+    # The model must support tool calling on chat completions; responses-only models fail.
+    - dest: "{{ services_data_dir }}/atuin/ai-config.toml"
+      content: |
+        port = 8080
+        endpoint = "https://api.openai.com/v1"
+        default_model = "gpt-5-mini"
+
+        [api_key]
+        env = "OPENAI_API_KEY"
+
+        [request.body]
+        stream_options = { include_usage = true }
+
+        [[models]]
+        alias = "gpt-5-mini"
+        name = "GPT-5 mini"
+        model = "gpt-5-mini"
 
   containers:
-    - image: ghcr.io/atuinsh/atuin:18.24.1@sha256:b9a8369b4016dddcd90d23906f1d63dd883f459c6aaecec3be87cf481e8ac88d
+    - name: atuin
+      image: ghcr.io/atuinsh/atuin:18.24.1@sha256:b9a8369b4016dddcd90d23906f1d63dd883f459c6aaecec3be87cf481e8ac88d
       command: start
       labels:
         traefik.enable: "true"
@@ -24,3 +54,15 @@ atuin:
         ATUIN_HOST: "0.0.0.0"
         ATUIN_OPEN_REGISTRATION: "true"
         ATUIN_DB_URI: sqlite:///config/atuin.db
+
+    # shortcut: upstream publishes only latest/main tags, pin a version once it tags releases.
+    - name: atuin-ai-server
+      image: ghcr.io/atuinsh/atuin-ai-server:latest
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.atuin-ai-server.rule: "Host(`atuin-ai.{{ services_domain }}`)"
+        traefik.http.services.atuin-ai-server.loadbalancer.server.port: "8080"
+      volumes:
+        - "{{ services_data_dir }}/atuin/ai-config.toml:/etc/atuin-ai/config.toml"
+      env:
+        OPENAI_API_KEY: "{{ atuin_openai_api_key }}"
