@@ -23,10 +23,6 @@
       "Bash(terraform -chdir=* destroy*)",
       "Bash(just tf::apply*)"
     ],
-    "deny": [
-      "Read(./.env)",
-      "Read(./.bws.yaml)",
-      "Read(./**/*.tfstate*)"
-    ]
+    "deny": ["Read(./.env)", "Read(./**/*.tfstate*)"]
   }
 }

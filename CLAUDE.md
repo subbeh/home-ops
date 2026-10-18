@@ -5,6 +5,7 @@ covers:
   - .pre-commit-config.yaml
   - .github/workflows/check.yaml
 ---
+
 # home-ops
 
 Ansible deploys self-hosted Services as Docker containers onto Hosts. Terraform (state in Terraform Cloud) owns DNS, the tailnet policy and its own workspaces. Renovate bumps pinned versions, and merged Version Bumps Auto-deploy through Semaphore.
@@ -18,7 +19,7 @@ Ansible deploys self-hosted Services as Docker containers onto Hosts. Terraform 
 
 - **Real runs need a same-turn ask.** Run a real Deploy, `terraform apply` or `just tf::apply` only when the user asks for that run in the current turn. Otherwise verify with `--check --diff`, `--syntax-check`, `just docs` and `terraform validate`.
 - **Secrets**: all live in Bitwarden Secrets Manager. Reference them as `bws_secrets.<KEY>` and set `no_log: true` on any Service that does.
-- **Token files**: `.env` and `.bws.yaml` hold access tokens. Leave them unread.
+- **Token files**: `.env` holds access tokens. Leave it unread.
 
 ## Docs upkeep
 
