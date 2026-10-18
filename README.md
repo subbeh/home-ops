@@ -15,7 +15,7 @@ Infrastructure for my personal Hosts and the self-hosted Services that run on th
 | `terraform/` | Terraform stacks: Cloudflare DNS, the Tailscale policy, TFC workspaces |
 | `.github/workflows/` | PR checks and Auto-deploy |
 | `.renovate/` | Renovate presets |
-| `docs/` | How it all works: [start here](docs/README.md) |
+| `docs/` | How it all works: [overview](docs/overview.md), [index](docs/README.md) |
 
 ## Getting started
 

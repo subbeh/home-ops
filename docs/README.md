@@ -4,6 +4,7 @@ What runs where, and how to change it. Terms (Host, Service, Deploy, Version Bum
 
 | Page | Covers |
 |---|---|
+| [overview.md](overview.md) | Start here: the parts, a Version Bump end to end, what each change triggers, who holds which credential |
 | [architecture.md](architecture.md) | Network, DNS and TLS, secrets, data, backups, monitoring |
 | [hosts.md](hosts.md) | Hosts and their assigned Services (generated) |
 | [services/](services/README.md) | Service catalog (generated), plus optional per-Service notes |

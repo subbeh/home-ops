@@ -54,8 +54,23 @@ Org `sbbh-cloud`.
 - [x] `tailscale` workspace: start a run (workspaces don't run on creation) and **Confirm** it. Adds `tag:ci` and creates the CI client.
 - [x] `just tf::apply tfe-admin` again: copies the CI client into GitHub as `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET`.
 - [x] `cloudflare` workspace: start a run; it imports the existing wildcard record (only when the record predates the workspace: add an `import` block for it, then remove it after the apply).
-- [ ] Delete the laptop's old local `terraform/cloudflare/terraform.tfstate`.
+- [x] Delete the laptop's old local `terraform/cloudflare/terraform.tfstate`.
+
+## GitHub
+
+- [x] Repo Settings → General → **Allow auto-merge** (Renovate's PR automerge uses it) and **Automatically delete head branches**.
+- [x] Secrets: nothing by hand. `tfe-admin` writes all three the deploy workflow needs.
 
 ## Renovate
 
-- [ ] Install the Mend Renovate GitHub App on `subbeh/home-ops`. Its first PRs pin every image digest.
+- [x] Install the Mend Renovate GitHub App (https://github.com/apps/renovate): plan **Renovate Only** (the other one is the paid Mend platform), **Only select repositories** → `home-ops`, mode **Scan and Alert** (Scan Only is silent: no PRs).
+- [ ] Merge the "pin dependencies" PR. It Auto-deploys every Service it touches; deploy Semaphore by hand afterwards for its pin to take effect.
+
+## Moving from the archive
+
+One-offs done when `v2` replaced the Kubernetes repo; listed so nothing is left behind.
+
+- [x] `v2` force-pushed over `main` (identical to `archive` at the time); `archive` and `archive_main` keep the old history.
+- [x] TFC: legacy projects, workspaces and variables deleted.
+- [x] GitHub: archive-only Actions secrets (`BOT_APP_*`, `CLOUDFLARE_*`) deleted, stale self-hosted-runner Renovate run gone.
+- [x] Old Renovate dashboard issue closed.

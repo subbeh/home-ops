@@ -8,11 +8,11 @@ covers:
 ---
 # Automation
 
-The rationale is in [ADR 0001](adr/0001-auto-deploy-via-semaphore-over-tailscale.md).
+How these pieces connect to each other is in [overview.md](overview.md); the rationale is in [ADR 0001](adr/0001-auto-deploy-via-semaphore-over-tailscale.md).
 
 ## Renovate
 
-The hosted Mend Renovate GitHub App reads `.renovaterc.json5`, which extends the presets in `.renovate/`. Commits are semantic (`fix(container): update image x ( a ➔ b )`), and there's a dependency dashboard issue.
+The hosted Mend Renovate GitHub App ("Renovate Only", mode "Scan and Alert") reads `.renovaterc.json5` from `main`, which extends the presets in `.renovate/` (also fetched from `main`, so config changes only take effect once pushed). Commits are semantic (`fix(container): update image x ( a ➔ b )`), and the "Renovate Dashboard 🤖" issue lists every dependency, pending update and config problem.
 
 | Target | Found by | Automerge |
 |---|---|---|
@@ -22,13 +22,19 @@ The hosted Mend Renovate GitHub App reads `.renovaterc.json5`, which extends the
 | Terraform providers | built-in; lock files refreshed monthly | minor + patch, as a PR |
 | mise tools (`.mise/config.toml`) | built-in | minor + patch, straight to `main` (no PR, no checks: those only run on PRs) |
 
-Anything not listed (e.g. minor or major image bumps) waits for a manual merge. To annotate a pinned version so Renovate tracks it, put this comment on the line above the version:
+Anything not listed (e.g. minor or major image bumps) waits for a manual merge. A merged Renovate PR Auto-deploys no matter who merged it.
+
+- **Release age**: updates younger than 3 days wait on the dashboard under "Pending Status Checks"; the PR's `renovate/stability-days` check turns green once they're old enough. Releases without a timestamp (most digests) aren't held.
+- **Pin digest PRs** ("pin dependencies") add `@sha256:` to new or unpinned images. They never automerge. Merging one Auto-deploys every Service it touches (but never Semaphore), which recreates their containers with the same image.
+- **PR automerge** relies on the repo's "Allow auto-merge" setting. To annotate a pinned version so Renovate tracks it, put this comment on the line above the version:
 
 ```yaml
 # renovate: datasource=github-releases depName=owner/repo
 ```
 
 ## PR check (`.github/workflows/check.yaml`)
+
+Every PR also gets a Terraform Cloud check: a speculative plan of each stack the PR touches, posted by TFC itself.
 
 The check uses no secrets and runs with only `ANSIBLE_CONFIG=ansible/ansible.cfg` set (no mise), the same as Semaphore. It runs:
 
