@@ -31,7 +31,7 @@ The VPS's tailnet IP is written in three places: the inventory, `terraform/cloud
 Bitwarden Secrets Manager is the only place secrets live.
 
 - **Adding one**: put it in `.bws.yaml` (gitignored). The dotfiles bws sync creates it in Secrets Manager, so there's no `bws secret create` to run.
-- **Ansible**: the services role runs `bws secret list` once per run and exposes every secret the `BWS_ACCESS_TOKEN` can read as `bws_secrets.<KEY>`. Services that reference secrets set `no_log: true`, which also hides their diffs.
+- **Ansible**: the services role runs `bws secret list` on the controller once per run (retried, since the Bitwarden API fails now and then) and exposes every secret the `BWS_ACCESS_TOKEN` can read as `bws_secrets.<KEY>`. Services that reference secrets set `no_log: true`, which also hides their diffs.
 - **Terraform**: `terraform/tfe-admin` copies the secrets each workspace needs into sensitive TFC env vars, and the deploy workflow's into GitHub Actions secrets.
 - **Tokens**: the laptop's `BWS_ACCESS_TOKEN` comes from `.env`, which mise loads. Semaphore uses its own machine account.
 

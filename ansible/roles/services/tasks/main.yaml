@@ -61,10 +61,24 @@
   ansible.builtin.meta: end_host
   when: services_selected | length == 0
 
+# On the controller, where bws and BWS_ACCESS_TOKEN live. A command rather than a pipe
+# lookup so it can retry: the Bitwarden API fails now and then.
+- name: Read secrets from Bitwarden Secrets Manager
+  ansible.builtin.command: bws secret list --output json
+  delegate_to: localhost
+  become: false
+  register: _bws
+  retries: 3
+  delay: 5
+  until: _bws.rc == 0
+  changed_when: false
+  check_mode: false
+  no_log: true
+
 # Every secret BWS_ACCESS_TOKEN can read, keyed by name, e.g. bws_secrets.KARAKEEP_NEXTAUTH_SECRET.
 - name: Load secrets from Bitwarden Secrets Manager
   ansible.builtin.set_fact:
-    bws_secrets: "{{ lookup('ansible.builtin.pipe', 'bws secret list --output json') | from_json | items2dict(key_name='key', value_name='value') }}"
+    bws_secrets: "{{ _bws.stdout | from_json | items2dict(key_name='key', value_name='value') }}"
   no_log: true
 
 - name: Check whether Docker is needed
