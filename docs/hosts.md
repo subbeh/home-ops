@@ -5,4 +5,4 @@ From [`ansible/inventory.yml`](../ansible/inventory.yml). Services are assigned 
 
 | Host | Groups | Tailnet | Services domain | Services |
 |---|---|---|---|---|
-| vps | debian, remote | vps.tailnet-7233.ts.net (100.77.96.125) | vps.sbbh.cloud | traefik, syncthing, karakeep, aven, opengym, restic, gatus, semaphore |
+| vps | debian, remote | vps.tailnet-7233.ts.net (100.77.96.125) | vps.sbbh.cloud | traefik, syncthing, karakeep, aven, opengym, restic, gatus, semaphore, atuin |

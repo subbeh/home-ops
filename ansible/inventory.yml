@@ -16,7 +16,7 @@ remote:
           addr: 100.77.96.125
           host: vps.tailnet-7233.ts.net
       services_domain: vps.sbbh.cloud
-      services: [traefik, syncthing, karakeep, aven, opengym, restic, gatus, semaphore]
+      services: [traefik, syncthing, karakeep, aven, opengym, restic, gatus, semaphore, atuin]
 
 local:
   hosts: {}

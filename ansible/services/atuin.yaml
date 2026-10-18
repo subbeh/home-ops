@@ -1,0 +1,26 @@
+---
+# Registration stays open: traefik is tailnet-only, so only tailnet devices can sign up.
+# On the first device: `atuin register -u <user> -e <email>`, with sync_address set to
+# https://atuin.vps.sbbh.cloud in ~/.config/atuin/config.toml; on the others `atuin login`
+# with the key from `atuin key`. See https://docs.atuin.sh/self-hosting/docker/
+atuin:
+  description: Sync server for Atuin shell history
+
+  files:
+    # The image runs as atuin (1000), and creates the SQLite db here.
+    - dest: "{{ services_data_dir }}/atuin/config"
+      owner: 1000
+      group: 1000
+
+  containers:
+    - image: ghcr.io/atuinsh/atuin:18.24.1@sha256:b9a8369b4016dddcd90d23906f1d63dd883f459c6aaecec3be87cf481e8ac88d
+      command: start
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.atuin.loadbalancer.server.port: "8888"
+      volumes:
+        - "{{ services_data_dir }}/atuin/config:/config"
+      env:
+        ATUIN_HOST: "0.0.0.0"
+        ATUIN_OPEN_REGISTRATION: "true"
+        ATUIN_DB_URI: sqlite:///config/atuin.db
