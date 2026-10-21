@@ -30,6 +30,7 @@ Ansible deploys self-hosted Services as Docker containers onto Hosts. Terraform 
 ## Conventions
 
 - **Commits**: Conventional Commits, with the scopes in `git log` (`feat(ansible)`, `feat(terraform)`, `ci`, `chore(mise)`, `docs`).
+- **Branches**: commit straight to `main`; the hooks from `just setup` run the PR check's Ansible and docs steps, so never bypass them with `--no-verify`. Open a PR only for `terraform/` (TFC plans PRs, but `cloudflare` auto-applies on push to `main`) and for Renovate config (its validator runs only in CI).
 - **Service files**: the file name is the top-level key, and every Service has a `description:`.
 - **Comments**: they carry the why (setup steps, gotchas, upstream links), as in the existing files. A known limit gets `shortcut: <the limit>, <when to upgrade>`; older ones say `ponytail:`.
 

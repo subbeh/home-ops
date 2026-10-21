@@ -47,7 +47,7 @@ The workflow mirrors the task's result, so a failed Deploy shows as a failed wor
 
 | Change | What happens | What you do |
 |---|---|---|
-| Hand edit to a Service, the role, group_vars or the inventory | `check` runs on the PR; the deploy workflow skips it | Deploy by hand: `just ansible::playbook services --tags <service>` |
+| Hand edit to a Service, the role, group_vars or the inventory | Committed straight to `main`; the local hooks run the `check` steps and the deploy workflow skips it | Deploy by hand: `just ansible::playbook services --tags <service>` |
 | Minor or major image bump | Renovate opens a PR and waits | Review, merge; it then Auto-deploys like any Version Bump |
 | Semaphore bump | Never automerges | Merge, then `--tags semaphore` by hand |
 | mise tool (minor/patch) | Renovate commits straight to `main` | Nothing; `mise install` picks it up |
