@@ -32,3 +32,17 @@ Ansible deploys self-hosted Services as Docker containers onto Hosts. Terraform 
 - **Commits**: Conventional Commits, with the scopes in `git log` (`feat(ansible)`, `feat(terraform)`, `ci`, `chore(mise)`, `docs`).
 - **Service files**: the file name is the top-level key, and every Service has a `description:`.
 - **Comments**: they carry the why (setup steps, gotchas, upstream links), as in the existing files. A known limit gets `shortcut: <the limit>, <when to upgrade>`; older ones say `ponytail:`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are aven tasks in project `home-ops` (refs `HO-*`), kept off the public GitHub repo. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default role names, used as aven labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` is the glossary, ADRs live in `docs/adr/`. See `docs/agents/domain.md`.
