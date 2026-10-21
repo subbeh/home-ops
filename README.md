@@ -21,7 +21,7 @@ Infrastructure for my personal Hosts and the self-hosted Services that run on th
 
 ```sh
 mise install     # tools, pinned in .mise/config.toml
-just setup       # git hooks that keep docs/ current
+just setup       # git hooks that keep docs/ current, Ansible collections
 just --list      # everything else
 ```
 

@@ -51,6 +51,7 @@ The workflow mirrors the task's result, so a failed Deploy shows as a failed wor
 | Minor or major image bump | Renovate opens a PR and waits | Review, merge; it then Auto-deploys like any Version Bump |
 | Semaphore bump | Never automerges | Merge, then `--tags semaphore` by hand |
 | mise tool (minor/patch) | Renovate commits straight to `main` | Nothing; `mise install` picks it up |
+| Ansible collection (`requirements.yml`) | Renovate opens a PR and waits | Review, merge, then `just setup` |
 | `terraform/cloudflare` | TFC plans the PR, applies on merge | Nothing |
 | `terraform/tailscale` | TFC plans the PR, waits after merge | Confirm the run in the TFC UI |
 | Workspace settings or their secrets (`terraform/tfe-admin`) | Nothing runs on its own | `just tf::apply tfe-admin` |

@@ -21,6 +21,7 @@ The hosted Mend Renovate GitHub App ("Renovate Only", mode "Scan and Alert") rea
 | GitHub Actions | built-in, digests pinned | minor, patch and digest, as a PR, after 3 days |
 | Terraform providers | built-in; lock files refreshed monthly | minor + patch, as a PR |
 | mise tools (`.mise/config.toml`) | built-in | minor + patch, straight to `main` (no PR, no checks: those only run on PRs) |
+| Ansible collections (`requirements.yml`) | built-in | never |
 
 Anything not listed (e.g. minor or major image bumps) waits for a manual merge. Meilisearch minor and major bumps don't even open a PR until you tick them under "Pending Approval" on the dashboard: an upgrade needs one start with `--upgrade-db`, and should follow the version karakeep's compose file pins. A merged Renovate PR Auto-deploys no matter who merged it.
 

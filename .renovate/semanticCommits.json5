@@ -43,5 +43,10 @@
       semanticCommitScope: "mise",
       commitMessageTopic: "tool {{depName}}",
     },
+    {
+      matchManagers: ["ansible-galaxy"],
+      semanticCommitScope: "ansible",
+      commitMessageTopic: "collection {{depName}}",
+    },
   ],
 }

@@ -19,10 +19,11 @@ mod tf "terraform"
 log lvl msg *args:
     gum log -t rfc3339 -s -l "{{ lvl }}" "{{ msg }}" {{ args }}
 
-# Install the git hooks, once per clone
+# Install the git hooks and Ansible collections, once per clone
 [group('docs')]
 setup:
     pre-commit install
+    ansible-galaxy collection install -r {{ justfile_directory() }}/requirements.yml
 
 # Regenerate the generated pages in docs/
 [group('docs')]
