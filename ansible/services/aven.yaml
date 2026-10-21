@@ -16,6 +16,6 @@ aven:
         traefik.enable: "true"
         traefik.http.services.aven.loadbalancer.server.port: "3746"
       ports:
-        - "{{ networks.tailnet.addr }}:3746:3746"
+        - "{{ networks.tailnet.addresses[inventory_hostname] }}:3746:3746"
       volumes:
         - "{{ services_data_dir }}/aven/data:/data"

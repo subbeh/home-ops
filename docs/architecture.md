@@ -24,7 +24,7 @@ Everything is reachable only over the tailnet.
 - `network_mode: host` containers (syncthing) are reached at `host.docker.internal`. aven also publishes its port on the tailnet address for sync clients.
 - **Tailnet policy** (`terraform/tailscale/policy.hujson`, owned in full by Terraform): members reach everything; `tag:ci` (the ephemeral Auto-deploy node) reaches only `vps:443`. The policy `tests` enforce this on every plan.
 
-The VPS's tailnet IP is written in three places: the inventory, `terraform/cloudflare/main.tf` and `policy.hujson`.
+The VPS's tailnet IP is written in three places: `ansible/group_vars/all/network.yaml` (`networks.tailnet.addresses.vps`), `terraform/cloudflare/main.tf` and `policy.hujson`.
 
 ## Secrets
 

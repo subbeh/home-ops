@@ -41,7 +41,7 @@ semaphore:
         traefik.http.services.semaphore.loadbalancer.server.port: "3000"
       # Pins the inventory's ansible_host, so SSH doesn't depend on MagicDNS in containers.
       # An expression, since Ansible doesn't template dict keys.
-      etc_hosts: "{{ {networks.tailnet.host: networks.tailnet.addr} }}"
+      etc_hosts: "{{ {ansible_host: networks.tailnet.addresses[inventory_hostname]} }}"
       volumes:
         - "{{ services_data_dir }}/semaphore/config:/etc/semaphore"
         - "{{ services_data_dir }}/semaphore/data:/var/lib/semaphore"

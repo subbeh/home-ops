@@ -7,5 +7,5 @@ From [`ansible/inventory.yml`](../ansible/inventory.yml). Services are assigned 
 |---|---|---|---|---|
 {% for h in groups['all'] | sort %}
 {% set hv = hostvars[h] %}
-| {{ h }} | {{ hv.group_names | join(', ') }} | {{ hv.networks.tailnet.host ~ ' (' ~ hv.networks.tailnet.addr ~ ')' if hv.networks.tailnet is defined else '' }} | {{ hv.services_domain | default('') }} | {{ hv.services | default([]) | join(', ') }} |
+| {{ h }} | {{ hv.group_names | join(', ') }} | {{ hv.ansible_host ~ ' (' ~ networks.tailnet.addresses[h] ~ ')' if h in networks.tailnet.addresses else '' }} | {{ hv.services_domain | default('') }} | {{ hv.services | default([]) | join(', ') }} |
 {% endfor %}

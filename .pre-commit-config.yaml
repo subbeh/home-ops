@@ -10,7 +10,7 @@ repos:
         entry: bash -c 'just docs >/dev/null && git diff --exit-code --stat -- docs/'
         language: system
         pass_filenames: false
-        files: ^(ansible/(inventory\.yml|services/|playbooks/docs\.yaml|playbooks/templates/docs/)|terraform/|docs/services/[^/]+\.md$)
+        files: ^(ansible/(inventory\.yml|group_vars/all/(devices|network)\.yaml|services/|playbooks/(docs\.yaml|templates/docs/|filter_plugins/))|terraform/|docs/services/[^/]+\.md$)
         stages: [pre-commit]
 
       # The PR check's syntax and Service load steps, caught before the push.

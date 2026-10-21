@@ -57,8 +57,8 @@ traefik:
   containers:
     - image: traefik:v3.7.15@sha256:0f6150202bc1fed72a7bd2107460eaa510e5b8a905f3fdb5b84f2c8619c33368
       ports:
-        - "{{ networks.tailnet.addr }}:80:80"
-        - "{{ networks.tailnet.addr }}:443:443"
+        - "{{ networks.tailnet.addresses[inventory_hostname] }}:80:80"
+        - "{{ networks.tailnet.addresses[inventory_hostname] }}:443:443"
       labels:
         traefik.enable: "true"
         traefik.http.routers.dashboard.rule: "Host(`traefik.{{ services_domain }}`)"

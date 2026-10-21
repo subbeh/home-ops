@@ -17,7 +17,7 @@ Hand-written docs, `CLAUDE.md` and the skills each list the code they describe i
 2. **Compare**: for each doc, read the whole doc and the staged diff of the files it covers (`git diff --cached -- <files>`). Done when every statement in the doc that touches the changed files is marked true, false or incomplete.
 3. **Edit** only the false and incomplete statements, in the doc's existing voice and terse style, with no versions. Stage each edited doc.
 4. **No edit needed**: when every statement still holds, propose a trailer that names the reason, e.g. `Docs: none (comment-only change in restic.yaml)`.
-5. **Generated pages**: when the sources of generated pages changed (inventory, Service files, Terraform stacks), run `just docs` and stage the result. Generated pages change only through `just docs`.
+5. **Generated pages**: when the sources of generated pages changed (inventory, Service files, the network files in `ansible/group_vars/all`, Terraform stacks), run `just docs` and stage the result. Generated pages change only through `just docs`.
 6. **Re-check**: run the command from step 1 again. Done when it exits 0, or when only docs covered by the proposed trailer remain.
 
 ## Gotchas

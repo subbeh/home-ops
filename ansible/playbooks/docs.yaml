@@ -1,7 +1,8 @@
 ---
-# Writes the generated pages in docs/ from the inventory, the Service definitions and the
-# Terraform stacks; run with `just docs`. Connects to no Host and reads no secrets: only
-# fields that never reference bws_secrets (description, container names, labels) are rendered.
+# Writes the generated pages in docs/ from the inventory, the Service definitions, the network
+# files in group_vars/all and the Terraform stacks; run with `just docs`, which also renders
+# the .d2 diagrams to SVG. Connects to no Host and reads no secrets: only fields that never
+# reference bws_secrets (description, container names, labels) are rendered.
 - name: Generate docs
   hosts: all
   gather_facts: false
@@ -42,6 +43,16 @@
           {%- endfor -%}
           {{ urls }}
 
+    # The checks live in filter_plugins/network.py, tested by scripts/network.test.py.
+    - name: Validate devices.yaml and network.yaml
+      ansible.builtin.assert:
+        that: _errors | length == 0
+        fail_msg: "{{ _errors }}"
+        quiet: true
+      run_once: true
+      vars:
+        _errors: "{{ devices | network_errors(networks, cables, pools, ssids, tailnet_routes, groups['all']) }}"
+
     - name: Find Terraform stacks
       ansible.builtin.find:
         paths: "{{ docs_repo }}/terraform"
@@ -57,6 +68,14 @@
         src: "docs/{{ item }}.j2"
         dest: "{{ docs_repo }}/docs/{{ item }}"
         mode: "0644"
-      loop: [services/README.md, hosts.md, terraform-stacks.md]
+      loop:
+        - services/README.md
+        - hosts.md
+        - terraform-stacks.md
+        - network.md
+        - devices.md
+        - diagrams/rack.d2
+        - diagrams/network.d2
+        - diagrams/kvm.d2
       run_once: true
       delegate_to: localhost

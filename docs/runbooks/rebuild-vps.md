@@ -20,7 +20,7 @@ Draft. Facts that aren't in this repo are marked TODO.
 - Install Tailscale and join the tailnet as `vps`.
   > TODO(you): auth key or interactive login, tags, key expiry.
 - The tailnet IP `100.77.96.125` is written in three places. Either give the new node that same IP in the Tailscale admin console, or update all three:
-  - `ansible/inventory.yml`: `networks.tailnet.addr`
+  - `ansible/group_vars/all/network.yaml`: `networks.tailnet.addresses.vps`
   - `terraform/cloudflare/main.tf`: the wildcard record
   - `terraform/tailscale/policy.hujson`: `hosts.vps`
 - Check access from the laptop: `just ansible::playbook test-connection --limit vps`.

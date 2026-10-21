@@ -25,10 +25,15 @@ setup:
     pre-commit install
     ansible-galaxy collection install -r {{ justfile_directory() }}/requirements.yml
 
-# Regenerate the generated pages in docs/
+# Regenerate the generated pages in docs/, and render the diagrams to SVG
 [group('docs')]
 docs:
     ansible-playbook {{ justfile_directory() }}/ansible/playbooks/docs.yaml
+    # Not in the playbook: the PR check runs it without d2 and compares only the .d2 sources,
+    # since a d2 Version Bump changes the SVG bytes.
+    for f in {{ justfile_directory() }}/docs/diagrams/*.d2; do
+      d2 --omit-version "$f" "${f%.d2}.svg" 2>/dev/null || d2 --omit-version "$f" "${f%.d2}.svg"
+    done
 
 # Run the PR check's Ansible steps as CI does, without the mise env
 [group('docs')]
@@ -42,7 +47,8 @@ check:
     out=$(ci ansible localhost -m ansible.builtin.include_vars \
       -a '{"dir": "ansible/services", "files_matching": "\\.ya?ml$", "depth": 1}' 2>&1) || { echo "$out"; exit 1; }
 
-# Self-test the docs-covers commit-msg hook
+# Self-test the docs-covers commit-msg hook and the network filters
 [group('docs')]
 docs-test:
     {{ justfile_directory() }}/scripts/docs-covers.test.sh
+    python3 -I {{ justfile_directory() }}/scripts/network.test.py
