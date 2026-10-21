@@ -5,7 +5,8 @@
 #
 # - addresses: keyed by Host or Device name. A string, or {addr, mac, monitor: false}. A mac
 #   makes it a DHCP reservation on OPNsense; without one it's static on the Device and sits
-#   outside the dhcp range.
+#   outside the dhcp range. To record a MAC without a reservation, put it on the Port in
+#   devices.yaml.
 # - Conventions: .1 is the gateway, mgmt .2-.9 is network gear, servers .10-.99 are Hosts
 #   (the same host number on storage), .100-.199 is the DHCP range.
 # - DNS: every address on a home Network with a gateway gets <name>.<network>.<home_domain>,

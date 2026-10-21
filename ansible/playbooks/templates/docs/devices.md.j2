@@ -21,12 +21,12 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 
 ## {{ d.key }}
 
-| Port | Kind | Speed | Peer |
-|---|---|---|---|
+| Port | Kind | Speed | MAC | Peer |
+|---|---|---|---|---|
 {% for port, p in (d.value.ports | default({})).items() %}
 {% for side in (['/front', '/back'] if d.value.kind == 'patch-panel' else ['']) %}
 {% set peer = peers[d.key ~ ':' ~ port ~ side] | default(none) %}
-| {{ port ~ side }} | {{ p.kind }} | {{ p.speed | default('') }} | {{ (peer.peer ~ (' via ' ~ peer.via | join(', ') if peer.via else '')) if peer else '' }} |
+| {{ port ~ side }} | {{ p.kind }} | {{ p.speed | default('') }} | {{ p.mac | default('') }} | {{ (peer.peer ~ (' via ' ~ peer.via | join(', ') if peer.via else '')) if peer else '' }} |
 {% endfor %}
 {% endfor %}
 {% endfor %}

@@ -9,6 +9,7 @@
 # - ports: keyed by the label printed on the Device, else descriptive. Switch and router Ports
 #   carry native: (untagged Network) and/or tagged:. A patch-panel Port exists twice, as
 #   <port>/front and <port>/back, and has no speed: the Cable carries it.
+# - mac: on a Port, for the record. A mac on an address in network.yaml makes a DHCP reservation.
 # - monitor: false opts all the Device's addresses out of Gatus.
 devices:
   opnsense:
@@ -17,11 +18,11 @@ devices:
     rack: 1
     specs: { cpu: N5105 4c/4t, memory: 16 GB, disks: [256 GB NVMe] }
     ports:
-      "0": { kind: ethernet, speed: 2.5G, native: main }
+      "0": { kind: ethernet, speed: 2.5G, native: main, mac: "" }
       "1":
-        { kind: ethernet, speed: 2.5G, tagged: [mgmt, servers, clients, iot] }
-      "2": { kind: ethernet, speed: 2.5G } # spare: storage stays unrouted, see ADR 0004
-      "3": { kind: ethernet, speed: 2.5G, native: break-glass } # plug a laptop in when the trunk is down
+        { kind: ethernet, speed: 2.5G, tagged: [mgmt, servers, clients, iot], mac: "" }
+      "2": { kind: ethernet, speed: 2.5G, mac: "" } # spare: storage stays unrouted, see ADR 0004
+      "3": { kind: ethernet, speed: 2.5G, native: break-glass, mac: "" } # plug a laptop in when the trunk is down
       hdmi: { kind: hdmi }
       usb: { kind: usb }
 
@@ -30,7 +31,7 @@ devices:
     model: JetKVM
     rack: 2
     ports:
-      eth: { kind: ethernet, speed: 1G }
+      eth: { kind: ethernet, speed: 1G, mac: "" }
       hdmi: { kind: hdmi }
       usb: { kind: usb }
 
@@ -64,7 +65,7 @@ devices:
     rack: 4
     specs: { cpu: i5-8259U 4c/8t, memory: 16 GB, disks: [1 TB NVMe] }
     ports:
-      eth: { kind: ethernet, speed: 1G }
+      eth: { kind: ethernet, speed: 1G, mac: "" }
       hdmi: { kind: hdmi }
       usb: { kind: usb }
 
@@ -87,8 +88,8 @@ devices:
     specs:
       { cpu: i7-1260P 12c/16t, memory: 64 GB, disks: [512 GB SSD, 512 GB NVMe] }
     ports:
-      eth-1g: { kind: ethernet, speed: 1G }
-      eth-2g5: { kind: ethernet, speed: 2.5G }
+      eth-1g: { kind: ethernet, speed: 1G, mac: "" }
+      eth-2g5: { kind: ethernet, speed: 2.5G, mac: "" }
       hdmi: { kind: hdmi }
       usb: { kind: usb }
 
@@ -161,8 +162,8 @@ devices:
     specs:
       { cpu: i5-10500T 6c/12t, memory: 32 GB, disks: [512 GB SSD, 512 GB NVMe] }
     ports:
-      eth-1g: { kind: ethernet, speed: 1G }
-      eth-2g5: { kind: ethernet, speed: 2.5G }
+      eth-1g: { kind: ethernet, speed: 1G, mac: "" }
+      eth-2g5: { kind: ethernet, speed: 2.5G, mac: "" }
       hdmi: { kind: hdmi }
       usb: { kind: usb }
 
@@ -173,8 +174,8 @@ devices:
     specs:
       { cpu: i5-8500T 6c/6t, memory: 32 GB, disks: [512 GB SSD, 500 GB NVMe] }
     ports:
-      eth-1g: { kind: ethernet, speed: 1G }
-      eth-2g5: { kind: ethernet, speed: 2.5G }
+      eth-1g: { kind: ethernet, speed: 1G, mac: "" }
+      eth-2g5: { kind: ethernet, speed: 2.5G, mac: "" }
       hdmi: { kind: hdmi }
       usb: { kind: usb }
 
@@ -187,10 +188,10 @@ devices:
       memory: 16 GB
       disks: [256 GB SSD, 2x 1 TB NVMe, 2x 14 TB HDD, 2x 6 TB HDD]
     ports:
-      "0": { kind: ethernet, speed: 2.5G }
-      "1": { kind: ethernet, speed: 2.5G }
-      "2": { kind: ethernet, speed: 2.5G }
-      "3": { kind: ethernet, speed: 2.5G }
+      "0": { kind: ethernet, speed: 2.5G, mac: "" }
+      "1": { kind: ethernet, speed: 2.5G, mac: "" }
+      "2": { kind: ethernet, speed: 2.5G, mac: "" }
+      "3": { kind: ethernet, speed: 2.5G, mac: "" }
       hdmi: { kind: hdmi }
       usb: { kind: usb }
 
@@ -199,8 +200,8 @@ devices:
     kind: router
     model: "GL.iNet (TODO(you): model)"
     ports:
-      wan: { kind: ethernet, speed: 1G }
-      lan: { kind: ethernet, speed: 1G, native: main }
+      wan: { kind: ethernet, speed: 1G, mac: "" }
+      lan: { kind: ethernet, speed: 1G, native: main, mac: "" }
 
   # TODO(you): seeded from the old notes (two Flex Minis daisy-chained to a U6 Lite). Confirm
   # their count, names, room runs and the Networks each room Port carries.
@@ -228,4 +229,4 @@ devices:
     kind: ap
     model: Ubiquiti U6 Lite
     ports:
-      eth: { kind: ethernet, speed: 1G }
+      eth: { kind: ethernet, speed: 1G, mac: "" }

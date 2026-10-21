@@ -1,6 +1,7 @@
 # Filters over group_vars/all/devices.yaml and network.yaml, for docs.yaml. Plain Python with
 # the stdlib ipaddress, since Ansible's ip filters need netaddr. Tested by scripts/network.test.py.
 import ipaddress
+import re
 
 
 def _panel(devices, end):
@@ -78,11 +79,19 @@ def network_errors(devices, networks, cables, pools, ssids, tailnet_routes, host
     for ssid, net in ssids.items():
         if net not in networks:
             errors.append(f"SSID {ssid}: unknown Network {net}")
+    macs = {}
     for name, device in devices.items():
         for port, spec in (device.get("ports") or {}).items():
             for net in ([spec["native"]] if "native" in spec else []) + spec.get("tagged", []):
                 if net not in networks:
                     errors.append(f"Port {name}:{port}: unknown Network {net}")
+            if spec.get("mac"):  # "" is a placeholder
+                mac = str(spec["mac"]).lower()
+                if not re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", mac):
+                    errors.append(f"Port {name}:{port}: mac {spec['mac']!r} isn't aa:bb:cc:dd:ee:ff")
+                elif mac in macs:
+                    errors.append(f"Port {name}:{port}: mac {mac} is also on {macs[mac]}")
+                macs[mac] = f"{name}:{port}"
     for name in tailnet_routes:
         if name not in devices and name not in hosts:
             errors.append(f"tailnet_routes: unknown Device or Host {name}")

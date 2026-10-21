@@ -70,6 +70,14 @@ class NetworkErrors(unittest.TestCase):
         self.assertError("Port router:0: unknown Network", devices__router__ports__0__tagged=["guest"])
         self.assertError("unknown Device or Host nope", tailnet_routes={"nope": {}})
 
+    def test_macs(self):
+        self.assertEqual(errors(devices__server__ports__eth__mac="AA:BB:CC:00:11:22"), [])
+        self.assertEqual(errors(devices__server__ports__eth__mac=""), [])
+        self.assertError("isn't aa:bb:cc:dd:ee:ff", devices__server__ports__eth__mac="TODO(you)")
+        ports = copy.deepcopy(DEVICES["router"]["ports"])
+        ports["0"]["mac"] = ports["hdmi"]["mac"] = "aa:bb:cc:00:11:22"
+        self.assertError("is also on router:0", devices__router__ports=ports)
+
 
 class CablePeers(unittest.TestCase):
     def test_traces_through_panels(self):
