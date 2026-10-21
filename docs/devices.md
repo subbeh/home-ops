@@ -14,11 +14,11 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | [opnsense](#opnsense) | router | Topton N5105 | 1 |  | N5105 4c/4t, 16 GB, 256 GB NVMe |
 | [jetkvm](#jetkvm) | kvm | JetKVM | 2 |  |  |
 | [kvm-switch](#kvm-switch) | kvm-switch | Steetek 8 Port HDMI KVM Switch | 3 |  |  |
-| [nuc-01](#nuc-01) | server | Intel NUC 8 | 4 |  | i5-8259U 4c/8t, 16 GB, 1 TB NVMe |
+| [pve-nuc](#pve-nuc) | server | Intel NUC 8 | 4 |  | i5-8259U 4c/8t, 16 GB, 1 TB NVMe |
 | [switch-2g5](#switch-2g5) | switch | Horaco 5 Port 2.5GbE | 4 |  |  |
 | [k8s-nuc](#k8s-nuc) | server | Intel NUC 12 Pro | 5 |  | i7-1260P 12c/16t, 64 GB, 512 GB SSD, 512 GB NVMe |
 | [keystone](#keystone) | patch-panel |  | 5 |  |  |
-| [switch-3p](#switch-3p) | switch | TODO(you) | 5 |  |  |
+| [switch-3p](#switch-3p) | switch | N/A | 5 |  |  |
 | [patch-panel](#patch-panel) | patch-panel |  | 6 |  |  |
 | [unifi-switch](#unifi-switch) | switch | Ubiquiti USW Lite 16 PoE | 7 |  |  |
 | [k8s-opti-01](#k8s-opti-01) | server | Dell OptiPlex 7080 (TODO(you): or the 7060) | 8 |  | i5-10500T 6c/12t, 32 GB, 512 GB SSD, 512 GB NVMe |
@@ -54,8 +54,8 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 |---|---|---|---|
 | 1-hdmi | hdmi |  | opnsense:hdmi |
 | 1-usb | usb |  | opnsense:usb |
-| 2-hdmi | hdmi |  | nuc-01:hdmi |
-| 2-usb | usb |  | nuc-01:usb |
+| 2-hdmi | hdmi |  | pve-nuc:hdmi |
+| 2-usb | usb |  | pve-nuc:usb |
 | 3-hdmi | hdmi |  | pve-nas:hdmi |
 | 3-usb | usb |  | pve-nas:usb |
 | 4-hdmi | hdmi |  |  |
@@ -71,7 +71,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | out-hdmi | hdmi |  | jetkvm:hdmi |
 | out-usb | usb |  | jetkvm:usb |
 
-## nuc-01
+## pve-nuc
 
 | Port | Kind | Speed | Peer |
 |---|---|---|---|
@@ -142,7 +142,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | 7/front | ethernet |  | unifi-switch:9 |
 | 7/back | ethernet |  | k8s-opti-02:eth-1g |
 | 8/front | ethernet |  | unifi-switch:11 |
-| 8/back | ethernet |  | nuc-01:eth |
+| 8/back | ethernet |  | pve-nuc:eth |
 | 9/front | ethernet |  | unifi-switch:13 |
 | 9/back | ethernet |  | pve-nas:0 |
 | 10/front | ethernet |  | switch-2g5:1 via keystone:eth2 |
@@ -166,7 +166,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | 8 | ethernet | 1G |  |
 | 9 | ethernet | 1G | k8s-opti-02:eth-1g via patch-panel:7 |
 | 10 | ethernet | 1G |  |
-| 11 | ethernet | 1G | nuc-01:eth via patch-panel:8 |
+| 11 | ethernet | 1G | pve-nuc:eth via patch-panel:8 |
 | 12 | ethernet | 1G |  |
 | 13 | ethernet | 1G | pve-nas:0 via patch-panel:9 |
 | 14 | ethernet | 1G |  |

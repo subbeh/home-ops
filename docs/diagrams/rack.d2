@@ -59,7 +59,7 @@ rack: {
   "4": {
     label: "shelf 4"
     grid-rows: 1
-    "nuc-01": {
+    "pve-nuc": {
       grid-rows: 1
       grid-gap: 8
       "eth": {shape: square; width: 40; style.stroke: "#006EAF"}
@@ -235,7 +235,7 @@ rack."8"."k8s-opti-01"."eth-1g" -- rack."6"."patch-panel"."6": {style.stroke: "#
 rack."7"."unifi-switch"."9" -- rack."6"."patch-panel"."7": {style.stroke: "#006EAF"; style.stroke-width: 2}
 rack."9"."k8s-opti-02"."eth-1g" -- rack."6"."patch-panel"."7": {style.stroke: "#006EAF"; style.stroke-width: 2}
 rack."7"."unifi-switch"."11" -- rack."6"."patch-panel"."8": {style.stroke: "#006EAF"; style.stroke-width: 2}
-rack."4"."nuc-01"."eth" -- rack."6"."patch-panel"."8": {style.stroke: "#006EAF"; style.stroke-width: 2}
+rack."4"."pve-nuc"."eth" -- rack."6"."patch-panel"."8": {style.stroke: "#006EAF"; style.stroke-width: 2}
 rack."7"."unifi-switch"."13" -- rack."6"."patch-panel"."9": {style.stroke: "#006EAF"; style.stroke-width: 2}
 rack."10"."pve-nas"."0" -- rack."6"."patch-panel"."9": {style.stroke: "#006EAF"; style.stroke-width: 2}
 rack."5"."k8s-nuc"."eth-2g5" -- rack."6"."patch-panel"."10": {style.stroke: "#C2185B"; style.stroke-width: 2}
@@ -252,8 +252,8 @@ off-rack."flex-mini-1"."2" -- off-rack."flex-mini-2"."1": {style.stroke: "#006EA
 off-rack."flex-mini-2"."2" -- off-rack."ap"."eth": {style.stroke: "#006EAF"; style.stroke-width: 2}
 rack."1"."opnsense"."hdmi" -- rack."3"."kvm-switch"."1-hdmi": {style.stroke: "#C73500"; style.stroke-width: 2}
 rack."1"."opnsense"."usb" -- rack."3"."kvm-switch"."1-usb": {style.stroke: "#2E7D32"; style.stroke-width: 2}
-rack."4"."nuc-01"."hdmi" -- rack."3"."kvm-switch"."2-hdmi": {style.stroke: "#C73500"; style.stroke-width: 2}
-rack."4"."nuc-01"."usb" -- rack."3"."kvm-switch"."2-usb": {style.stroke: "#2E7D32"; style.stroke-width: 2}
+rack."4"."pve-nuc"."hdmi" -- rack."3"."kvm-switch"."2-hdmi": {style.stroke: "#C73500"; style.stroke-width: 2}
+rack."4"."pve-nuc"."usb" -- rack."3"."kvm-switch"."2-usb": {style.stroke: "#2E7D32"; style.stroke-width: 2}
 rack."10"."pve-nas"."hdmi" -- rack."3"."kvm-switch"."3-hdmi": {style.stroke: "#C73500"; style.stroke-width: 2}
 rack."10"."pve-nas"."usb" -- rack."3"."kvm-switch"."3-usb": {style.stroke: "#2E7D32"; style.stroke-width: 2}
 rack."5"."k8s-nuc"."hdmi" -- rack."3"."kvm-switch"."5-hdmi": {style.stroke: "#C73500"; style.stroke-width: 2}

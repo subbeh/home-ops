@@ -9,11 +9,11 @@ vars: {d2-config: {layout-engine: elk}}
 "opnsense": {shape: hexagon}
 
 "main": {
-  label: "main\n192.168.100.0/24"
-  "jetkvm": "jetkvm\n192.168.100.11"
+  label: "main\n192.168.11.0/24"
+  "jetkvm": "jetkvm\n192.168.11.11"
 }
-"main" -- "gl-router-home": "192.168.100.1"
-"main" -- "opnsense": "192.168.100.10"
+"main" -- "gl-router-home": "192.168.11.1"
+"main" -- "opnsense": "192.168.11.10"
 "mgmt": {
   label: "mgmt\n10.11.10.0/24\nVLAN 10"
   "unifi-switch": "unifi-switch\n10.11.10.2"
@@ -24,7 +24,7 @@ vars: {d2-config: {layout-engine: elk}}
 "mgmt" -- "opnsense": "10.11.10.1"
 "servers": {
   label: "servers\n10.11.20.0/24\nVLAN 20"
-  "nuc-01": "nuc-01\n10.11.20.10"
+  "pve-nuc": "pve-nuc\n10.11.20.10"
   "pve-nas": "pve-nas\n10.11.20.11"
   "k8s-nuc": "k8s-nuc\n10.11.20.21"
   "k8s-opti-01": "k8s-opti-01\n10.11.20.22"
@@ -62,4 +62,4 @@ vars: {d2-config: {layout-engine: elk}}
 "servers"."k8s-opti-02" -> "k8s-lb": announces {style.stroke-dash: 3}
 
 tailnet -- "opnsense": "10.11.0.0/16, exit node" {style.stroke: "#6A1B9A"}
-tailnet -- "gl-router-home": "192.168.100.0/24" {style.stroke: "#6A1B9A"}
+tailnet -- "gl-router-home": "192.168.11.0/24" {style.stroke: "#6A1B9A"}

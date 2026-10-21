@@ -11,7 +11,7 @@ From [`ansible/group_vars/all/network.yaml`](../ansible/group_vars/all/network.y
 
 | Network | CIDR | VLAN | Gateway | DHCP | For |
 |---|---|---|---|---|---|
-| main | 192.168.100.0/24 |  | gl-router-home |  | Upstream: gl-router-home, the OPNsense WAN and jetkvm, kept off the trunk |
+| main | 192.168.11.0/24 |  | gl-router-home |  | Upstream: gl-router-home, the OPNsense WAN and jetkvm, kept off the trunk |
 | mgmt | 10.11.10.0/24 | 10 | opnsense | .100-.199 | Network gear only, the UniFi switch, Flex Minis and AP |
 | servers | 10.11.20.0/24 | 20 | opnsense | .100-.199 | Every Host, including the Proxmox UI and the Talos API |
 | clients | 10.11.30.0/24 | 30 | opnsense | .100-.199 | Personal devices, and SSID ST |
@@ -28,9 +28,9 @@ A MAC makes the address a DHCP reservation on OPNsense; the rest are static on t
 
 | Name | Address | DNS | MAC |
 |---|---|---|---|
-| gl-router-home | 192.168.100.1 | gl-router-home.main.home.sbbh.cloud, gl-router-home.home.sbbh.cloud |  |
-| opnsense | 192.168.100.10 | opnsense.main.home.sbbh.cloud |  |
-| jetkvm | 192.168.100.11 | jetkvm.main.home.sbbh.cloud, jetkvm.home.sbbh.cloud |  |
+| gl-router-home | 192.168.11.1 | gl-router-home.main.home.sbbh.cloud, gl-router-home.home.sbbh.cloud |  |
+| opnsense | 192.168.11.10 | opnsense.main.home.sbbh.cloud |  |
+| jetkvm | 192.168.11.11 | jetkvm.main.home.sbbh.cloud, jetkvm.home.sbbh.cloud |  |
 
 ### mgmt
 
@@ -47,7 +47,7 @@ A MAC makes the address a DHCP reservation on OPNsense; the rest are static on t
 | Name | Address | DNS | MAC |
 |---|---|---|---|
 | opnsense | 10.11.20.1 | opnsense.servers.home.sbbh.cloud |  |
-| nuc-01 | 10.11.20.10 | nuc-01.servers.home.sbbh.cloud, nuc-01.home.sbbh.cloud |  |
+| pve-nuc | 10.11.20.10 | pve-nuc.servers.home.sbbh.cloud, pve-nuc.home.sbbh.cloud |  |
 | pve-nas | 10.11.20.11 | pve-nas.servers.home.sbbh.cloud, pve-nas.home.sbbh.cloud |  |
 | k8s-nuc | 10.11.20.21 | k8s-nuc.servers.home.sbbh.cloud, k8s-nuc.home.sbbh.cloud |  |
 | k8s-opti-01 | 10.11.20.22 | k8s-opti-01.servers.home.sbbh.cloud, k8s-opti-01.home.sbbh.cloud |  |
@@ -106,7 +106,7 @@ Set by hand in the UniFi Network Application.
 | Node | Routes | Exit node |
 |---|---|---|
 | opnsense | 10.11.0.0/16 | yes |
-| gl-router-home | 192.168.100.0/24 |  |
+| gl-router-home | 192.168.11.0/24 |  |
 
 ## Switch and router Ports
 
@@ -155,7 +155,7 @@ The peer is the Port at the far end, traced through the patch panels. UniFi Port
 | 8 | 1G |  |  |  |
 | 9 | 1G | servers |  | k8s-opti-02:eth-1g via patch-panel:7 |
 | 10 | 1G |  |  |  |
-| 11 | 1G | servers |  | nuc-01:eth via patch-panel:8 |
+| 11 | 1G | servers |  | pve-nuc:eth via patch-panel:8 |
 | 12 | 1G |  |  |  |
 | 13 | 1G | servers |  | pve-nas:0 via patch-panel:9 |
 | 14 | 1G |  |  |  |
