@@ -45,6 +45,8 @@ traefik:
                 # The host resolver goes through MagicDNS; ask Cloudflare directly.
                 resolvers: ["1.1.1.1:53", "1.0.0.1:53"]
 
+        api: {}
+
         providers:
           docker:
             exposedByDefault: false
@@ -57,6 +59,10 @@ traefik:
       ports:
         - "{{ networks.tailnet.addr }}:80:80"
         - "{{ networks.tailnet.addr }}:443:443"
+      labels:
+        traefik.enable: "true"
+        traefik.http.routers.dashboard.rule: "Host(`traefik.{{ services_domain }}`)"
+        traefik.http.routers.dashboard.service: "api@internal"
       # Where traefik reaches network_mode: host containers such as syncthing.
       etc_hosts:
         host.docker.internal: host-gateway
