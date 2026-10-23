@@ -9,7 +9,7 @@ opengym:
 
   containers:
     - name: opengym-api
-      image: ghcr.io/duartesantos8/opengym-api:1.4.1@sha256:4bc07fe7d1f05a57c0fa25da3563d54dfe27223506637d67fc64088a2a2f140b
+      image: ghcr.io/duartesantos8/opengym-api:1.4.2@sha256:57f4dd3fb9e4a6f48aa139b09de60398098ba85457f9498c1bcd4ac86c948f12
       volumes:
         - "{{ services_data_dir }}/opengym/data:/data"
       env:
