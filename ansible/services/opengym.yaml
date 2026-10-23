@@ -23,7 +23,7 @@ opengym:
         # FIRST_USER_ADMIN: "1" # enable on next bootstrap
 
     - name: opengym-web
-      image: ghcr.io/duartesantos8/opengym-web:1.4.1@sha256:e32cae9d2f4aad0c5e1b7888c9bfc712b2306ddfe3c65bc4cfefd4b0002e86d3
+      image: ghcr.io/duartesantos8/opengym-web:1.4.2@sha256:748c77417d40969d9840f064fd0cafecd84e47ac786d424688d0cff0d6b53299
       # The image checks every 5m, and traefik skips containers until they're healthy.
       healthcheck:
         interval: 30s
