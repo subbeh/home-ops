@@ -24,9 +24,8 @@ networks:
       jetkvm: 192.168.11.11  # TODO(you): seed; any static address outside gl-router-home's DHCP range
 
   mgmt:
-    description: Network gear only, the UniFi switch, Flex Minis and AP
+    description: Network gear only, the UniFi switch, Flex Minis and AP; untagged on the trunk so factory-default gear gets DHCP
     cidr: 10.11.10.0/24
-    vlan: 10
     gateway: opnsense
     dhcp: {from: 100, to: 199}
     addresses:

@@ -12,7 +12,7 @@ From [`ansible/group_vars/all/network.yaml`](../ansible/group_vars/all/network.y
 | Network | CIDR | VLAN | Gateway | DHCP | For |
 |---|---|---|---|---|---|
 | main | 192.168.11.0/24 |  | gl-router-home |  | Upstream: gl-router-home, the OPNsense WAN and jetkvm, kept off the trunk |
-| mgmt | 10.11.10.0/24 | 10 | opnsense | .100-.199 | Network gear only, the UniFi switch, Flex Minis and AP |
+| mgmt | 10.11.10.0/24 |  | opnsense | .100-.199 | Network gear only, the UniFi switch, Flex Minis and AP; untagged on the trunk so factory-default gear gets DHCP |
 | servers | 10.11.20.0/24 | 20 | opnsense | .100-.199 | Every Host, including the Proxmox UI and the Talos API |
 | clients | 10.11.30.0/24 | 30 | opnsense | .100-.199 | Personal devices, and SSID ST |
 | iot | 10.11.40.0/24 | 40 | opnsense | .100-.199 | Media and smart devices, and SSID ST-IoT: internet plus specific allowances |
@@ -117,7 +117,7 @@ The peer is the Port at the far end, traced through the patch panels. UniFi Port
 | Port | Speed | Native | Tagged | Peer |
 |---|---|---|---|---|
 | 0 | 2.5G | main |  | switch-3p:2 |
-| 1 | 2.5G |  | mgmt, servers, clients, iot | unifi-switch:1 via patch-panel:3 |
+| 1 | 2.5G | mgmt | servers, clients, iot | unifi-switch:1 via patch-panel:3 |
 | 2 | 2.5G |  |  |  |
 | 3 | 2.5G | break-glass |  |  |
 | hdmi |  |  |  | kvm-switch:1-hdmi |
@@ -145,7 +145,7 @@ The peer is the Port at the far end, traced through the patch panels. UniFi Port
 
 | Port | Speed | Native | Tagged | Peer |
 |---|---|---|---|---|
-| 1 | 1G |  | mgmt, servers, clients, iot | opnsense:1 via patch-panel:3 |
+| 1 | 1G | mgmt | servers, clients, iot | opnsense:1 via patch-panel:3 |
 | 2 | 1G |  |  |  |
 | 3 | 1G | mgmt | clients, iot | flex-mini-1:1 via patch-panel:4 |
 | 4 | 1G |  |  |  |
