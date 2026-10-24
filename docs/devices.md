@@ -44,7 +44,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
-| eth | ethernet | 1G |  | switch-3p:1 |
+| eth | ethernet | 1G | 30:52:53:0e:af:e4 | switch-3p:1 |
 | hdmi | hdmi |  |  | kvm-switch:out-hdmi |
 | usb | usb |  |  | kvm-switch:out-usb |
 
