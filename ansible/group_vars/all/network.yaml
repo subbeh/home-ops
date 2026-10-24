@@ -17,31 +17,30 @@ networks:
   main:
     description: "Upstream: gl-router-home, the OPNsense WAN and jetkvm, kept off the trunk"
     cidr: 192.168.11.0/24
-    gateway: gl-router-home # which also serves its DHCP, so there's no dhcp: here
+    gateway: gl-router-home  # which also serves its DHCP, so there's no dhcp: here
     addresses:
       gl-router-home: 192.168.11.1
       opnsense: 192.168.11.10
-      jetkvm: 192.168.11.11 # TODO(you): seed; any static address outside gl-router-home's DHCP range
+      jetkvm: 192.168.11.11  # TODO(you): seed; any static address outside gl-router-home's DHCP range
 
   mgmt:
-    description: Network gear only, the UniFi switch, Flex Minis and AP
+    description: Network gear only, the UniFi switch, Flex Minis and AP; untagged on the trunk so factory-default gear gets DHCP
     cidr: 10.11.10.0/24
-    vlan: 10
     gateway: opnsense
-    dhcp: { from: 100, to: 199 }
+    dhcp: {from: 100, to: 199}
     addresses:
       opnsense: 10.11.10.1
-      unifi-switch: { addr: 10.11.10.2, mac: "TODO(you)" }
-      flex-mini-1: { addr: 10.11.10.3, mac: "TODO(you)" }
-      flex-mini-2: { addr: 10.11.10.4, mac: "TODO(you)" }
-      ap: { addr: 10.11.10.5, mac: "TODO(you)" }
+      unifi-switch: {addr: 10.11.10.2, mac: "TODO(you)"}
+      flex-mini-1: {addr: 10.11.10.3, mac: "TODO(you)"}
+      flex-mini-2: {addr: 10.11.10.4, mac: "TODO(you)"}
+      ap: {addr: 10.11.10.5, mac: "TODO(you)"}
 
   servers:
     description: Every Host, including the Proxmox UI and the Talos API
     cidr: 10.11.20.0/24
     vlan: 20
     gateway: opnsense
-    dhcp: { from: 100, to: 199 }
+    dhcp: {from: 100, to: 199}
     addresses:
       opnsense: 10.11.20.1
       pve-nuc: 10.11.20.10
@@ -55,7 +54,7 @@ networks:
     cidr: 10.11.30.0/24
     vlan: 30
     gateway: opnsense
-    dhcp: { from: 100, to: 199 }
+    dhcp: {from: 100, to: 199}
     addresses:
       opnsense: 10.11.30.1
 
@@ -64,7 +63,7 @@ networks:
     cidr: 10.11.40.0/24
     vlan: 40
     gateway: opnsense
-    dhcp: { from: 100, to: 199 }
+    dhcp: {from: 100, to: 199}
     addresses:
       opnsense: 10.11.40.1
 
@@ -72,7 +71,7 @@ networks:
     description: "opnsense:3 only, for a laptop when the trunk is broken: OPNsense UI and SSH only"
     cidr: 10.11.254.0/24
     gateway: opnsense
-    dhcp: { from: 100, to: 199 }
+    dhcp: {from: 100, to: 199}
     addresses:
       opnsense: 10.11.254.1
 
@@ -107,64 +106,64 @@ ssids:
   ST-IoT: iot
 
 tailnet_routes:
-  opnsense: { routes: ["10.11.0.0/16"], exit_node: true }
-  gl-router-home: { routes: ["192.168.11.0/24"] } # the out-of-band path to jetkvm
+  opnsense: {routes: ["10.11.0.0/16"], exit_node: true}
+  gl-router-home: {routes: ["192.168.11.0/24"]}  # the out-of-band path to jetkvm
 
 # Each Cable joins two Ports. Its kind comes from them; ethernet Cables carry the speed as drawn
 # in docs/homelab.drawio.xml (blue 1G, pink 2.5G). A run through a patch panel is two Cables.
 cables:
   # main, kept off the trunk by switch-3p
-  - { a: gl-router-home:lan, b: switch-3p:3, speed: 1G }
-  - { a: switch-3p:2, b: opnsense:0, speed: 1G }
-  - { a: switch-3p:1, b: jetkvm:eth, speed: 1G }
+  - {a: 'gl-router-home:lan', b: 'switch-3p:3', speed: 1G}
+  - {a: 'switch-3p:2', b: 'opnsense:0', speed: 1G}
+  - {a: 'switch-3p:1', b: 'jetkvm:eth', speed: 1G}
 
   # The trunk, and the 1G Host ports through the patch panel
-  - { a: opnsense:1, b: patch-panel:3/back, speed: 1G }
-  - { a: unifi-switch:1, b: patch-panel:3/front, speed: 1G }
-  - { a: unifi-switch:3, b: patch-panel:4/front, speed: 1G }
-  - { a: patch-panel:4/back, b: flex-mini-1:1, speed: 1G }
-  - { a: unifi-switch:5, b: patch-panel:5/front, speed: 1G }
-  - { a: k8s-nuc:eth-1g, b: patch-panel:5/back, speed: 1G }
-  - { a: unifi-switch:7, b: patch-panel:6/front, speed: 1G }
-  - { a: k8s-opti-01:eth-1g, b: patch-panel:6/back, speed: 1G }
-  - { a: unifi-switch:9, b: patch-panel:7/front, speed: 1G }
-  - { a: k8s-opti-02:eth-1g, b: patch-panel:7/back, speed: 1G }
-  - { a: unifi-switch:11, b: patch-panel:8/front, speed: 1G }
-  - { a: pve-nuc:eth, b: patch-panel:8/back, speed: 1G }
-  - { a: unifi-switch:13, b: patch-panel:9/front, speed: 1G }
-  - { a: pve-nas:0, b: patch-panel:9/back, speed: 1G }
+  - {a: 'opnsense:1', b: 'patch-panel:3/back', speed: 1G}
+  - {a: 'unifi-switch:1', b: 'patch-panel:3/front', speed: 1G}
+  - {a: 'unifi-switch:3', b: 'patch-panel:4/front', speed: 1G}
+  - {a: 'patch-panel:4/back', b: 'flex-mini-1:1', speed: 1G}
+  - {a: 'unifi-switch:5', b: 'patch-panel:5/front', speed: 1G}
+  - {a: 'k8s-nuc:eth-1g', b: 'patch-panel:5/back', speed: 1G}
+  - {a: 'unifi-switch:7', b: 'patch-panel:6/front', speed: 1G}
+  - {a: 'k8s-opti-01:eth-1g', b: 'patch-panel:6/back', speed: 1G}
+  - {a: 'unifi-switch:9', b: 'patch-panel:7/front', speed: 1G}
+  - {a: 'k8s-opti-02:eth-1g', b: 'patch-panel:7/back', speed: 1G}
+  - {a: 'unifi-switch:11', b: 'patch-panel:8/front', speed: 1G}
+  - {a: 'pve-nuc:eth', b: 'patch-panel:8/back', speed: 1G}
+  - {a: 'unifi-switch:13', b: 'patch-panel:9/front', speed: 1G}
+  - {a: 'pve-nas:0', b: 'patch-panel:9/back', speed: 1G}
 
   # storage at 2.5G, through both panels. The front jumpers are drawn blue, but both ends of
   # each run are 2.5G.
-  - { a: k8s-nuc:eth-2g5, b: patch-panel:10/back, speed: 2.5G }
-  - { a: patch-panel:10/front, b: keystone:eth2/front, speed: 2.5G }
-  - { a: keystone:eth2/back, b: switch-2g5:1, speed: 2.5G }
-  - { a: k8s-opti-01:eth-2g5, b: patch-panel:11/back, speed: 2.5G }
-  - { a: patch-panel:11/front, b: keystone:eth3/front, speed: 2.5G }
-  - { a: keystone:eth3/back, b: switch-2g5:2, speed: 2.5G }
-  - { a: k8s-opti-02:eth-2g5, b: patch-panel:12/back, speed: 2.5G }
-  - { a: patch-panel:12/front, b: keystone:eth4/front, speed: 2.5G }
-  - { a: keystone:eth4/back, b: switch-2g5:3, speed: 2.5G }
-  - { a: pve-nas:1, b: switch-2g5:4, speed: 2.5G }
+  - {a: 'k8s-nuc:eth-2g5', b: 'patch-panel:10/back', speed: 2.5G}
+  - {a: 'patch-panel:10/front', b: 'keystone:eth2/front', speed: 2.5G}
+  - {a: 'keystone:eth2/back', b: 'switch-2g5:1', speed: 2.5G}
+  - {a: 'k8s-opti-01:eth-2g5', b: 'patch-panel:11/back', speed: 2.5G}
+  - {a: 'patch-panel:11/front', b: 'keystone:eth3/front', speed: 2.5G}
+  - {a: 'keystone:eth3/back', b: 'switch-2g5:2', speed: 2.5G}
+  - {a: 'k8s-opti-02:eth-2g5', b: 'patch-panel:12/back', speed: 2.5G}
+  - {a: 'patch-panel:12/front', b: 'keystone:eth4/front', speed: 2.5G}
+  - {a: 'keystone:eth4/back', b: 'switch-2g5:3', speed: 2.5G}
+  - {a: 'pve-nas:1', b: 'switch-2g5:4', speed: 2.5G}
 
   # Off-rack, from the old notes: TODO(you), see flex-mini-1 in devices.yaml
-  - { a: flex-mini-1:2, b: flex-mini-2:1, speed: 1G }
-  - { a: flex-mini-2:2, b: ap:eth, speed: 1G }
+  - {a: 'flex-mini-1:2', b: 'flex-mini-2:1', speed: 1G}
+  - {a: 'flex-mini-2:2', b: 'ap:eth', speed: 1G}
 
   # KVM: each Host's HDMI and USB on one input, the output to jetkvm
-  - { a: opnsense:hdmi, b: kvm-switch:1-hdmi }
-  - { a: opnsense:usb, b: kvm-switch:1-usb }
-  - { a: pve-nuc:hdmi, b: kvm-switch:2-hdmi }
-  - { a: pve-nuc:usb, b: kvm-switch:2-usb }
-  - { a: pve-nas:hdmi, b: kvm-switch:3-hdmi }
-  - { a: pve-nas:usb, b: kvm-switch:3-usb }
-  - { a: k8s-nuc:hdmi, b: kvm-switch:5-hdmi }
-  - { a: k8s-nuc:usb, b: kvm-switch:5-usb }
-  - { a: k8s-opti-01:hdmi, b: kvm-switch:6-hdmi }
-  - { a: k8s-opti-01:usb, b: kvm-switch:6-usb }
-  - { a: k8s-opti-02:hdmi, b: kvm-switch:7-hdmi }
-  - { a: k8s-opti-02:usb, b: kvm-switch:7-usb }
-  - { a: keystone:hdmi/back, b: kvm-switch:8-hdmi }
-  - { a: keystone:usb/back, b: kvm-switch:8-usb }
-  - { a: kvm-switch:out-hdmi, b: jetkvm:hdmi }
-  - { a: kvm-switch:out-usb, b: jetkvm:usb }
+  - {a: 'opnsense:hdmi', b: 'kvm-switch:1-hdmi'}
+  - {a: 'opnsense:usb', b: 'kvm-switch:1-usb'}
+  - {a: 'pve-nuc:hdmi', b: 'kvm-switch:2-hdmi'}
+  - {a: 'pve-nuc:usb', b: 'kvm-switch:2-usb'}
+  - {a: 'pve-nas:hdmi', b: 'kvm-switch:3-hdmi'}
+  - {a: 'pve-nas:usb', b: 'kvm-switch:3-usb'}
+  - {a: 'k8s-nuc:hdmi', b: 'kvm-switch:5-hdmi'}
+  - {a: 'k8s-nuc:usb', b: 'kvm-switch:5-usb'}
+  - {a: 'k8s-opti-01:hdmi', b: 'kvm-switch:6-hdmi'}
+  - {a: 'k8s-opti-01:usb', b: 'kvm-switch:6-usb'}
+  - {a: 'k8s-opti-02:hdmi', b: 'kvm-switch:7-hdmi'}
+  - {a: 'k8s-opti-02:usb', b: 'kvm-switch:7-usb'}
+  - {a: 'keystone:hdmi/back', b: 'kvm-switch:8-hdmi'}
+  - {a: 'keystone:usb/back', b: 'kvm-switch:8-usb'}
+  - {a: 'kvm-switch:out-hdmi', b: 'jetkvm:hdmi'}
+  - {a: 'kvm-switch:out-usb', b: 'jetkvm:usb'}

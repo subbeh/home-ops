@@ -16,58 +16,57 @@ devices:
     kind: router
     model: Topton N5105
     rack: 1
-    specs: { cpu: N5105 4c/4t, memory: 16 GB, disks: [256 GB NVMe] }
+    specs: {cpu: N5105 4c/4t, memory: 16 GB, disks: [256 GB NVMe]}
     ports:
-      "0": { kind: ethernet, speed: 2.5G, native: main, mac: "" }
-      "1":
-        { kind: ethernet, speed: 2.5G, tagged: [mgmt, servers, clients, iot], mac: "" }
-      "2": { kind: ethernet, speed: 2.5G, mac: "" } # spare: storage stays unrouted, see ADR 0004
-      "3": { kind: ethernet, speed: 2.5G, native: break-glass, mac: "" } # plug a laptop in when the trunk is down
-      hdmi: { kind: hdmi }
-      usb: { kind: usb }
+      "0": {kind: ethernet, speed: 2.5G, native: main, mac: ""}
+      "1": {kind: ethernet, speed: 2.5G, native: mgmt, tagged: [servers, clients, iot], mac: ""}
+      "2": {kind: ethernet, speed: 2.5G, mac: ""}  # spare: storage stays unrouted, see ADR 0004
+      "3": {kind: ethernet, speed: 2.5G, native: break-glass, mac: ""}  # plug a laptop in when the trunk is down
+      hdmi: {kind: hdmi}
+      usb: {kind: usb}
 
   jetkvm:
     kind: kvm
     model: JetKVM
     rack: 2
     ports:
-      eth: { kind: ethernet, speed: 1G, mac: "" }
-      hdmi: { kind: hdmi }
-      usb: { kind: usb }
+      eth: {kind: ethernet, speed: 1G, mac: "30:52:53:0e:af:e4"}
+      hdmi: {kind: hdmi}
+      usb: {kind: usb}
 
   kvm-switch:
     kind: kvm-switch
     model: Steetek 8 Port HDMI KVM Switch
     rack: 3
     ports:
-      1-hdmi: { kind: hdmi }
-      1-usb: { kind: usb }
-      2-hdmi: { kind: hdmi }
-      2-usb: { kind: usb }
-      3-hdmi: { kind: hdmi }
-      3-usb: { kind: usb }
-      4-hdmi: { kind: hdmi }
-      4-usb: { kind: usb }
-      5-hdmi: { kind: hdmi }
-      5-usb: { kind: usb }
-      6-hdmi: { kind: hdmi }
-      6-usb: { kind: usb }
-      7-hdmi: { kind: hdmi }
-      7-usb: { kind: usb }
-      8-hdmi: { kind: hdmi }
-      8-usb: { kind: usb }
-      out-hdmi: { kind: hdmi }
-      out-usb: { kind: usb }
+      1-hdmi: {kind: hdmi}
+      1-usb: {kind: usb}
+      2-hdmi: {kind: hdmi}
+      2-usb: {kind: usb}
+      3-hdmi: {kind: hdmi}
+      3-usb: {kind: usb}
+      4-hdmi: {kind: hdmi}
+      4-usb: {kind: usb}
+      5-hdmi: {kind: hdmi}
+      5-usb: {kind: usb}
+      6-hdmi: {kind: hdmi}
+      6-usb: {kind: usb}
+      7-hdmi: {kind: hdmi}
+      7-usb: {kind: usb}
+      8-hdmi: {kind: hdmi}
+      8-usb: {kind: usb}
+      out-hdmi: {kind: hdmi}
+      out-usb: {kind: usb}
 
   pve-nuc:
     kind: server
     model: Intel NUC 8
     rack: 4
-    specs: { cpu: i5-8259U 4c/8t, memory: 16 GB, disks: [1 TB NVMe] }
+    specs: {cpu: i5-8259U 4c/8t, memory: 16 GB, disks: [1 TB NVMe]}
     ports:
-      eth: { kind: ethernet, speed: 1G, mac: "" }
-      hdmi: { kind: hdmi }
-      usb: { kind: usb }
+      eth: {kind: ethernet, speed: 1G, mac: ""}
+      hdmi: {kind: hdmi}
+      usb: {kind: usb}
 
   # Unmanaged, outside the rack beside pve-nuc: carries storage only.
   switch-2g5:
@@ -75,35 +74,34 @@ devices:
     model: Horaco 5 Port 2.5GbE
     rack: 4
     ports:
-      "1": { kind: ethernet, speed: 2.5G }
-      "2": { kind: ethernet, speed: 2.5G }
-      "3": { kind: ethernet, speed: 2.5G }
-      "4": { kind: ethernet, speed: 2.5G }
-      "5": { kind: ethernet, speed: 2.5G }
+      "1": {kind: ethernet, speed: 2.5G}
+      "2": {kind: ethernet, speed: 2.5G}
+      "3": {kind: ethernet, speed: 2.5G}
+      "4": {kind: ethernet, speed: 2.5G}
+      "5": {kind: ethernet, speed: 2.5G}
 
   k8s-nuc:
     kind: server
     model: Intel NUC 12 Pro
     rack: 5
-    specs:
-      { cpu: i7-1260P 12c/16t, memory: 64 GB, disks: [512 GB SSD, 512 GB NVMe] }
+    specs: {cpu: i7-1260P 12c/16t, memory: 64 GB, disks: [512 GB SSD, 512 GB NVMe]}
     ports:
-      eth-1g: { kind: ethernet, speed: 1G, mac: "" }
-      eth-2g5: { kind: ethernet, speed: 2.5G, mac: "" }
-      hdmi: { kind: hdmi }
-      usb: { kind: usb }
+      eth-1g: {kind: ethernet, speed: 1G, mac: ""}
+      eth-2g5: {kind: ethernet, speed: 2.5G, mac: ""}
+      hdmi: {kind: hdmi}
+      usb: {kind: usb}
 
   # Beside k8s-nuc. Its HDMI and USB are KVM input 8, for a Device brought to the rack.
   keystone:
     kind: patch-panel
     rack: 5
     ports:
-      eth1: { kind: ethernet }
-      eth2: { kind: ethernet }
-      eth3: { kind: ethernet }
-      eth4: { kind: ethernet }
-      hdmi: { kind: hdmi }
-      usb: { kind: usb }
+      eth1: {kind: ethernet}
+      eth2: {kind: ethernet}
+      eth3: {kind: ethernet}
+      eth4: {kind: ethernet}
+      hdmi: {kind: hdmi}
+      usb: {kind: usb}
 
   # Unmanaged and USB-powered, outside the rack beside k8s-nuc: keeps main off the trunk.
   switch-3p:
@@ -111,26 +109,26 @@ devices:
     model: "N/A"
     rack: 5
     ports:
-      "1": { kind: ethernet, speed: 1G }
-      "2": { kind: ethernet, speed: 1G }
-      "3": { kind: ethernet, speed: 1G }
+      "1": {kind: ethernet, speed: 1G}
+      "2": {kind: ethernet, speed: 1G}
+      "3": {kind: ethernet, speed: 1G}
 
   patch-panel:
     kind: patch-panel
     rack: 6
     ports:
-      "1": { kind: ethernet }
-      "2": { kind: ethernet }
-      "3": { kind: ethernet }
-      "4": { kind: ethernet }
-      "5": { kind: ethernet }
-      "6": { kind: ethernet }
-      "7": { kind: ethernet }
-      "8": { kind: ethernet }
-      "9": { kind: ethernet }
-      "10": { kind: ethernet }
-      "11": { kind: ethernet }
-      "12": { kind: ethernet }
+      "1": {kind: ethernet}
+      "2": {kind: ethernet}
+      "3": {kind: ethernet}
+      "4": {kind: ethernet}
+      "5": {kind: ethernet}
+      "6": {kind: ethernet}
+      "7": {kind: ethernet}
+      "8": {kind: ethernet}
+      "9": {kind: ethernet}
+      "10": {kind: ethernet}
+      "11": {kind: ethernet}
+      "12": {kind: ethernet}
 
   # Port profiles are set by hand in the UniFi Network Application to match native/tagged.
   unifi-switch:
@@ -138,46 +136,44 @@ devices:
     model: Ubiquiti USW Lite 16 PoE
     rack: 7
     ports:
-      "1": { kind: ethernet, speed: 1G, tagged: [mgmt, servers, clients, iot] }
-      "2": { kind: ethernet, speed: 1G }
-      "3": { kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot] }
-      "4": { kind: ethernet, speed: 1G }
-      "5": { kind: ethernet, speed: 1G, native: servers }
-      "6": { kind: ethernet, speed: 1G }
-      "7": { kind: ethernet, speed: 1G, native: servers }
-      "8": { kind: ethernet, speed: 1G }
-      "9": { kind: ethernet, speed: 1G, native: servers }
-      "10": { kind: ethernet, speed: 1G }
-      "11": { kind: ethernet, speed: 1G, native: servers }
-      "12": { kind: ethernet, speed: 1G }
-      "13": { kind: ethernet, speed: 1G, native: servers }
-      "14": { kind: ethernet, speed: 1G }
-      "15": { kind: ethernet, speed: 1G }
-      "16": { kind: ethernet, speed: 1G }
+      "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [servers, clients, iot]}
+      "2": {kind: ethernet, speed: 1G}
+      "3": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
+      "4": {kind: ethernet, speed: 1G}
+      "5": {kind: ethernet, speed: 1G, native: servers}
+      "6": {kind: ethernet, speed: 1G}
+      "7": {kind: ethernet, speed: 1G, native: servers}
+      "8": {kind: ethernet, speed: 1G}
+      "9": {kind: ethernet, speed: 1G, native: servers}
+      "10": {kind: ethernet, speed: 1G}
+      "11": {kind: ethernet, speed: 1G, native: servers}
+      "12": {kind: ethernet, speed: 1G}
+      "13": {kind: ethernet, speed: 1G, native: servers}
+      "14": {kind: ethernet, speed: 1G}
+      "15": {kind: ethernet, speed: 1G}
+      "16": {kind: ethernet, speed: 1G}
 
   k8s-opti-01:
     kind: server
     model: "Dell OptiPlex 7080 (TODO(you): or the 7060)"
     rack: 8
-    specs:
-      { cpu: i5-10500T 6c/12t, memory: 32 GB, disks: [512 GB SSD, 512 GB NVMe] }
+    specs: {cpu: i5-10500T 6c/12t, memory: 32 GB, disks: [512 GB SSD, 512 GB NVMe]}
     ports:
-      eth-1g: { kind: ethernet, speed: 1G, mac: "" }
-      eth-2g5: { kind: ethernet, speed: 2.5G, mac: "" }
-      hdmi: { kind: hdmi }
-      usb: { kind: usb }
+      eth-1g: {kind: ethernet, speed: 1G, mac: ""}
+      eth-2g5: {kind: ethernet, speed: 2.5G, mac: ""}
+      hdmi: {kind: hdmi}
+      usb: {kind: usb}
 
   k8s-opti-02:
     kind: server
     model: "Dell OptiPlex 7060 (TODO(you): or the 7080)"
     rack: 9
-    specs:
-      { cpu: i5-8500T 6c/6t, memory: 32 GB, disks: [512 GB SSD, 500 GB NVMe] }
+    specs: {cpu: i5-8500T 6c/6t, memory: 32 GB, disks: [512 GB SSD, 500 GB NVMe]}
     ports:
-      eth-1g: { kind: ethernet, speed: 1G, mac: "" }
-      eth-2g5: { kind: ethernet, speed: 2.5G, mac: "" }
-      hdmi: { kind: hdmi }
-      usb: { kind: usb }
+      eth-1g: {kind: ethernet, speed: 1G, mac: ""}
+      eth-2g5: {kind: ethernet, speed: 2.5G, mac: ""}
+      hdmi: {kind: hdmi}
+      usb: {kind: usb}
 
   pve-nas:
     kind: server
@@ -188,20 +184,20 @@ devices:
       memory: 16 GB
       disks: [256 GB SSD, 2x 1 TB NVMe, 2x 14 TB HDD, 2x 6 TB HDD]
     ports:
-      "0": { kind: ethernet, speed: 2.5G, mac: "" }
-      "1": { kind: ethernet, speed: 2.5G, mac: "" }
-      "2": { kind: ethernet, speed: 2.5G, mac: "" }
-      "3": { kind: ethernet, speed: 2.5G, mac: "" }
-      hdmi: { kind: hdmi }
-      usb: { kind: usb }
+      "0": {kind: ethernet, speed: 2.5G, mac: ""}
+      "1": {kind: ethernet, speed: 2.5G, mac: ""}
+      "2": {kind: ethernet, speed: 2.5G, mac: ""}
+      "3": {kind: ethernet, speed: 2.5G, mac: ""}
+      hdmi: {kind: hdmi}
+      usb: {kind: usb}
 
   # Upstream router and tailnet node; its subnet route is the out-of-band path to jetkvm.
   gl-router-home:
     kind: router
     model: "GL.iNet (TODO(you): model)"
     ports:
-      wan: { kind: ethernet, speed: 1G, mac: "" }
-      lan: { kind: ethernet, speed: 1G, native: main, mac: "" }
+      wan: {kind: ethernet, speed: 1G, mac: ""}
+      lan: {kind: ethernet, speed: 1G, native: main, mac: ""}
 
   # TODO(you): seeded from the old notes (two Flex Minis daisy-chained to a U6 Lite). Confirm
   # their count, names, room runs and the Networks each room Port carries.
@@ -209,24 +205,24 @@ devices:
     kind: switch
     model: Ubiquiti USW Flex Mini
     ports:
-      "1": { kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot] }
-      "2": { kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot] }
-      "3": { kind: ethernet, speed: 1G }
-      "4": { kind: ethernet, speed: 1G }
-      "5": { kind: ethernet, speed: 1G }
+      "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
+      "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
+      "3": {kind: ethernet, speed: 1G}
+      "4": {kind: ethernet, speed: 1G}
+      "5": {kind: ethernet, speed: 1G}
 
   flex-mini-2:
     kind: switch
     model: Ubiquiti USW Flex Mini
     ports:
-      "1": { kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot] }
-      "2": { kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot] }
-      "3": { kind: ethernet, speed: 1G }
-      "4": { kind: ethernet, speed: 1G }
-      "5": { kind: ethernet, speed: 1G }
+      "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
+      "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
+      "3": {kind: ethernet, speed: 1G}
+      "4": {kind: ethernet, speed: 1G}
+      "5": {kind: ethernet, speed: 1G}
 
   ap:
     kind: ap
     model: Ubiquiti U6 Lite
     ports:
-      eth: { kind: ethernet, speed: 1G, mac: "" }
+      eth: {kind: ethernet, speed: 1G, mac: ""}

@@ -16,6 +16,7 @@ What runs where, and how to change it. Terms (Host, Service, Deploy, Version Bum
 | [runbooks/deploy.md](runbooks/deploy.md) | Deploying Services by hand |
 | [runbooks/restore-backup.md](runbooks/restore-backup.md) | Restoring Service data from restic |
 | [runbooks/rebuild-vps.md](runbooks/rebuild-vps.md) | Rebuilding the VPS from scratch |
+| [runbooks/opnsense.md](runbooks/opnsense.md) | Installing OPNsense, its manual steps, restoring and upgrading it |
 | [runbooks/manual-setup.md](runbooks/manual-setup.md) | One-time setup outside the repo: consoles, credentials, their order |
 | [adr/](adr/) | Architecture decisions |
 

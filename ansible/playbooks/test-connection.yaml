@@ -19,8 +19,7 @@
 
     - name: Display privilege escalation result
       ansible.builtin.debug:
-        msg:
-          "✓ Privilege escalation works - running as {{ whoami_result.stdout }}"
+        msg: "✓ Privilege escalation works - running as {{ whoami_result.stdout }}"
 
     - name: Gather and display key facts
       ansible.builtin.debug:
