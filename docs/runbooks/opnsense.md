@@ -3,6 +3,7 @@ covers:
   - ansible/playbooks/opnsense.yaml
   - ansible/host_vars/opnsense.yaml
 ---
+
 # OPNsense
 
 The steps on the Topton that the API can't do, and how to restore and upgrade it. Everything else comes from `ansible/playbooks/opnsense.yaml` (ADR 0003). Networks, addresses and Ports are in `ansible/group_vars/all/{network,devices}.yaml`, and [network.md](../network.md) lists them.
@@ -17,7 +18,6 @@ Until os-tailscale is up, the only way in is jetkvm, on kvm-switch input 1. jetk
 
 1. Write the amd64 VGA installer image from opnsense.org to a USB stick, and plug it into the Topton.
 2. Boot from it, log in as `installer` / `opnsense`, and install with ZFS onto the NVMe. Set the root password when the installer asks.
-   > TODO(you): where the root password is kept.
 3. Remove the stick and reboot.
 
 ## 2. Interfaces
@@ -26,11 +26,11 @@ At the console menu:
 
 1. **Assign interfaces** (option 1). No VLANs here: the playbook creates them on the trunk.
 
-   | OPNsense | Port | Network |
-   |---|---|---|
-   | WAN | opnsense:0 | main |
-   | LAN | opnsense:1 | mgmt (native; the parent of the tagged VLANs) |
-   | OPT1 | opnsense:3 | break-glass |
+   | OPNsense | Port       | Network                                       |
+   | -------- | ---------- | --------------------------------------------- |
+   | WAN      | opnsense:0 | main                                          |
+   | LAN      | opnsense:1 | mgmt (native; the parent of the tagged VLANs) |
+   | OPT1     | opnsense:3 | break-glass                                   |
 
    > TODO(you): the NIC names (probably `igc0`-`igc3`). Match them by MAC, and record each MAC on its Port in `devices.yaml`.
 
@@ -60,7 +60,7 @@ System → Access → Users → Add: a named user in group `admins`. Keep `root`
 ## 5. Tailscale
 
 1. System → Firmware → Plugins: install `os-tailscale`.
-2. VPN → Tailscale → Settings: enable it, log in, and advertise the route `10.11.0.0/16` plus an exit node, as `tailnet_routes.opnsense` in `network.yaml` says. The tailnet policy approves the routes (HO-3FW9).
+2. VPN → Tailscale → Settings: enable it, log in, and advertise the route `10.11.0.0/16` plus an exit node, as `tailnet_routes.opnsense` in `network.yaml` says. The tailnet policy approves the routes (`autoApprovers` in `terraform/tailscale/policy.hujson`).
    > TODO(you): auth key or interactive login, tags, key expiry.
 3. Interfaces → Assignments: assign `tailscale0`, enable it, and name it `tailscale`.
 4. Firewall → NAT → Outbound: switch to hybrid mode and add a rule on `tailscale`, source `LAN net` (mgmt), translation `Interface address`. UniFi gear then adopts through the VPS, which only sees OPNsense's tailnet address ([ADR 0006](../adr/0006-unifi-controller-on-the-vps.md)).
@@ -80,7 +80,7 @@ curl -sk -u "$OPNSENSE_API_KEY:$OPNSENSE_API_SECRET" https://<opnsense tailnet n
 
 1. Reinstall as in steps 1 and 2.
 2. From break-glass, System → Configuration → Backups: restore `config.xml` from the backup repo. It brings back the users, the API key and every rule, but not the plugin packages.
-   > TODO(you): the backup repo, once os-git-backup is set up (HO-QBVY).
+   > TODO(you): the backup repo, once os-git-backup is set up.
 3. Install `os-tailscale` by hand (step 5.1). The playbook reaches OPNsense over the tailnet, and it installs the other plugins.
 4. Run the playbook, `--check --diff` first.
 
