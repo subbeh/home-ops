@@ -1,0 +1,4 @@
+---
+# Without this, nvim's ansible-lint installs requirements.yml into <repo>/.ansible. Offline, it
+# caches in ANSIBLE_HOME (.cache/ansible, from mise) and uses the collections there.
+offline: true

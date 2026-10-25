@@ -6,7 +6,7 @@ experimental = true
 [env]
 MISE_DIR = 1
 ANSIBLE_CONFIG            = "{{config_root}}/ansible/ansible.cfg"
-ANSIBLE_HOME              = "{{config_root}}/ansible"
+ANSIBLE_HOME              = "{{config_root}}/.cache/ansible"
 ANSIBLE_PLAYBOOK_DIR      = "{{config_root}}/ansible/playbooks"
 ANSIBLE_COLLECTIONS_PATH  = "{{config_root}}/.cache/ansible/collections"
 ANSIBLE_ROLES_PATH        = "{{config_root}}/.cache/ansible/roles:{{config_root}}/ansible/roles"
