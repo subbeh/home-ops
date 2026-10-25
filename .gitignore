@@ -6,3 +6,4 @@ kubeconfig
 *.tfstate
 *.tfstate.*
 .bw-provider-state
+.ansible
