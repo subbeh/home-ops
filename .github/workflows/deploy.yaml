@@ -45,7 +45,7 @@ jobs:
 
       - name: Join tailnet
         if: steps.select.outputs.services != ''
-        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4.2.0
+        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd  # v4.2.0
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
@@ -60,7 +60,7 @@ jobs:
           TOKEN: ${{ secrets.SEMAPHORE_API_TOKEN }}
           PROJECT: ${{ env.SEMAPHORE_PROJECT_ID }}
           TEMPLATE: ${{ env.SEMAPHORE_TEMPLATE_ID }}
-        run: |
+        run: |-
           api="$SEMAPHORE_URL/api/project/$PROJECT/tasks"
           body=$(jq -nc --argjson t "$TEMPLATE" --arg s "$SERVICES" --arg m "Auto-deploy $GITHUB_SHA" \
             '{template_id: $t, message: $m, params: {tags: ($s | split(","))}}')

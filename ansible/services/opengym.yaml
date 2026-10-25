@@ -19,7 +19,7 @@ opengym:
         RP_ID: "gym.{{ services_domain }}"
         ORIGIN: "https://gym.{{ services_domain }}"
         PASSWORD_LOGIN: "1"
-        ADMIN_UIDS: "IR5d1HqhGAGj2mqy" # disable on next bootstrap
+        ADMIN_UIDS: "IR5d1HqhGAGj2mqy"  # disable on next bootstrap
         # FIRST_USER_ADMIN: "1" # enable on next bootstrap
 
     - name: opengym-web

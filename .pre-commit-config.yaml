@@ -1,3 +1,4 @@
+---
 # Install with `just setup`. See docs/README.md for what these keep in sync.
 default_install_hook_types: [pre-commit, commit-msg]
 
@@ -20,6 +21,14 @@ repos:
         language: system
         pass_filenames: false
         files: ^ansible/
+        stages: [pre-commit]
+
+      # Formats as nvim does on save (.yamlfmt.yaml); on a change the commit aborts so you can re-stage.
+      - id: yamlfmt
+        name: Format YAML
+        entry: yamlfmt
+        language: system
+        types: [yaml]
         stages: [pre-commit]
 
       - id: docs-covers

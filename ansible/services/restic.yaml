@@ -47,11 +47,9 @@ restic:
         RESTIC_PASSWORD: "{{ restic_password }}"
         RESTIC_BACKUP_SOURCES: /data
         # Excludes this service's own ssh key/known_hosts from the backup.
-        RESTIC_BACKUP_ARGS:
-          "--one-file-system --exclude-caches --exclude /data/restic"
+        RESTIC_BACKUP_ARGS: "--one-file-system --exclude-caches --exclude /data/restic"
         # Forget is cheap and runs after every backup; restic-prune reclaims the space.
-        RESTIC_FORGET_ARGS:
-          "--keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
+        RESTIC_FORGET_ARGS: "--keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
         # go-cron, with a leading seconds field: every hour, on the hour.
         BACKUP_CRON: "0 0 * * * *"
         # Gatus's dead-man's-switch for this schedule; see gatus.yaml.
