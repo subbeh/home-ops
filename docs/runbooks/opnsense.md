@@ -132,6 +132,7 @@ Keep `root` for the console. Every other way in uses a named user.
    | Description            | `tailnet: UI and SSH`   |
 
    Source is any because the tailnet policy already decides which nodes get this far. This rule only opens OPNsense itself. Tailnet traffic to the Networks behind it, and through the exit node, stays blocked until the playbook's rules land. The mgmt NAT from step 5.6 needs no rule here, because replies match its state. The WAN gets no pass rules, so the UI and API stay closed there.
+8. System → Settings → Administration → Web GUI: add `opnsense.sbbh.cloud` to Alternate Hostnames, then Save. The UI rejects any hostname it doesn't know as a possible DNS rebind attack. That name is the Cloudflare record for the tailnet address, in `terraform/cloudflare/records.auto.tfvars`. Keep the DNS rebind check itself on.
 
 ## 6. Check
 
