@@ -18,10 +18,10 @@ devices:
     rack: 1
     specs: {cpu: N5105 4c/4t, memory: 16 GB, disks: [256 GB NVMe]}
     ports:
-      "0": {kind: ethernet, speed: 2.5G, native: main, mac: ""}
-      "1": {kind: ethernet, speed: 2.5G, native: mgmt, tagged: [servers, clients, iot], mac: ""}
-      "2": {kind: ethernet, speed: 2.5G, mac: ""}  # spare: storage stays unrouted, see ADR 0004
-      "3": {kind: ethernet, speed: 2.5G, native: break-glass, mac: ""}  # plug a laptop in when the trunk is down
+      "0": {kind: ethernet, speed: 2.5G, native: main, mac: "60:be:b4:09:39:ac"}
+      "1": {kind: ethernet, speed: 2.5G, native: mgmt, tagged: [servers, clients, iot], mac: "60:be:b4:09:39:ad"}
+      "2": {kind: ethernet, speed: 2.5G, mac: "60:be:b4:09:39:ae"}  # spare: storage stays unrouted, see ADR 0004
+      "3": {kind: ethernet, speed: 2.5G, native: break-glass, mac: "60:be:b4:09:39:af"}  # plug a laptop in when the trunk is down
       hdmi: {kind: hdmi}
       usb: {kind: usb}
 

@@ -33,10 +33,10 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
-| 0 | ethernet | 2.5G |  | switch-3p:2 |
-| 1 | ethernet | 2.5G |  | unifi-switch:1 via patch-panel:3 |
-| 2 | ethernet | 2.5G |  |  |
-| 3 | ethernet | 2.5G |  |  |
+| 0 | ethernet | 2.5G | 60:be:b4:09:39:ac | switch-3p:2 |
+| 1 | ethernet | 2.5G | 60:be:b4:09:39:ad | unifi-switch:1 via patch-panel:3 |
+| 2 | ethernet | 2.5G | 60:be:b4:09:39:ae |  |
+| 3 | ethernet | 2.5G | 60:be:b4:09:39:af |  |
 | hdmi | hdmi |  |  | kvm-switch:1-hdmi |
 | usb | usb |  |  | kvm-switch:1-usb |
 
