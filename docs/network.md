@@ -85,6 +85,7 @@ A MAC makes the address a DHCP reservation on OPNsense; the rest are static on t
 | Name | Address | DNS | MAC |
 |---|---|---|---|
 | vps | 100.77.96.125 |  |  |
+| opnsense | 100.66.175.26 |  |  |
 
 ## Pools
 

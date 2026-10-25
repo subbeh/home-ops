@@ -90,6 +90,7 @@ networks:
     cidr: 100.64.0.0/10
     addresses:
       vps: 100.77.96.125
+      opnsense: 100.66.175.26
 
 # Announced over BGP to OPNsense, not tied to a segment. See docs/adr/0005-bgp-pool-for-kubernetes.md.
 pools:
