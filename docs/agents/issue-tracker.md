@@ -14,6 +14,18 @@ Issues and specs for this repo live as tasks in aven, a local-first task manager
 
 Task refs are local: keep them out of commit messages, PR descriptions and GitHub. A merged PR doesn't close its task; close it by hand.
 
+## Organisation
+
+- **Titles** are Conventional Commits subjects with the repo's scopes (`feat(opnsense): ...`, `chore(terraform): ...`), so a done task's title can become its commit message.
+- **Status** follows the work: `inbox` (not triaged yet) → `backlog` (accepted, not scheduled) → `todo` (next up) → `active` (in progress) → `done` or `canceled`. An epic is `active` while any of its children is.
+- **Triage label**: every open task carries exactly one label from [triage-labels.md](triage-labels.md). A `needs-info` task lists its open questions in a note.
+- **Priority** follows the critical path. `high`: the blockers of the active epic and the work on its path. `medium`: the rest of that epic. `low`: backlog and standalone tasks. `urgent` is for something broken.
+- **Epics** group linked work by theme, and they nest. Network work lives under the *network architecture* epic, and a large effort gets a nested epic with its spec in the description (for example the OPNsense bring-up). Unrelated one-off tasks stay outside any epic: don't create an epic for a single task.
+- **Dependencies, epics and related links** each do one job. `aven dep add` sets execution order, and `aven list --ready` hides blocked tasks. Epic membership only groups and never blocks. `aven related add` links context, with no order.
+- **Handover**: when you stop mid-task, leave a note with Done, State, Next and Open, so the next session can pick it up from `aven context` alone.
+
+Useful views: `aven list --ready` (what to do next), `aven epic list <epic>` (an epic's progress), `aven list --open --label needs-info` (what's waiting on answers), `aven list --blocked`.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** Triage runs on aven tasks only.
