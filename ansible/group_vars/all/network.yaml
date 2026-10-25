@@ -67,7 +67,7 @@ networks:
     addresses:
       opnsense: 10.11.40.1
 
-  break-glass:
+  backdoor:
     description: "opnsense:3 only, for a laptop when the trunk is broken: OPNsense UI and SSH only"
     cidr: 10.11.254.0/24
     gateway: opnsense

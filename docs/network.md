@@ -16,7 +16,7 @@ From [`ansible/group_vars/all/network.yaml`](../ansible/group_vars/all/network.y
 | servers | 10.11.20.0/24 | 20 | opnsense | .100-.199 | Every Host, including the Proxmox UI and the Talos API |
 | clients | 10.11.30.0/24 | 30 | opnsense | .100-.199 | Personal devices, and SSID ST |
 | iot | 10.11.40.0/24 | 40 | opnsense | .100-.199 | Media and smart devices, and SSID ST-IoT: internet plus specific allowances |
-| break-glass | 10.11.254.0/24 |  | opnsense | .100-.199 | opnsense:3 only, for a laptop when the trunk is broken: OPNsense UI and SSH only |
+| backdoor | 10.11.254.0/24 |  | opnsense | .100-.199 | opnsense:3 only, for a laptop when the trunk is broken: OPNsense UI and SSH only |
 | storage | 10.99.0.0/24 |  |  |  | NAS to Kubernetes at 2.5G on switch-2g5, unrouted |
 | tailnet | 100.64.0.0/10 |  |  |  | The VPS and the other tailnet peers |
 
@@ -65,11 +65,11 @@ A MAC makes the address a DHCP reservation on OPNsense; the rest are static on t
 |---|---|---|---|
 | opnsense | 10.11.40.1 | opnsense.iot.home.sbbh.cloud |  |
 
-### break-glass
+### backdoor
 
 | Name | Address | DNS | MAC |
 |---|---|---|---|
-| opnsense | 10.11.254.1 | opnsense.break-glass.home.sbbh.cloud |  |
+| opnsense | 10.11.254.1 | opnsense.backdoor.home.sbbh.cloud |  |
 
 ### storage
 
@@ -119,7 +119,7 @@ The peer is the Port at the far end, traced through the patch panels. UniFi Port
 | 0 | 2.5G | main |  | switch-3p:2 |
 | 1 | 2.5G | mgmt | servers, clients, iot | unifi-switch:1 via patch-panel:3 |
 | 2 | 2.5G |  |  |  |
-| 3 | 2.5G | break-glass |  |  |
+| 3 | 2.5G | backdoor |  |  |
 | hdmi |  |  |  | kvm-switch:1-hdmi |
 | usb |  |  |  | kvm-switch:1-usb |
 

@@ -39,10 +39,10 @@ vars: {d2-config: {layout-engine: elk}}
   label: "iot\n10.11.40.0/24\nVLAN 40"
 }
 "iot" -- "opnsense": "10.11.40.1"
-"break-glass": {
-  label: "break-glass\n10.11.254.0/24"
+"backdoor": {
+  label: "backdoor\n10.11.254.0/24"
 }
-"break-glass" -- "opnsense": "10.11.254.1"
+"backdoor" -- "opnsense": "10.11.254.1"
 "storage": {
   label: "storage\n10.99.0.0/24"
   "pve-nas": "pve-nas\n10.99.0.11"
