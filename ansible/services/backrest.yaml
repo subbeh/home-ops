@@ -31,8 +31,9 @@ backrest:
         - "{{ services_data_dir }}/backrest/config:/config"
         - "{{ services_data_dir }}/backrest/cache:/cache"
         - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh:ro"
-        # As a system config, since ssh rejects a ~/.ssh/config not owned by root, and the
-        # alias works without custom sftp.args, which Backrest's edit dialog drops.
-        - "{{ services_data_dir }}/restic/ssh/config:/etc/ssh/ssh_config.d/storagebox.conf:ro"
+        # As the main system config: ssh rejects a ~/.ssh/config or an Include'd file not
+        # owned by root, and the alias works without custom sftp.args, which Backrest's edit
+        # dialog drops. The image's own ssh_config only includes ssh_config.d.
+        - "{{ services_data_dir }}/restic/ssh/config:/etc/ssh/ssh_config:ro"
       env:
         RESTIC_VPS_PASSWORD: "{{ bws_secrets.RESTIC_VPS_PASSWORD }}"
