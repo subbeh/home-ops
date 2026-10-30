@@ -63,3 +63,19 @@ atuin:
         - "{{ services_data_dir }}/atuin/ai-config.toml:/etc/atuin-ai/config.toml"
       env:
         OPENAI_API_KEY: "{{ bws_secrets.ATUIN_OPENAI_API_KEY }}"
+
+  gatus:
+    endpoints:
+      - name: atuin
+        group: services
+        url: "https://atuin.{{ services_domain }}/healthz"
+        conditions:
+          - "[STATUS] == 200"
+      # No health route: the app's JSON 404 shows it answered; Traefik's own 404 for a
+      # missing container is plain text.
+      - name: atuin-ai
+        group: services
+        url: "https://atuin-ai.{{ services_domain }}/"
+        conditions:
+          - "[STATUS] == 404"
+          - "[BODY].error == not_found"

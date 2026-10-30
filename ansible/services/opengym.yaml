@@ -34,3 +34,12 @@ opengym:
       env:
         BACKEND: opengym-api
         PORT: "3000"
+
+  gatus:
+    endpoints:
+      # Through opengym-web to opengym-api, so it covers both.
+      - name: opengym
+        group: services
+        url: "https://gym.{{ services_domain }}/api/health"
+        conditions:
+          - "[STATUS] == 200"

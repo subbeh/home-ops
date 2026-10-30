@@ -61,3 +61,11 @@ semaphore:
         SEMAPHORE_FORWARDED_ENV_VARS: '["BWS_ACCESS_TOKEN"]'
         # Token of a dedicated Bitwarden machine account that can read the Service secrets.
         BWS_ACCESS_TOKEN: "{{ bws_secrets.SEMAPHORE_BWS_ACCESS_TOKEN }}"
+
+  gatus:
+    endpoints:
+      - name: semaphore
+        group: services
+        url: "https://semaphore.{{ services_domain }}/api/ping"
+        conditions:
+          - "[STATUS] == 200"

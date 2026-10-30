@@ -47,3 +47,11 @@ karakeep:
       env:
         MEILI_NO_ANALYTICS: "true"
         MEILI_MASTER_KEY: "{{ karakeep_meili_master_key }}"
+
+  gatus:
+    endpoints:
+      - name: karakeep
+        group: services
+        url: "https://{{ karakeep_url }}/api/health"
+        conditions:
+          - "[STATUS] == 200"

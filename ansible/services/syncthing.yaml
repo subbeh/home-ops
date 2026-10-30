@@ -21,3 +21,11 @@ syncthing:
         interval: 1m
         timeout: 10s
         retries: 3
+
+  gatus:
+    endpoints:
+      - name: syncthing
+        group: services
+        url: "https://syncthing.{{ services_domain }}/rest/noauth/health"
+        conditions:
+          - "[STATUS] == 200"

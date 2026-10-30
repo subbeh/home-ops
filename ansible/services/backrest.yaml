@@ -37,3 +37,11 @@ backrest:
         - "{{ services_data_dir }}/restic/ssh/config:/etc/ssh/ssh_config:ro"
       env:
         RESTIC_VPS_PASSWORD: "{{ bws_secrets.RESTIC_VPS_PASSWORD }}"
+
+  gatus:
+    endpoints:
+      - name: backrest
+        group: services
+        url: "https://backrest.{{ services_domain }}/"
+        conditions:
+          - "[STATUS] == 200"

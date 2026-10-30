@@ -74,3 +74,11 @@ traefik:
         - /var/run/docker.sock:/var/run/docker.sock:ro
       env:
         CF_DNS_API_TOKEN: "{{ bws_secrets.CLOUDFLARE_API_TOKEN }}"
+
+  gatus:
+    endpoints:
+      - name: traefik
+        group: services
+        url: "https://traefik.{{ services_domain }}/dashboard/"
+        conditions:
+          - "[STATUS] == 200"

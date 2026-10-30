@@ -39,3 +39,12 @@ hermes:
         TELEGRAM_BOT_TOKEN: "{{ bws_secrets.HERMES_TELEGRAM_BOT_TOKEN }}"
         # Without it the gateway rejects every Telegram user.
         TELEGRAM_ALLOWED_USERS: "{{ bws_secrets.HERMES_TELEGRAM_ALLOWED_USERS }}"
+
+  gatus:
+    endpoints:
+      # Every other path redirects to the login page.
+      - name: hermes
+        group: services
+        url: "https://hermes.{{ services_domain }}/login"
+        conditions:
+          - "[STATUS] == 200"

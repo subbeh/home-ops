@@ -19,3 +19,14 @@ aven:
         - "{{ networks.tailnet.addresses[inventory_hostname] }}:3746:3746"
       volumes:
         - "{{ services_data_dir }}/aven/data:/data"
+
+  gatus:
+    endpoints:
+      # No health route: the app's JSON 404 shows it answered; Traefik's own 404 for a
+      # missing container is plain text.
+      - name: aven
+        group: services
+        url: "https://aven.{{ services_domain }}/"
+        conditions:
+          - "[STATUS] == 404"
+          - "[BODY].error == not-found"

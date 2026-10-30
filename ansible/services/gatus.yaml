@@ -61,3 +61,12 @@ gatus:
         - "{{ services_data_dir }}/gatus/data:/data"
       env:
         GATUS_CONFIG_PATH: /config
+
+  gatus:
+    endpoints:
+      # Only proves Traefik routes here: a stopped Gatus can't alert about itself.
+      - name: gatus
+        group: services
+        url: "https://gatus.{{ services_domain }}/health"
+        conditions:
+          - "[STATUS] == 200"
