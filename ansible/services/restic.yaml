@@ -11,6 +11,19 @@ restic:
   vars:
     restic_password: "{{ bws_secrets.RESTIC_VPS_PASSWORD }}"
 
+  # Dead-man's switch: restic-backup's POST_COMMANDS push here after every run.
+  gatus:
+    external-endpoints:
+      - name: restic-backup
+        group: backups
+        token: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
+        heartbeat:
+          interval: 1h
+        alerts:
+          - type: pushover
+            description: "restic hourly backup hasn't checked in"
+            send-on-resolved: true
+
   files:
     - dest: "{{ services_data_dir }}/restic/ssh/id_ed25519"
       # OpenSSH rejects a private key without its trailing newline.
@@ -52,7 +65,7 @@ restic:
         RESTIC_FORGET_ARGS: "--keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
         # go-cron, with a leading seconds field: every hour, on the hour.
         BACKUP_CRON: "0 0 * * * *"
-        # Gatus's dead-man's-switch for this schedule; see gatus.yaml.
+        # Gatus's dead-man's-switch for this schedule; see `gatus:` above.
         GATUS_TOKEN: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
         # "|| true": this runs under `set -e`, and a failed push must never be able
         # to stop the script before it clears /run/lock/backup.lock, or every run

@@ -2,6 +2,7 @@
 covers:
   - ansible/group_vars/all/services.yaml
   - ansible/roles/services/tasks/main.yaml
+  - ansible/roles/services/tasks/gatus.yaml
   - ansible/services/traefik.yaml
   - ansible/services/restic.yaml
   - ansible/services/backrest.yaml
@@ -56,3 +57,5 @@ Backrest (`ansible/services/backrest.yaml`) is a web UI over the same repository
 ## Monitoring
 
 Gatus (`ansible/services/gatus.yaml`) pings Tailscale DNS and the two home routers. It is also the dead-man's switch for backups: restic reports to a Gatus external endpoint after every run, and Gatus alerts if no report arrives within the heartbeat interval. Alerts go to Pushover.
+
+A Service declares its own checks under a `gatus:` key (Gatus `endpoints` and `external-endpoints`), as restic does for its heartbeat. Its Deploy writes them to `/opt/data/gatus/config/services/<service>.yaml`, and Gatus merges every file in `/opt/data/gatus/config` and reloads on change. Endpoints without their own `alerts` alert to Pushover. Dropping the key removes the file on the Service's next Deploy. This only works for Services on Gatus's Host, the vps.

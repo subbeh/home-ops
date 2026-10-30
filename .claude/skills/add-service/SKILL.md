@@ -41,6 +41,13 @@ The schema is the services role (`ansible/roles/services/tasks/`). Existing Serv
         - "{{ services_data_dir }}/<name>/data:/data"
       env:
         SECRET: "{{ bws_secrets.<NAME>_SECRET }}"
+
+  gatus:                      # optional: Gatus checks, only on the vps
+    endpoints:
+      - name: <name>
+        group: services
+        url: "https://<name>.{{ services_domain }}"
+        conditions: ["[STATUS] == 200"]
 ```
 
 ## Gotchas
@@ -52,4 +59,5 @@ The schema is the services role (`ansible/roles/services/tasks/`). Existing Serv
 - **`network_mode: host`**: the container leaves the `services` network, and Traefik reaches it through `host.docker.internal`.
 - **Image runs as a fixed UID**: give its data dir that `owner`/`group` in `files:` (aven: 65532). Find it on the Host, since the laptop's Docker is usually off: `ssh <host> docker run --rm --entrypoint id <image>`.
 - **Hostname override**: set a `traefik.http.routers.<name>.rule` label, as opengym does.
+- **`gatus:`**: Gatus `endpoints` and `external-endpoints` in Gatus's own schema, written to Gatus's config dir by the Service's Deploy. Endpoints without `alerts` get Pushover with send-on-resolved. The `group` and `name` make the endpoint key (`<group>_<name>`), which must be unique across Services and is the push URL for an external endpoint.
 - **Leave out** Service names that clash with a Step tag (`pre-tasks`, `files`, `containers`, `post-tasks`) or with `all`/`always`.

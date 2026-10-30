@@ -1,0 +1,44 @@
+---
+# A Service's `gatus:` key holds Gatus endpoints and external-endpoints; Gatus merges every
+# file in its config dir. shortcut: the dir is on this Host, so it only works for Services
+# on Gatus's Host (the vps), move to a pushed or pulled config once Gatus watches another Host.
+- name: "{{ service.name }} | Create Gatus services dir"
+  ansible.builtin.file:
+    path: "{{ services_gatus_dir }}/services"
+    state: directory
+    owner: "{{ services_uid }}"
+    group: "{{ services_gid }}"
+    mode: "0755"
+  when: service.gatus is defined
+
+- name: "{{ service.name }} | Write Gatus endpoints"
+  ansible.builtin.copy:
+    content: "{{ _gatus | to_nice_yaml(indent=2) }}"
+    dest: "{{ services_gatus_dir }}/services/{{ service.name }}.yaml"
+    owner: "{{ services_uid }}"
+    group: "{{ services_gid }}"
+  no_log: "{{ service.no_log | default(false) }}"
+  when: service.gatus is defined
+  vars:
+    # Endpoints without their own alerts get Pushover's: product() pairs the default with
+    # each endpoint, and combine() lets the endpoint's keys win.
+    _alerts: {alerts: [{type: pushover, send-on-resolved: true}]}
+    _gatus: >-
+      {{ service.gatus | combine({
+           'endpoints': [_alerts] | product(service.gatus.endpoints | default([])) | map('combine') | list,
+           'external-endpoints': [_alerts] | product(service.gatus['external-endpoints'] | default([])) | map('combine') | list,
+         }) }}
+
+- name: "{{ service.name }} | Remove Gatus endpoints"
+  ansible.builtin.file:
+    path: "{{ services_gatus_dir }}/services/{{ service.name }}.yaml"
+    state: absent
+  register: _gatus_removed
+  when: service.gatus is not defined
+
+# Gatus only reloads when a file's mtime moves forward, so a deleted file needs a nudge.
+- name: "{{ service.name }} | Reload Gatus"
+  ansible.builtin.file:
+    path: "{{ services_gatus_dir }}/config.yaml"
+    state: touch
+  when: _gatus_removed is changed

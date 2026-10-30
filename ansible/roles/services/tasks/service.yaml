@@ -42,6 +42,13 @@
     _owned: "{{ file.dest is defined and file.dest.startswith(services_data_dir ~ '/') }}"
     _parent_owned: "{{ file.dest is defined and (file.dest | dirname).startswith(services_data_dir ~ '/') }}"
 
+- name: "{{ service.name }} | Gatus endpoints"
+  ansible.builtin.include_tasks:
+    file: gatus.yaml
+    apply:
+      tags: [always]
+  when: "'files' in services_steps"
+
 - name: "{{ service.name }} | Containers"
   ansible.builtin.include_tasks:
     file: containers.yaml

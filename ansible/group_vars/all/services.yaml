@@ -1,6 +1,8 @@
 ---
 services_root: "{{ inventory_dir }}/services"
 services_data_dir: /opt/data
+# Gatus reads every YAML file here; Services add theirs under services/ (roles/services/tasks/gatus.yaml).
+services_gatus_dir: "{{ services_data_dir }}/gatus/config"
 services_user: apps
 services_uid: 2000
 services_gid: 2000
