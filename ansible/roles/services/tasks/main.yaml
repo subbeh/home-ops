@@ -125,3 +125,12 @@
     loop_var: services_name
   vars:
     service: "{{ services_configs[services_name] | default({}, true) | combine({'name': services_name}) }}"
+
+# Every Deploy pulls, so replaced versions pile up until the disk fills. Removes every
+# image no container uses (`docker image prune -a`); a Deploy re-pulls what it needs.
+- name: Remove unused images
+  community.docker.docker_prune:
+    images: true
+    images_filters:
+      dangling: false
+  when: services_need_docker

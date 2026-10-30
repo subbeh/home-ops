@@ -40,7 +40,7 @@ Bitwarden Secrets Manager is the only place secrets live.
 
 ## Data
 
-Each Service keeps its state in `/opt/data/<service>` (`services_data_dir`), owned by the `apps` user (2000:2000). The role creates that directory for any Service with files or containers. Every container joins the `services` bridge network and gets the shared defaults from `services_container_defaults`. Each Deploy pulls images and recreates containers.
+Each Service keeps its state in `/opt/data/<service>` (`services_data_dir`), owned by the `apps` user (2000:2000). The role creates that directory for any Service with files or containers. Every container joins the `services` bridge network and gets the shared defaults from `services_container_defaults`. Each Deploy pulls images and recreates containers, then removes every image no container uses, so replaced versions don't fill the disk.
 
 ## Backups
 

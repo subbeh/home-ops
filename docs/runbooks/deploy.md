@@ -27,6 +27,7 @@ just ansible::playbook services --tags karakeep
 - A tag that is neither a Service nor a Step fails the run (typo protection). So does a Step tag on its own.
 - A Service assigned to more than one Host needs `--limit <host>`.
 - Every Deploy pulls images and **recreates** the selected containers, even when nothing changed.
+- Every Deploy that touches containers then removes every image no container uses (`docker image prune -a`), so a stopped Service's image is re-pulled on its next Deploy.
 
 ## Special cases
 
