@@ -1,6 +1,7 @@
 ---
 covers:
   - ansible/services/restic.yaml
+  - ansible/services/backrest.yaml
 ---
 # Restore Service data from restic
 
@@ -10,7 +11,9 @@ The repository is `sftp:storagebox:restic/vps` on a Hetzner Storage Box sub-acco
 
 ## Look around
 
-The running `restic-backup` container already has the repository, password and SSH setup:
+Backrest (https://backrest.vps.sbbh.cloud) browses the snapshots and downloads single files or folders.
+
+From the shell, the running `restic-backup` container already has the repository, password and SSH setup:
 
 ```sh
 docker exec restic-backup restic snapshots

@@ -1,0 +1,38 @@
+---
+# Web UI to browse and restore the restic snapshots that the restic Service takes. It only
+# views: resticker keeps running backup, forget, prune and check. Needs the restic Service on
+# the same Host for its SSH files. See https://github.com/garethgeorge/backrest
+#
+# One-time setup in the UI (https://backrest.vps.sbbh.cloud):
+#   1. Create the login user on first launch.
+#   2. Add Repo: URI sftp:storagebox:restic/vps, password left empty, env var
+#      RESTIC_PASSWORD=${RESTIC_VPS_PASSWORD} (expanded from this container's env, so the
+#      password stays out of config.json), SFTP fields empty. Auto-initialize and
+#      auto-unlock off; prune and check schedules Disabled, since resticker runs them.
+#   3. Index snapshots: resticker's snapshots appear under the _unassociated_ plan.
+backrest:
+  description: Web UI to browse and restore the restic backups
+
+  no_log: true
+
+  files:
+    - dest: "{{ services_data_dir }}/backrest/data"
+    - dest: "{{ services_data_dir }}/backrest/config"
+    # restic marks its cache with CACHEDIR.TAG, so restic-backup's --exclude-caches skips it.
+    - dest: "{{ services_data_dir }}/backrest/cache"
+
+  containers:
+    - image: ghcr.io/garethgeorge/backrest:v1.14.1
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.backrest.loadbalancer.server.port: "9898"
+      volumes:
+        - "{{ services_data_dir }}/backrest/data:/data"
+        - "{{ services_data_dir }}/backrest/config:/config"
+        - "{{ services_data_dir }}/backrest/cache:/cache"
+        - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh:ro"
+        # As a system config, since ssh rejects a ~/.ssh/config not owned by root, and the
+        # alias works without custom sftp.args, which Backrest's edit dialog drops.
+        - "{{ services_data_dir }}/restic/ssh/config:/etc/ssh/ssh_config.d/storagebox.conf:ro"
+      env:
+        RESTIC_VPS_PASSWORD: "{{ bws_secrets.RESTIC_VPS_PASSWORD }}"

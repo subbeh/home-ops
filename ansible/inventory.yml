@@ -11,7 +11,7 @@ remote:
       # Its tailnet IP is networks.tailnet.addresses.vps in group_vars/all/network.yaml.
       ansible_host: vps.tailnet-7233.ts.net
       services_domain: vps.sbbh.cloud
-      services: [traefik, syncthing, karakeep, aven, opengym, restic, gatus, semaphore, atuin, hermes]
+      services: [traefik, syncthing, karakeep, aven, opengym, restic, backrest, gatus, semaphore, atuin, hermes]
 
 local:
   hosts: {}

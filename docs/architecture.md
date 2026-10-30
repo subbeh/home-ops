@@ -4,6 +4,7 @@ covers:
   - ansible/roles/services/tasks/main.yaml
   - ansible/services/traefik.yaml
   - ansible/services/restic.yaml
+  - ansible/services/backrest.yaml
   - ansible/services/gatus.yaml
   - terraform/cloudflare/main.tf
   - terraform/cloudflare/records.auto.tfvars
@@ -49,6 +50,8 @@ restic backs up all of `/opt/data` every hour, on the hour, to a dedicated Hetzn
 - **Check**: monthly, reading 5% of the data, in its own container.
 
 Prune and check need an exclusive lock, so they start at :30, clear of the backup. Restoring: [runbooks/restore-backup.md](runbooks/restore-backup.md).
+
+Backrest (`ansible/services/backrest.yaml`) is a web UI over the same repository, for browsing snapshots and downloading files. It only views: its prune, check and auto-unlock are off, so resticker alone backs up and cleans up the repository.
 
 ## Monitoring
 
