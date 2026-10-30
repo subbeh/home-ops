@@ -1,7 +1,7 @@
 ---
 # Every Device on the home network: the target state after the OPNsense cut-over, the one
 # source for docs/network.md, docs/devices.md and docs/diagrams/. Plain data, no Jinja:
-# Terraform reads these files with yamldecode. See docs/adr/0002-network-file-is-the-source.md.
+# Terraform reads these files with yamldecode.
 #
 # - kind: router | switch | server | kvm | kvm-switch | patch-panel | ap
 # - rack: the shelf, counted from the top. Devices sharing a number sit side by side; omit it

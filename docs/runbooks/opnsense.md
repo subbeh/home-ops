@@ -117,7 +117,7 @@ Keep `root` for the console. Every other way in uses a named user.
    | Translate Source IP | left empty (the default, interface address) |
    | Description         | `mgmt to the tailnet, for UniFi adoption`   |
 
-   The rest of Translation keeps its defaults. The interface address rewrites the source of mgmt traffic to OPNsense's own tailnet address, and maps the replies back. Automatic NAT only covers interfaces with a gateway, which leaves tailscale out. UniFi gear adopts through the VPS, which only sees OPNsense's tailnet address ([ADR 0006](../adr/0006-unifi-controller-on-the-vps.md)).
+   The rest of Translation keeps its defaults. The interface address rewrites the source of mgmt traffic to OPNsense's own tailnet address, and maps the replies back. Automatic NAT only covers interfaces with a gateway, which leaves tailscale out. UniFi gear adopts through the VPS, which only sees OPNsense's tailnet address.
 7. Firewall → Rules → TAILSCALE → Add, then Save and Apply changes:
 
    | Field                  | Value                   |

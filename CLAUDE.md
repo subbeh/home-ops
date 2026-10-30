@@ -10,8 +10,8 @@ covers:
 
 Ansible deploys self-hosted Services as Docker containers onto Hosts. Terraform (state in Terraform Cloud) owns DNS, the tailnet policy and its own workspaces. Renovate bumps pinned versions, and merged Version Bumps Auto-deploy through Semaphore.
 
-- **Terms**: [CONTEXT.md](CONTEXT.md) is the glossary. Use its words (Host, Service, Assignment, Step, Deploy, Version Bump, Auto-deploy, Device, Port, Cable, Network, Pool) in code, docs and commit messages.
-- **Current state**: `docs/`, starting at [docs/README.md](docs/README.md). `.specs/` is design history; where it disagrees with the code or `docs/`, the code and `docs/` win.
+- **Terms**: use the glossary's words (Host, Service, Assignment, Step, Deploy, Version Bump, Auto-deploy, Device, Port, Cable, Network, Pool) in code, docs and commit messages.
+- **Current state**: `docs/`, starting at [docs/README.md](docs/README.md). The specs are design history; where they disagree with the code or `docs/`, the code and `docs/` win.
 - **Commands**: `just --list`. mise (`.mise/config.toml`) pins the tools, sets the Ansible env and loads `.env`.
 - **Without mise**: CI and Semaphore run with only `ANSIBLE_CONFIG=ansible/ansible.cfg`, so new Ansible paths must resolve relative to that file or the playbook. `just check` runs the PR check's Ansible steps that way; mise's `ANSIBLE_PLAYBOOK_DIR` moves relative `include_vars` paths, so CI commands copied as-is fail locally.
 
@@ -47,4 +47,4 @@ The five default role names, used as aven labels. See `docs/agents/triage-labels
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` is the glossary, ADRs live in `docs/adr/`. See `docs/agents/domain.md`.
+Single-context: one glossary and a set of ADRs, kept outside the repo with the other agent files. See `docs/agents/domain.md`.

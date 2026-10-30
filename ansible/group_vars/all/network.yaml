@@ -75,7 +75,7 @@ networks:
     addresses:
       opnsense: 10.11.254.1
 
-  # Unrouted, so it has no gateway, dhcp or DNS. See docs/adr/0004-isolated-storage-network.md.
+  # Unrouted, so it has no gateway, dhcp or DNS.
   storage:
     description: NAS to Kubernetes at 2.5G on switch-2g5, unrouted
     cidr: 10.99.0.0/24
@@ -92,7 +92,7 @@ networks:
       vps: 100.77.96.125
       opnsense: 100.66.175.26
 
-# Announced over BGP to OPNsense, not tied to a segment. See docs/adr/0005-bgp-pool-for-kubernetes.md.
+# Announced over BGP to OPNsense, not tied to a segment.
 pools:
   k8s-lb:
     cidr: 10.11.80.0/24

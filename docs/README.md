@@ -1,6 +1,6 @@
 # Docs
 
-What runs where, and how to change it. Terms (Host, Service, Deploy, Version Bump, ...) are defined in [CONTEXT.md](../CONTEXT.md). Docs describe the current state; `.specs/` holds the design history behind it, and where the two disagree, these docs win. One exception: `network.md`, `devices.md` and `diagrams/` describe the home network after the OPNsense cut-over, until it lands.
+What runs where, and how to change it. Docs describe the current state. One exception: `network.md`, `devices.md` and `diagrams/` describe the home network after the OPNsense cut-over, until it lands.
 
 | Page | Covers |
 |---|---|
@@ -18,7 +18,6 @@ What runs where, and how to change it. Terms (Host, Service, Deploy, Version Bum
 | [runbooks/rebuild-vps.md](runbooks/rebuild-vps.md) | Rebuilding the VPS from scratch |
 | [runbooks/opnsense.md](runbooks/opnsense.md) | Installing OPNsense, its manual steps, restoring and upgrading it |
 | [runbooks/manual-setup.md](runbooks/manual-setup.md) | One-time setup outside the repo: consoles, credentials, their order |
-| [adr/](adr/) | Architecture decisions |
 
 ## Keeping docs current
 

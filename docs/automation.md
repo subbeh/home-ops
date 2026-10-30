@@ -8,7 +8,7 @@ covers:
 ---
 # Automation
 
-How these pieces connect to each other is in [overview.md](overview.md); the rationale is in [ADR 0001](adr/0001-auto-deploy-via-semaphore-over-tailscale.md).
+How these pieces connect to each other is in [overview.md](overview.md). Only Version Bumps Auto-deploy: hand edits to Services, the role, group_vars or inventory are deployed by hand, because their blast radius is unpredictable and the role recreates every container it touches.
 
 ## Renovate
 
