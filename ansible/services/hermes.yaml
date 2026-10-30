@@ -1,0 +1,41 @@
+---
+# Hermes Agent: a personal assistant on Claude, chatted with over a Telegram bot, with its
+# dashboard at https://hermes.vps.sbbh.cloud. The dashboard refuses a non-loopback bind
+# without an auth provider, so it uses the bundled basic auth.
+#
+# One-time setup, after the first Deploy:
+#   1. Pick the model (Hermes owns config.yaml and edits it itself, so Ansible never writes it):
+#      `docker exec -it hermes hermes model`, choosing provider anthropic.
+#   2. Under `dashboard:` in /opt/data/hermes/data/config.yaml set
+#      `public_url: https://hermes.vps.sbbh.cloud` and `trusted_proxies:` the services
+#      network's subnet (`docker network inspect services`), so traefik's X-Forwarded-Proto counts.
+# See https://hermes-agent.nousresearch.com/docs/user-guide/docker
+hermes:
+  description: Hermes Agent, a personal assistant on Claude reached over Telegram
+
+  no_log: true
+
+  files:
+    - dest: "{{ services_data_dir }}/hermes/data"
+
+  containers:
+    - image: nousresearch/hermes-agent:v0.22.5
+      command: [gateway, run]
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.hermes.loadbalancer.server.port: "9119"
+      volumes:
+        - "{{ services_data_dir }}/hermes/data:/opt/data"
+      env:
+        # s6-overlay remaps its hermes user to these instead of PUID/PGID.
+        HERMES_UID: "{{ services_uid | string }}"
+        HERMES_GID: "{{ services_gid | string }}"
+        HERMES_DASHBOARD: "1"
+        HERMES_DASHBOARD_BASIC_AUTH_USERNAME: admin
+        HERMES_DASHBOARD_BASIC_AUTH_PASSWORD: "{{ bws_secrets.HERMES_DASHBOARD_PASSWORD }}"
+        # openssl rand -hex 32; signs the dashboard sessions, so logins survive restarts.
+        HERMES_DASHBOARD_BASIC_AUTH_SECRET: "{{ bws_secrets.HERMES_DASHBOARD_SECRET }}"
+        ANTHROPIC_API_KEY: "{{ bws_secrets.HERMES_ANTHROPIC_API_KEY }}"
+        TELEGRAM_BOT_TOKEN: "{{ bws_secrets.HERMES_TELEGRAM_BOT_TOKEN }}"
+        # Without it the gateway rejects every Telegram user.
+        TELEGRAM_ALLOWED_USERS: "{{ bws_secrets.HERMES_TELEGRAM_ALLOWED_USERS }}"
