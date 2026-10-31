@@ -35,7 +35,7 @@ hermes:
         HERMES_DASHBOARD_BASIC_AUTH_PASSWORD: "{{ bws_secrets.HERMES_DASHBOARD_PASSWORD }}"
         # openssl rand -hex 32; signs the dashboard sessions, so logins survive restarts.
         HERMES_DASHBOARD_BASIC_AUTH_SECRET: "{{ bws_secrets.HERMES_DASHBOARD_SECRET }}"
-        ANTHROPIC_API_KEY: "{{ bws_secrets.HERMES_ANTHROPIC_API_KEY }}"
+        OPENCODE_GO_API_KEY: "{{ bws_secrets.HERMES_OPENCODE_GO_API_KEY }}"
         TELEGRAM_BOT_TOKEN: "{{ bws_secrets.HERMES_TELEGRAM_BOT_TOKEN }}"
         # Without it the gateway rejects every Telegram user.
         TELEGRAM_ALLOWED_USERS: "{{ bws_secrets.HERMES_TELEGRAM_ALLOWED_USERS }}"
@@ -48,3 +48,11 @@ hermes:
         url: "https://hermes.{{ services_domain }}/login"
         conditions:
           - "[STATUS] == 200"
+      # The gateway's own port (8642) listens on loopback only; the dashboard reports its state.
+      - name: hermes-gateway
+        group: services
+        url: "https://hermes.{{ services_domain }}/api/status"
+        conditions:
+          - "[STATUS] == 200"
+          - "[BODY].gateway_running == true"
+          - "[BODY].gateway_platforms.telegram.state == connected"
