@@ -11,7 +11,7 @@ The repository is `sftp:storagebox:restic/vps` on a Hetzner Storage Box sub-acco
 
 ## Look around
 
-Backrest (https://backrest.vps.sbbh.cloud) browses the snapshots and downloads single files or folders.
+Backrest (https://backups.vps.sbbh.cloud) browses the snapshots and downloads single files or folders.
 
 From the shell, the running `restic-backup` container already has the repository, password and SSH setup:
 

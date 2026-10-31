@@ -16,6 +16,9 @@ gatus:
           type: sqlite
           path: /data/data.db
 
+        ui:
+          default-sort-by: group
+
         alerting:
           pushover:
             application-token: "{{ bws_secrets.GATUS_PUSHOVER_APP_TOKEN }}"
@@ -54,6 +57,7 @@ gatus:
     - image: ghcr.io/twin/gatus:v5.38.0@sha256:085ed63da963728965d00a3c78aa6167e3bf135218485b893201758e079e8415
       labels:
         traefik.enable: "true"
+        traefik.http.routers.gatus.rule: "Host(`status.{{ services_domain }}`)"
         traefik.http.services.gatus.loadbalancer.server.port: "8080"
       volumes:
         # The dir, not the file: Gatus misses updates to a bind-mounted file (TwiN/gatus#151).
@@ -67,6 +71,6 @@ gatus:
       # Only proves Traefik routes here: a stopped Gatus can't alert about itself.
       - name: gatus
         group: services
-        url: "https://gatus.{{ services_domain }}/health"
+        url: "https://status.{{ services_domain }}/health"
         conditions:
           - "[STATUS] == 200"

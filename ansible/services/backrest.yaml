@@ -3,7 +3,7 @@
 # views: resticker keeps running backup, forget, prune and check. Needs the restic Service on
 # the same Host for its SSH files. See https://github.com/garethgeorge/backrest
 #
-# One-time setup in the UI (https://backrest.vps.sbbh.cloud):
+# One-time setup in the UI (https://backups.vps.sbbh.cloud):
 #   1. Create the login user on first launch.
 #   2. Add Repo: URI sftp:storagebox:restic/vps, password left empty, env var
 #      RESTIC_PASSWORD=${RESTIC_VPS_PASSWORD} (expanded from this container's env, so the
@@ -25,6 +25,7 @@ backrest:
     - image: ghcr.io/garethgeorge/backrest:v1.14.1@sha256:b852979754281026230cc69fb11428e6d57c9a97784ab4a444ffc7934c53a215
       labels:
         traefik.enable: "true"
+        traefik.http.routers.backrest.rule: "Host(`backups.{{ services_domain }}`)"
         traefik.http.services.backrest.loadbalancer.server.port: "9898"
       volumes:
         - "{{ services_data_dir }}/backrest/data:/data"
@@ -42,6 +43,6 @@ backrest:
     endpoints:
       - name: backrest
         group: services
-        url: "https://backrest.{{ services_domain }}/"
+        url: "https://backups.{{ services_domain }}/"
         conditions:
           - "[STATUS] == 200"
