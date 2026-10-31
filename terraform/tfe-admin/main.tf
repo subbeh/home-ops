@@ -14,7 +14,7 @@ terraform {
   required_providers {
     tfe = {
       source  = "hashicorp/tfe"
-      version = "~> 0.82"
+      version = "~> 0.83"
     }
     bitwarden-secrets = {
       source  = "bitwarden/bitwarden-secrets"
