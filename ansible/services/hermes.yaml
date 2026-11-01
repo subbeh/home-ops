@@ -9,6 +9,8 @@
 #   2. Under `dashboard:` in /opt/data/hermes/data/config.yaml set
 #      `public_url: https://hermes.vps.sbbh.cloud` and `trusted_proxies:` the services
 #      network's subnet (`docker network inspect services`), so traefik's X-Forwarded-Proto counts.
+#   3. Plugins live in the data dir, Python deps included, so they survive recreation:
+#      `hermes plugins install <name> --yes-deps --enable` for hermes-memory-wiki and langfuse.
 # See https://hermes-agent.nousresearch.com/docs/user-guide/docker
 hermes:
   description: Hermes Agent, a personal assistant on Claude reached over Telegram
@@ -42,6 +44,10 @@ hermes:
         DISCORD_HOME_CHANNEL: "1566222287483576340"
         DISCORD_FREE_RESPONSE_CHANNELS: "1566222287483576340"
         DISCORD_FREE_RESPONSE_AUTO_THREAD: "true"
+        # Langfuse Cloud traces for the langfuse plugin; metadata capture keeps chat content off it.
+        HERMES_LANGFUSE_PUBLIC_KEY: "{{ bws_secrets.HERMES_LANGFUSE_PUBLIC_KEY }}"
+        HERMES_LANGFUSE_SECRET_KEY: "{{ bws_secrets.HERMES_LANGFUSE_SECRET_KEY }}"
+        HERMES_LANGFUSE_CAPTURE: metadata
 
   gatus:
     endpoints:
