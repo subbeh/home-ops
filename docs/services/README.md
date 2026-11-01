@@ -9,7 +9,7 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 | [aven](../../ansible/services/aven.yaml) | Sync server for the Aven task manager | vps | [aven.vps.sbbh.cloud](https://aven.vps.sbbh.cloud) |  |
 | [backrest](../../ansible/services/backrest.yaml) | Web UI to browse and restore the restic backups | vps | [backups.vps.sbbh.cloud](https://backups.vps.sbbh.cloud) |  |
 | [gatus](../../ansible/services/gatus.yaml) | Status dashboard, plus the dead-man's switch for restic backups | vps | [status.vps.sbbh.cloud](https://status.vps.sbbh.cloud) |  |
-| [hermes](../../ansible/services/hermes.yaml) | Hermes Agent, a personal assistant on Claude reached over Telegram | vps | [hermes.vps.sbbh.cloud](https://hermes.vps.sbbh.cloud) |  |
+| [hermes](../../ansible/services/hermes.yaml) | Hermes Agent, a personal assistant on OpenCode Go reached over Discord | vps | [hermes.vps.sbbh.cloud](https://hermes.vps.sbbh.cloud) |  |
 | [karakeep](../../ansible/services/karakeep.yaml) | Bookmark manager with full-text search and page archiving | vps | [karakeep.vps.sbbh.cloud](https://karakeep.vps.sbbh.cloud) |  |
 | [opengym](../../ansible/services/opengym.yaml) | Workout tracker | vps | [gym.vps.sbbh.cloud](https://gym.vps.sbbh.cloud) |  |
 | [restic](../../ansible/services/restic.yaml) | Hourly encrypted backups of /opt/data to a Hetzner Storage Box | vps |  |  |

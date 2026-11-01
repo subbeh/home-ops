@@ -1,11 +1,11 @@
 ---
-# Hermes Agent: a personal assistant on Claude, chatted with over a Telegram bot, with its
+# Hermes Agent: a personal assistant on OpenCode Go models, chatted with over Discord, with its
 # dashboard at https://hermes.vps.sbbh.cloud. The dashboard refuses a non-loopback bind
 # without an auth provider, so it uses the bundled basic auth.
 #
 # One-time setup, after the first Deploy:
 #   1. Pick the model (Hermes owns config.yaml and edits it itself, so Ansible never writes it):
-#      `docker exec -it hermes hermes model`, choosing provider anthropic.
+#      `docker exec -it hermes hermes model`, choosing provider opencode-go.
 #   2. Under `dashboard:` in /opt/data/hermes/data/config.yaml set
 #      `public_url: https://hermes.vps.sbbh.cloud` and `trusted_proxies:` the services
 #      network's subnet (`docker network inspect services`), so traefik's X-Forwarded-Proto counts.
@@ -13,7 +13,7 @@
 #      `hermes plugins install <name> --yes-deps --enable` for hermes-memory-wiki and langfuse.
 # See https://hermes-agent.nousresearch.com/docs/user-guide/docker
 hermes:
-  description: Hermes Agent, a personal assistant on Claude reached over Telegram
+  description: Hermes Agent, a personal assistant on OpenCode Go reached over Discord
 
   no_log: true
 
@@ -39,6 +39,7 @@ hermes:
         # openssl rand -hex 32; signs the dashboard sessions, so logins survive restarts.
         HERMES_DASHBOARD_BASIC_AUTH_SECRET: "{{ bws_secrets.HERMES_DASHBOARD_SECRET }}"
         OPENCODE_GO_API_KEY: "{{ bws_secrets.HERMES_OPENCODE_GO_API_KEY }}"
+        FIRECRAWL_API_KEY: "{{ bws_secrets.HERMES_FIRECRAWL_API_KEY }}"
         DISCORD_BOT_TOKEN: "{{ bws_secrets.HERMES_DISCORD_BOT_TOKEN }}"
         DISCORD_ALLOWED_USERS: "{{ bws_secrets.HERMES_DISCORD_ALLOWED_USERS }}"
         DISCORD_HOME_CHANNEL: "1566222287483576340"
