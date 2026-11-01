@@ -26,6 +26,7 @@ hermes:
         traefik.http.services.hermes.loadbalancer.server.port: "9119"
       volumes:
         - "{{ services_data_dir }}/hermes/data:/opt/data"
+        - "{{ services_data_dir }}/shared:/shared"
       env:
         # s6-overlay remaps its hermes user to these instead of PUID/PGID.
         HERMES_UID: "{{ services_uid | string }}"
@@ -36,9 +37,11 @@ hermes:
         # openssl rand -hex 32; signs the dashboard sessions, so logins survive restarts.
         HERMES_DASHBOARD_BASIC_AUTH_SECRET: "{{ bws_secrets.HERMES_DASHBOARD_SECRET }}"
         OPENCODE_GO_API_KEY: "{{ bws_secrets.HERMES_OPENCODE_GO_API_KEY }}"
-        TELEGRAM_BOT_TOKEN: "{{ bws_secrets.HERMES_TELEGRAM_BOT_TOKEN }}"
-        # Without it the gateway rejects every Telegram user.
-        TELEGRAM_ALLOWED_USERS: "{{ bws_secrets.HERMES_TELEGRAM_ALLOWED_USERS }}"
+        DISCORD_BOT_TOKEN: "{{ bws_secrets.HERMES_DISCORD_BOT_TOKEN }}"
+        DISCORD_ALLOWED_USERS: "{{ bws_secrets.HERMES_DISCORD_ALLOWED_USERS }}"
+        DISCORD_HOME_CHANNEL: "1566222287483576340"
+        DISCORD_FREE_RESPONSE_CHANNELS: "1566222287483576340"
+        DISCORD_FREE_RESPONSE_AUTO_THREAD: "true"
 
   gatus:
     endpoints:
@@ -55,4 +58,4 @@ hermes:
         conditions:
           - "[STATUS] == 200"
           - "[BODY].gateway_running == true"
-          - "[BODY].gateway_platforms.telegram.state == connected"
+          - "[BODY].gateway_platforms.discord.state == connected"

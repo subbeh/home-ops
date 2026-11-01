@@ -19,6 +19,7 @@ aven:
         - "{{ networks.tailnet.addresses[inventory_hostname] }}:3746:3746"
       volumes:
         - "{{ services_data_dir }}/aven/data:/data"
+        - "{{ services_data_dir }}/shared:/shared"
 
   gatus:
     endpoints:
