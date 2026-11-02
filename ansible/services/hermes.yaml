@@ -1,7 +1,8 @@
 ---
 # Hermes Agent: a personal assistant on OpenCode Go models, chatted with over Discord, with its
 # dashboard at https://hermes.vps.sbbh.cloud. The dashboard refuses a non-loopback bind
-# without an auth provider, so it uses the bundled basic auth.
+# without an auth provider, so it uses the bundled basic auth. How it all fits together:
+# docs/services/hermes/README.md.
 #
 # One-time setup, after the first Deploy:
 #   1. Pick the model (Hermes owns config.yaml and edits it itself, so Ansible never writes it):
@@ -16,41 +17,30 @@
 #      `deep` (deepseek-v4-pro, for hard reasoning), so cheap subagents stay cheap.
 #   4. `hermes config set approvals.mode manual`: the default `smart` lets a model approve
 #      dangerous commands; manual asks in Discord and denies after 5 minutes.
-#   5. Kanban team, as profiles cloned from default (`hermes profile create <p> --clone`), no own
-#      bots; goals start with `/kanban create --triage` in Discord, which gets each card's notices.
-#      Models: orchestrator deepseek-v4.1-flash, researcher glm-5.3-flash (tool-heavy, needs the
-#      request allowance), writer deepseek-v4-pro, reviewer kimi-k3.1-pro (judges; another family
-#      than the writer so it doesn't favour its own output). Hermes drafted each description and
-#      SOUL.md; the user approved them. `kanban.orchestrator_profile: orchestrator`,
-#      `kanban.default_assignee: researcher`, and the orchestrator's cli toolsets are kanban and
-#      memory only, so it routes work instead of doing it. `kanban.review_dispatch: false`: the
-#      reviewer runs as an ordinary card, so the review lane stays a manual gate. No ops profile
-#      on the board. Every Discord subscription stays on plain notices, which carry the summary and
-#      the result files: /kanban create's notify+wake would wake default, which has no kanban tools
-#      and digs through kanban.db instead. The hermes-kanban-notices post-task keeps it that way.
-#   6. Langfuse prices: Hermes has no rates for opencode-go and sends no cost, so each model gets a
-#      Langfuse model definition (Settings > Models, match `(?i)^(opencode-go/)?<model>$`) at the
-#      off-peak rates on https://opencode.ai/docs/go/, with output_reasoning_tokens at the output
-#      rate. Go's limits are dollars per model, so the cost is allowance used. shortcut: DeepSeek
-#      peak hours bill double and show at half; upgrade when Hermes reads the response's
-#      opencode.allowance as the actual cost.
+#   5. Kanban team (docs/services/hermes/kanban.md): profiles cloned from default, no own bots;
+#      goals start with `/kanban create --triage` in Discord. Models: orchestrator
+#      deepseek-v4.1-flash, researcher glm-5.3-flash, writer deepseek-v4-pro, reviewer
+#      kimi-k3.1-pro (docs/services/hermes/profiles.md says why). Hermes drafted each description
+#      and SOUL.md; the user approved them. `kanban.orchestrator_profile: orchestrator`,
+#      `kanban.default_assignee: researcher`, `kanban.review_dispatch: false`, and the
+#      orchestrator's cli toolsets are kanban and memory only. No ops profile on the board. Discord
+#      subscriptions stay on plain notices; the hermes-kanban-notices post-task keeps it that way.
+#   6. Langfuse prices (docs/services/hermes/profiles.md): Hermes sends no cost for opencode-go, so
+#      each model gets a Langfuse model definition (Settings > Models, match
+#      `(?i)^(opencode-go/)?<model>$`) at the off-peak rates on https://opencode.ai/docs/go/, with
+#      output_reasoning_tokens at the output rate. shortcut: DeepSeek peak hours bill double and
+#      show at half; upgrade when Hermes reads the response's opencode.allowance as the actual cost.
 #
-# A Deploy that recreates the container kills running Kanban workers. The fixed hostname below
-# lets the gateway's dispatcher see their claims as its own and requeue the cards on its next
-# tick, so they rerun from the start without manual steps. Each such kill counts as a failure
-# toward the card's retry limit.
+# A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
+# (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
 #
-# Provider and tool keys go into each profile's own .env, not into env below: under the
-# multiplexed gateway a non-default profile reads secrets only from its .env, never from the
-# container (https://github.com/NousResearch/hermes-agent/issues/147922). The post-task writes
-# each hermes_profiles entry's key sets from BWS as a marked block at the end of that profile's
-# .env, leaving the lines Hermes writes there alone, and restarts hermes when a block changed.
-# So a rotation lands on the next Deploy. Keys saved in the dashboard (Providers > API keys)
-# sit outside the block and lose to it; don't save them there.
+# Provider and tool keys go into each profile's own .env, never into env below or the dashboard:
+# the hermes-profile-keys post-task writes each hermes_profiles entry's key sets from BWS
+# (docs/services/hermes/keys.md, https://github.com/NousResearch/hermes-agent/issues/147922).
 #
-# Adding a profile: `hermes profile create <name> --clone`, list it under hermes_profiles,
-# Deploy. --clone copies the source's .env, so delete any key outside the block that the new
-# profile shouldn't have. Discord settings stay in env: they belong to the default profile only.
+# Adding a profile: `hermes profile create <name> --clone`, list it under hermes_profiles, Deploy,
+# then delete keys outside the block it shouldn't have (docs/services/hermes/profiles.md). Discord
+# settings stay in env: they belong to the default profile only.
 # See https://hermes-agent.nousresearch.com/docs/user-guide/docker
 hermes:
   description: Hermes Agent, a personal assistant on OpenCode Go reached over Discord

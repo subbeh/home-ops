@@ -1,9 +1,9 @@
 ---
-# Keeps every Discord Kanban subscription on plain notices; see hermes.yaml's header. /kanban create
-# hardcodes notify+wake, and cards copy their parents' and creator's subscriptions, so triggers on
-# the table catch the root and every card added mid-run. Each Deploy recreates a missing trigger, as
-# after an upgrade that rebuilds the table. Before the gateway first creates kanban.db this does
-# nothing, and the next Deploy adds them.
+# Keeps every Discord Kanban subscription on plain notices; see docs/services/hermes/kanban.md.
+# /kanban create hardcodes notify+wake, and cards copy their parents' and creator's
+# subscriptions, so triggers on the table catch the root and every card added mid-run. Each
+# Deploy recreates a missing trigger, as after an upgrade that rebuilds the table. Before the
+# gateway first creates kanban.db this does nothing, and the next Deploy adds them.
 # shortcut: the triggers depend on kanban.db's schema, which an image bump can change; switch to a
 # Hermes setting for notify-only subscriptions once one exists.
 - name: hermes | Keep Discord Kanban notices plain

@@ -1,0 +1,57 @@
+---
+covers:
+  - ansible/services/hermes.yaml
+---
+# Profiles and models
+
+A **Profile** is one persona of Hermes: its own model, persona, memory, skills, sessions, cron jobs and keys. Every Profile runs inside the one `hermes` container, through the one gateway and Discord bot. Upstream: [profiles](https://hermes-agent.nousresearch.com/docs/user-guide/profiles).
+
+## The Profiles
+
+| Profile | Job | Model | Tools |
+|---|---|---|---|
+| `default` | The assistant you chat with in Discord; owns the Discord settings | deepseek-v4.1-flash | The default toolsets, web search included |
+| `orchestrator` | Splits a Kanban goal into cards, routes them, writes the final summary | deepseek-v4.1-flash | Board only: kanban and memory, so it routes work instead of doing it |
+| `researcher` | Gathers facts with web search, cites sources | glm-5.3-flash | Default toolsets |
+| `writer` | Turns research notes into the deliverable | deepseek-v4-pro | Default toolsets |
+| `reviewer` | Checks the writer's work against the card: PASS or FAIL with a punch-list, never edits | kimi-k3.1-pro | Default toolsets |
+
+The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`.
+
+Why these models: researcher does many tool calls, so it gets the model with a large request allowance. The reviewer judges in few turns, and it is from a different model family than the writer, so it doesn't favour its own family's output.
+
+## What Profiles share, and what they don't
+
+- **Own**: `config.yaml`, `SOUL.md`, memory, skills, sessions, `.env` keys, cron jobs. The default Profile's home is the data dir itself (`/opt/data`); each other Profile's is `/opt/data/profiles/<name>`.
+- **Shared**: the container, its filesystem, the gateway and the Discord bot. One Profile's terminal can read another Profile's files and keys; [safety.md](safety.md) says what that means.
+- **Discord settings** stay in the container env and belong to the default Profile only.
+- **Routes** (`gateway.profile_routes`) live in the default Profile's `config.yaml`.
+
+## Models and costs
+
+All Profiles use provider `opencode-go`. [OpenCode Go](https://opencode.ai/docs/go/) is a subscription with a monthly allowance per model, counted in dollars at per-token prices, with shorter 5-hour and weekly caps on top. A model that runs out stops answering until its window resets, so the cheap model with the largest allowance does the everyday work.
+
+**Subagents.** When the default Profile delegates a subtask, the advanced-delegation plugin picks the model by route ([upstream](https://github.com/NousResearch/hermes-official-plugins/tree/main/advanced-delegation)):
+
+- `fast` (the default): deepseek-v4.1-flash, for lookups and research.
+- `deep`: deepseek-v4-pro, for hard reasoning.
+
+Subagents don't spawn subagents of their own (depth 1). `hermes delegation config --show` lists the routes.
+
+**Traces and prices.** The langfuse plugin sends a trace of every model call to Langfuse Cloud, with metadata only (`HERMES_LANGFUSE_CAPTURE: metadata`), so chat content stays off it. Hermes knows no prices for opencode-go and sends no cost, so Langfuse computes it from its own model definitions (Settings > Models), one per model at OpenCode Go's off-peak rates. Because Go's allowance is counted in dollars at those rates, the cost Langfuse shows is the allowance used.
+
+Confusing part: DeepSeek models bill double during peak hours, but Langfuse has one price per model, so peak-hour calls show at half their real cost. The response carries the exact charge, but Hermes doesn't read it yet.
+
+To read traces through the API, use `/api/public/v2/observations` with a time range and `fields=core,basic,usage,model`. Without `model` and `usage` in `fields`, those come back empty, which looks like missing data.
+
+**Planned:** the Claude subscription as the default Profile's fallback when OpenCode Go fails.
+
+## Adding a Profile
+
+1. Check `docker exec hermes hermes kanban list` for running cards, since step 4 restarts the container ([running.md](running.md)).
+2. `docker exec -it hermes hermes profile create <name> --clone`. `--clone` copies default's config, skills and `.env`.
+3. Set its model (`docker exec -it hermes hermes -p <name> model`), and write its description and `SOUL.md`.
+4. List it under `hermes_profiles` in [`hermes.yaml`](../../../ansible/services/hermes.yaml) with the Key sets it needs, commit, and Deploy hermes. The Deploy writes its keys ([keys.md](keys.md)).
+5. In its `.env`, delete any key outside the managed block that it shouldn't have: the clone copied default's.
+6. Add one line for each lasting setting to the `hermes.yaml` header, and a row to the table above.
+7. To reach it from Discord, add a `gateway.profile_routes` entry in default's `config.yaml`. Kanban Profiles need no route.

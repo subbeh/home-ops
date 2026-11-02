@@ -1,5 +1,6 @@
 ---
-# Writes each hermes_profiles entry's keys into that profile's .env; see hermes.yaml's header.
+# Writes each hermes_profiles entry's keys into that profile's .env; see
+# docs/services/hermes/keys.md.
 # The default profile's home is the data dir itself, the others sit under profiles/.
 - name: hermes | Find profile homes
   ansible.builtin.stat:

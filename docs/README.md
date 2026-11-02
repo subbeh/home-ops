@@ -10,6 +10,7 @@ What runs where, and how to change it. Docs describe the current state. One exce
 | [network.md](network.md) | Home Networks, addresses, Pools, SSIDs, tailnet routes and switch Ports; target state (generated) |
 | [devices.md](devices.md) | Home Devices in rack order, their Ports and Cables, with the rack and KVM diagrams; target state (generated) |
 | [services/](services/README.md) | Service catalog (generated), plus optional per-Service notes |
+| [services/hermes/](services/hermes/README.md) | Hermes, the AI assistant: Profiles, keys, the Kanban team, safety, running it |
 | [terraform.md](terraform.md) | Terraform Cloud setup, applying, adding a stack |
 | [terraform-stacks.md](terraform-stacks.md) | Stacks and where they run (generated) |
 | [automation.md](automation.md) | Renovate, PR checks, Auto-deploy via Semaphore |
