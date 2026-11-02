@@ -16,6 +16,19 @@
 #      `deep` (deepseek-v4-pro, for hard reasoning), so cheap subagents stay cheap.
 #   4. `hermes config set approvals.mode manual`: the default `smart` lets a model approve
 #      dangerous commands; manual asks in Discord and denies after 5 minutes.
+#   5. Kanban team, as profiles cloned from default (`hermes profile create <p> --clone`), no own
+#      bots; goals start with `/kanban create --triage` in Discord, which gets each card's notices.
+#      Models: orchestrator deepseek-v4.1-flash, researcher glm-5.3-flash (tool-heavy, needs the
+#      request allowance), writer deepseek-v4-pro, reviewer kimi-k3.1-pro (judges; another family
+#      than the writer so it doesn't favour its own output). Hermes drafted each description and
+#      SOUL.md; the user approved them. `kanban.orchestrator_profile: orchestrator`,
+#      `kanban.default_assignee: researcher`, and the orchestrator's cli toolsets are kanban and
+#      memory only, so it routes work instead of doing it. `kanban.review_dispatch: false`: the
+#      reviewer runs as an ordinary card, so the review lane stays a manual gate. No ops profile
+#      on the board. Switch every card of a goal, including ones added mid-run, to plain notices
+#      (`hermes kanban notify-subscribe <card> --platform discord --chat-id <home channel>
+#      --delivery-mode notify`): they carry the summary and the result files, while the default
+#      notify+wake wakes default, which has no kanban tools and digs through kanban.db instead.
 #
 # Provider and tool keys go into each profile's own .env, not into env below: under the
 # multiplexed gateway a non-default profile reads secrets only from its .env, never from the
