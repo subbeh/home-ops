@@ -4,6 +4,8 @@
 # the table catch the root and every card added mid-run. Each Deploy recreates a missing trigger, as
 # after an upgrade that rebuilds the table. Before the gateway first creates kanban.db this does
 # nothing, and the next Deploy adds them.
+# shortcut: the triggers depend on kanban.db's schema, which an image bump can change; switch to a
+# Hermes setting for notify-only subscriptions once one exists.
 - name: hermes | Keep Discord Kanban notices plain
   community.docker.docker_container_exec:
     container: hermes
