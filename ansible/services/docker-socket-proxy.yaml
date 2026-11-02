@@ -1,0 +1,25 @@
+---
+# A filtered Docker socket for hermes: container list and logs only, since inspect would expose
+# every container's env (bws token, Semaphore admin password, restic and Cloudflare credentials).
+# No network at all: it serves a unix socket in its data dir, which only hermes mounts
+# (at /run/docker-proxy). Talk to it over the raw API: `docker logs` inspects first, which is refused.
+# See https://github.com/wollomatic/socket-proxy
+docker-socket-proxy:
+  description: Docker socket proxy that lets hermes list containers and read their logs
+
+  containers:
+    - image: wollomatic/socket-proxy:1.13.2@sha256:ff95d6ff6c27853005ef85eb8f4ab5923dc3d2f1e055f98fb6aeeaceec3fe848
+      network_mode: none
+      # The services uid owns the data dir and the socket, so hermes (remapped to it) can connect.
+      # 988 is the vps's docker group (`getent group docker`), which owns /var/run/docker.sock.
+      user: "{{ services_uid }}:988"
+      read_only: true
+      cap_drop: [ALL]
+      memory: 64m
+      command:
+        - -proxysocketendpoint=/socket/proxy.sock
+        # ^ and $ are implied. Path only; the version prefix is optional in the Docker API.
+        - -allowGET=/(v1\.[0-9]+/)?containers/(json|[a-zA-Z0-9][a-zA-Z0-9_.-]*/logs)
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - "{{ services_data_dir }}/docker-socket-proxy:/socket"

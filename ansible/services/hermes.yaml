@@ -71,6 +71,8 @@ hermes:
       volumes:
         - "{{ services_data_dir }}/hermes/data:/opt/data"
         - "{{ services_data_dir }}/shared:/shared"
+        # The docker-socket-proxy Service's filtered socket: proxy.sock, list and logs only.
+        - "{{ services_data_dir }}/docker-socket-proxy:/run/docker-proxy:ro"
       env:
         # s6-overlay remaps its hermes user to these instead of PUID/PGID.
         HERMES_UID: "{{ services_uid | string }}"
