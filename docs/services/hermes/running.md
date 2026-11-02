@@ -1,6 +1,5 @@
 ---
 covers:
-  - ansible/services/hermes.yaml
   - ansible/services/tasks/hermes-*.yaml
 ---
 # Running Hermes

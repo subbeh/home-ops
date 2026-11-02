@@ -1,6 +1,5 @@
 ---
 covers:
-  - ansible/services/hermes.yaml
   - ansible/services/tasks/hermes-kanban-notices.yaml
 ---
 # The Kanban team

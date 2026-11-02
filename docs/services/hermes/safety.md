@@ -1,6 +1,5 @@
 ---
 covers:
-  - ansible/services/hermes.yaml
   - ansible/services/docker-socket-proxy.yaml
 ---
 # Safety

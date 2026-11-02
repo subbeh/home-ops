@@ -1,8 +1,6 @@
 ---
 covers:
   - ansible/services/hermes.yaml
-  - ansible/services/tasks/hermes-*.yaml
-  - ansible/services/docker-socket-proxy.yaml
 ---
 # Hermes
 
