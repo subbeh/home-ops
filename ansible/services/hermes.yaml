@@ -30,6 +30,11 @@
 #      --delivery-mode notify`): they carry the summary and the result files, while the default
 #      notify+wake wakes default, which has no kanban tools and digs through kanban.db instead.
 #
+# A Deploy that recreates the container kills running Kanban workers. The fixed hostname below
+# lets the gateway's dispatcher see their claims as its own and requeue the cards on its next
+# tick, so they rerun from the start without manual steps. Each such kill counts as a failure
+# toward the card's retry limit.
+#
 # Provider and tool keys go into each profile's own .env, not into env below: under the
 # multiplexed gateway a non-default profile reads secrets only from its .env, never from the
 # container (https://github.com/NousResearch/hermes-agent/issues/147922). The post-task writes
@@ -74,6 +79,9 @@ hermes:
   containers:
     - image: nousresearch/hermes-agent:v0.22.5@sha256:9c5561579f3ffdf333401797094ac3a743738d6c25d40f4331c7bf77b694238d
       command: [gateway, run]
+      # Kanban claims carry the hostname, and the dispatcher reclaims dead workers only for its own
+      # host; the default (the container ID) changes on each recreate, leaving cards to the 15m TTL.
+      hostname: hermes
       # The vps has no swap, so a runaway agent would OOM other Services; this keeps it in its own
       # cgroup. About 0.8 GB at rest; the rest is headroom for Kanban workers and tool runs.
       memory: 2g
