@@ -10,7 +10,10 @@
 #      `public_url: https://hermes.vps.sbbh.cloud` and `trusted_proxies:` the services
 #      network's subnet (`docker network inspect services`), so traefik's X-Forwarded-Proto counts.
 #   3. Plugins live in the data dir, Python deps included, so they survive recreation:
-#      `hermes plugins install <name> --yes-deps --enable` for hermes-memory-wiki and langfuse.
+#      `hermes plugins install <name> --yes-deps --enable` for hermes-memory-wiki, langfuse and
+#      advanced-delegation. Then `hermes delegation config` with backend model_map and routes on
+#      provider opencode-go: `fast` (default; deepseek-v4.1-flash, for lookups and research) and
+#      `deep` (deepseek-v4-pro, for hard reasoning), so cheap subagents stay cheap.
 #   4. `hermes config set approvals.mode manual`: the default `smart` lets a model approve
 #      dangerous commands; manual asks in Discord and denies after 5 minutes.
 # See https://hermes-agent.nousresearch.com/docs/user-guide/docker
