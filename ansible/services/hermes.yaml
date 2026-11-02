@@ -28,6 +28,12 @@
 #      on the board. Every Discord subscription stays on plain notices, which carry the summary and
 #      the result files: /kanban create's notify+wake would wake default, which has no kanban tools
 #      and digs through kanban.db instead. The hermes-kanban-notices post-task keeps it that way.
+#   6. Langfuse prices: Hermes has no rates for opencode-go and sends no cost, so each model gets a
+#      Langfuse model definition (Settings > Models, match `(?i)^(opencode-go/)?<model>$`) at the
+#      off-peak rates on https://opencode.ai/docs/go/, with output_reasoning_tokens at the output
+#      rate. Go's limits are dollars per model, so the cost is allowance used. shortcut: DeepSeek
+#      peak hours bill double and show at half; upgrade when Hermes reads the response's
+#      opencode.allowance as the actual cost.
 #
 # A Deploy that recreates the container kills running Kanban workers. The fixed hostname below
 # lets the gateway's dispatcher see their claims as its own and requeue the cards on its next
