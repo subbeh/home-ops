@@ -1,0 +1,38 @@
+---
+# Writes each hermes_profiles entry's keys into that profile's .env; see hermes.yaml's header.
+# The default profile's home is the data dir itself, the others sit under profiles/.
+- name: hermes | Find profile homes
+  ansible.builtin.stat:
+    path: "{{ services_data_dir }}/hermes/data{{ '' if item == 'default' else '/profiles/' ~ item }}"
+  loop: "{{ hermes_profiles.keys() | list }}"
+  register: hermes_profile_homes
+
+# Last in the file, so its values win over any duplicate line Hermes or the dashboard wrote above.
+- name: hermes | Write profile keys
+  ansible.builtin.blockinfile:
+    path: "{{ item.stat.path }}/.env"
+    create: true
+    owner: "{{ services_uid }}"
+    group: "{{ services_gid }}"
+    mode: "0600"
+    marker: "# {mark} ANSIBLE MANAGED: keys from BWS, edit ansible/services/hermes.yaml"
+    block: |-
+      {% for set in hermes_profiles[item.item] %}
+      {% for key, value in hermes_key_sets[set].items() %}
+      {{ key }}={{ value }}
+      {% endfor %}
+      {% endfor %}
+  loop: "{{ hermes_profile_homes.results | selectattr('stat.exists') | list }}"
+  loop_control:
+    label: "{{ item.item }}"
+  register: hermes_profile_keys
+  no_log: true
+
+# The gateway re-reads a profile's .env every turn, but the default profile and plugins also
+# load it into the process env at startup.
+- name: hermes | Restart after a key change
+  community.docker.docker_container:
+    name: hermes
+    state: started
+    restart: true
+  when: hermes_profile_keys is changed
