@@ -11,6 +11,8 @@
 #      network's subnet (`docker network inspect services`), so traefik's X-Forwarded-Proto counts.
 #   3. Plugins live in the data dir, Python deps included, so they survive recreation:
 #      `hermes plugins install <name> --yes-deps --enable` for hermes-memory-wiki and langfuse.
+#   4. `hermes config set approvals.mode manual`: the default `smart` lets a model approve
+#      dangerous commands; manual asks in Discord and denies after 5 minutes.
 # See https://hermes-agent.nousresearch.com/docs/user-guide/docker
 hermes:
   description: Hermes Agent, a personal assistant on OpenCode Go reached over Discord
@@ -23,6 +25,10 @@ hermes:
   containers:
     - image: nousresearch/hermes-agent:v0.22.5@sha256:9c5561579f3ffdf333401797094ac3a743738d6c25d40f4331c7bf77b694238d
       command: [gateway, run]
+      # The vps has no swap, so a runaway agent would OOM other Services; this keeps it in its own
+      # cgroup. About 0.8 GB at rest; the rest is headroom for Kanban workers and tool runs.
+      memory: 2g
+      cpus: 1.5
       labels:
         traefik.enable: "true"
         traefik.http.services.hermes.loadbalancer.server.port: "9119"
