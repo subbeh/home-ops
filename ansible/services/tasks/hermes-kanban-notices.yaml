@@ -1,0 +1,38 @@
+---
+# Keeps every Discord Kanban subscription on plain notices; see hermes.yaml's header. /kanban create
+# hardcodes notify+wake, and cards copy their parents' and creator's subscriptions, so triggers on
+# the table catch the root and every card added mid-run. Each Deploy recreates a missing trigger, as
+# after an upgrade that rebuilds the table. Before the gateway first creates kanban.db this does
+# nothing, and the next Deploy adds them.
+- name: hermes | Keep Discord Kanban notices plain
+  community.docker.docker_container_exec:
+    container: hermes
+    user: "{{ services_uid }}:{{ services_gid }}"
+    argv:
+      - python3
+      - -c
+      - |
+        import sqlite3
+        try:
+            db = sqlite3.connect("file:/opt/data/kanban.db?mode=rw", uri=True)
+        except sqlite3.OperationalError:
+            raise SystemExit
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE name = 'kanban_notify_subs'").fetchone():
+            raise SystemExit
+        with db:
+            before = db.total_changes
+            db.execute("UPDATE kanban_notify_subs SET delivery_mode = 'notify'"
+                       " WHERE platform = 'discord' AND delivery_mode <> 'notify'")
+            names = {n for (n,) in db.execute("SELECT name FROM sqlite_master WHERE type = 'trigger'")}
+            for name, event in (("discord_notify_on_insert", "INSERT"),
+                                ("discord_notify_on_update", "UPDATE OF delivery_mode")):
+                if name not in names:
+                    db.execute(f"CREATE TRIGGER {name} AFTER {event} ON kanban_notify_subs"
+                               " WHEN NEW.platform = 'discord' AND NEW.delivery_mode <> 'notify'"
+                               " BEGIN UPDATE kanban_notify_subs SET delivery_mode = 'notify'"
+                               " WHERE rowid = NEW.rowid; END")
+                    print("changed")
+            if db.total_changes > before:
+                print("changed")
+  register: hermes_kanban_notices
+  changed_when: "'changed' in hermes_kanban_notices.stdout"

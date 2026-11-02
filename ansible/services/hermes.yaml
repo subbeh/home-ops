@@ -25,10 +25,9 @@
 #      `kanban.default_assignee: researcher`, and the orchestrator's cli toolsets are kanban and
 #      memory only, so it routes work instead of doing it. `kanban.review_dispatch: false`: the
 #      reviewer runs as an ordinary card, so the review lane stays a manual gate. No ops profile
-#      on the board. Switch every card of a goal, including ones added mid-run, to plain notices
-#      (`hermes kanban notify-subscribe <card> --platform discord --chat-id <home channel>
-#      --delivery-mode notify`): they carry the summary and the result files, while the default
-#      notify+wake wakes default, which has no kanban tools and digs through kanban.db instead.
+#      on the board. Every Discord subscription stays on plain notices, which carry the summary and
+#      the result files: /kanban create's notify+wake would wake default, which has no kanban tools
+#      and digs through kanban.db instead. The hermes-kanban-notices post-task keeps it that way.
 #
 # A Deploy that recreates the container kills running Kanban workers. The fixed hostname below
 # lets the gateway's dispatcher see their claims as its own and requeue the cards on its next
@@ -71,7 +70,7 @@ hermes:
       reviewer: [model, web]
 
   tasks:
-    post: [hermes-profile-keys.yaml]
+    post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml]
 
   files:
     - dest: "{{ services_data_dir }}/hermes/data"
