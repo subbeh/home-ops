@@ -4,6 +4,7 @@ covers:
   - .mise/config.toml
   - .pre-commit-config.yaml
   - .github/workflows/check.yaml
+  - scripts/worktree-setup.sh
 ---
 
 # home-ops
@@ -14,6 +15,7 @@ Ansible deploys self-hosted Services as Docker containers onto Hosts. Terraform 
 - **Current state**: `docs/`, starting at [docs/README.md](docs/README.md). The specs are design history; where they disagree with the code or `docs/`, the code and `docs/` win.
 - **Commands**: `just --list`. mise (`.mise/config.toml`) pins the tools, sets the Ansible env and loads `.env`.
 - **Without mise**: CI and Semaphore run with only `ANSIBLE_CONFIG=ansible/ansible.cfg`, so new Ansible paths must resolve relative to that file or the playbook. `just check` runs the PR check's Ansible steps that way; mise's `ANSIBLE_PLAYBOOK_DIR` moves relative `include_vars` paths, so CI commands copied as-is fail locally.
+- **Worktrees**: the `worktree-setup` post-checkout hook links a new worktree's `.env` to the main checkout's and installs its own Ansible collections. It is installed by `just setup`.
 
 ## Safety
 

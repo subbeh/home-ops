@@ -47,8 +47,9 @@ check:
     out=$(ci ansible localhost -m ansible.builtin.include_vars \
       -a '{"dir": "ansible/services", "files_matching": "\\.ya?ml$", "depth": 1}' 2>&1) || { echo "$out"; exit 1; }
 
-# Self-test the docs-covers commit-msg hook and the network filters
+# Self-test the docs-covers and worktree-setup hooks and the network filters
 [group('docs')]
 docs-test:
     {{ justfile_directory() }}/scripts/docs-covers.test.sh
+    {{ justfile_directory() }}/scripts/worktree-setup.test.sh
     python3 -I {{ justfile_directory() }}/scripts/network.test.py

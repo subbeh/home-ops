@@ -1,6 +1,6 @@
 ---
 # Install with `just setup`. See docs/README.md for what these keep in sync.
-default_install_hook_types: [pre-commit, commit-msg]
+default_install_hook_types: [pre-commit, commit-msg, post-checkout]
 
 repos:
   - repo: local
@@ -37,3 +37,12 @@ repos:
         language: script
         always_run: true
         stages: [commit-msg]
+
+      # A new worktree (agent-manager's or worktrunk's) gets .env and the Ansible collections.
+      - id: worktree-setup
+        name: Set up a new worktree
+        entry: scripts/worktree-setup.sh
+        language: script
+        pass_filenames: false
+        always_run: true
+        stages: [post-checkout]
