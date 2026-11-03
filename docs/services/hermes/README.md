@@ -55,7 +55,7 @@ The default Profile manages aven tasks through the `aven-mcp` container, which r
 
 - **A device of its own**: `aven-mcp` runs `aven mcp --http --sync`, a synced aven device with its own database, so tasks Hermes creates show up on your other devices, and yours reach Hermes within the 30-second sync interval. The sync server alone can't serve MCP: it only relays encrypted changes and can't read a task.
 - **Connection**: Hermes reaches `http://aven-mcp:3747/mcp` over the services network. No port is published. Hermes's `config.yaml` sends `Authorization: Bearer ${AVEN_MCP_TOKEN}`, and Hermes fills that in from the Profile's `.env` (the `aven` Key set in [keys.md](keys.md)).
-- **Scope**: the token gives full access to every aven workspace, and aven has no read-only mode. Only default gets it.
+- **Scope**: Hermes should use only the `default` aven workspace, but aven can't enforce that: the token gives full access to every workspace, with no read-only mode, and the vps device stores all of them, work included. So the limit is soft: the server defaults to `default`, Hermes isn't given the `list_workspaces` tool, and its memory holds the rule. Only the default Profile gets the token.
 
 The join and config steps are in `aven.yaml`'s header.
 

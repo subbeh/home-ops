@@ -14,8 +14,10 @@
 #      -e AVEN_CONFIG_DIR=/data/config -e XDG_STATE_HOME=/data/state ghcr.io/raine/aven:<tag> sync join`.
 #   3. Deploy aven; `docker logs aven-mcp` shows daemon-synced lines once sync works.
 #   4. In hermes's /opt/data/config.yaml (default Profile), add under `mcp_servers:`
-#      `aven: {url: "http://aven-mcp:3747/mcp", headers: {Authorization: "Bearer ${AVEN_MCP_TOKEN}"}}`;
-#      Hermes fills the token from the Profile's .env (the aven Key set in hermes.yaml). Deploy hermes.
+#      `aven: {url: "http://aven-mcp:3747/mcp", headers: {Authorization: "Bearer ${AVEN_MCP_TOKEN}"},
+#      tools: {exclude: [list_workspaces]}}`; Hermes fills the token from the Profile's .env (the aven
+#      Key set in hermes.yaml). Hermes should stay on the default workspace, so it isn't shown the
+#      others; tell it that in Discord too, for its memory. Deploy hermes.
 # See https://aventasks.dev/mcp/#http-and-containers
 aven:
   description: Sync server for the Aven task manager, plus the MCP server hermes uses
@@ -44,7 +46,9 @@ aven:
     - name: aven-mcp
       image: ghcr.io/raine/aven:0.1.54@sha256:06ec1b172d6aa6343657404512be0fceefc25bb8ca0328fc8675cdeb391b7e1e
       # Wildcard bind so hermes can reach it over the services network; --sync replaces aven daemon.
-      command: [mcp, --http, --bind, "0.0.0.0:3747", --unsafe-public-bind, --sync]
+      # shortcut: --workspace only sets the default, every tool can still name another workspace;
+      # upgrade when aven can scope a token or device to one workspace.
+      command: [mcp, --http, --bind, "0.0.0.0:3747", --unsafe-public-bind, --sync, --workspace, default]
       memory: 128m
       volumes:
         - "{{ services_data_dir }}/aven/mcp:/data"
