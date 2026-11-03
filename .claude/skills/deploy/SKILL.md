@@ -18,6 +18,7 @@ covers:
 
 ## Gotchas
 
+- **Real runs need clean main**: the recipe refuses a real run unless the tree is clean and `HEAD` is local `main`. From a worktree, land first, then Deploy from the main checkout; preview with `--check` from anywhere. Use `DEPLOY_FROM_BRANCH=1` only when the user asks for it.
 - **Each run recreates** every selected container, even when the preview shows no changes.
 - **semaphore**: deploy it by hand, and only when no Auto-deploy task is running. Auto-deploys never cover it.
 - **Hand edits** never Auto-deploy; only merged Renovate Version Bumps do. After merging a hand edit, the user still needs a Deploy.

@@ -16,6 +16,8 @@ just ansible::playbook services --tags karakeep --check --diff
 just ansible::playbook services --tags karakeep
 ```
 
+A real run (no `--check`) refuses unless the tree is clean and `HEAD` is local `main`: a run from a stale or unlanded tree silently undoes what main last deployed. `DEPLOY_FROM_BRANCH=1` overrides it.
+
 ## Selecting what runs
 
 | Tags | Runs |
