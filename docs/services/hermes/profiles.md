@@ -16,7 +16,7 @@ A **Profile** is one persona of Hermes: its own model, persona, memory, skills, 
 | `writer` | Turns research notes into the deliverable | deepseek-v4-pro | Default toolsets |
 | `reviewer` | Checks the writer's work against the card: PASS or FAIL with a punch-list, never edits | kimi-k3.1-pro | Default toolsets |
 
-The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`.
+The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`, and its `memories/USER.md` holds the user's profile (timezone, location, reply style, brief topics, workday and quiet hours), which Hermes wrote from a Discord chat. To change it, tell Hermes in Discord: it rewrites the file itself, within `memory.user_char_limit`. The file goes to the model provider every turn.
 
 Why these models: researcher does many tool calls, so it gets the model with a large request allowance. The reviewer judges in few turns, and it is from a different model family than the writer, so it doesn't favour its own family's output.
 
