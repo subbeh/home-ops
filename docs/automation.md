@@ -74,4 +74,4 @@ Semaphore runs the services playbook for Auto-deploys, at `https://semaphore.vps
 - It runs one task at a time, so concurrent Auto-deploys queue.
 - The image has no `bws`, so a pre-task installs the pinned musl build into `/opt/data/semaphore/bin`.
 - Tasks don't inherit the container's env. `BWS_ACCESS_TOKEN` (Bitwarden `SEMAPHORE_BWS_ACCESS_TOKEN`, from a dedicated machine account) is forwarded to them, and `ANSIBLE_CONFIG` is set for them, both on the container, so the variable group stays empty.
-- The one-time UI setup (key, repo, inventory, variable group, template, API token) is at the top of `ansible/services/semaphore.yaml`.
+- The one-time UI setup (key, repo, inventory, variable group, template, API token, the `hermes-ops` Task Runner user) is at the top of `ansible/services/semaphore.yaml`.

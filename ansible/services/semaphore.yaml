@@ -14,6 +14,9 @@
 #   6. API token (User > Tokens) for the deploy workflow: add it to .bws.yaml as
 #      SEMAPHORE_API_TOKEN; terraform/tfe-admin puts it in GitHub. Project and template
 #      IDs are in .github/workflows/deploy.yaml.
+#   7. User hermes-ops (Users, admin only), added to the project's Team as Task Runner: it can
+#      read and start tasks but not change the project. Log in as it and create an API token
+#      (User > Tokens) for hermes's ops Profile: add it to .bws.yaml as HERMES_OPS_SEMAPHORE_TOKEN.
 semaphore:
   description: Ansible UI that runs Auto-deploys
 
