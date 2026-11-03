@@ -26,8 +26,9 @@ A **Key set** is a named group of secrets a Profile may get. [`hermes.yaml`](../
 |---|---|---|
 | `model` | `HERMES_OPENCODE_GO_API_KEY`, `HERMES_LANGFUSE_PUBLIC_KEY`, `HERMES_LANGFUSE_SECRET_KEY` | `OPENCODE_GO_API_KEY`, `HERMES_LANGFUSE_PUBLIC_KEY`, `HERMES_LANGFUSE_SECRET_KEY` (plus `HERMES_LANGFUSE_CAPTURE`, not a secret) |
 | `web` | `HERMES_FIRECRAWL_API_KEY` | `FIRECRAWL_API_KEY` |
+| `aven` | `AVEN_MCP_TOKEN` | `AVEN_MCP_TOKEN`, the bearer token for the aven MCP server ([README.md](README.md#tasks-over-mcp)) |
 
-`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model` only.
+`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model` only. Only default gets `aven`.
 
 On each Deploy, the [`hermes-profile-keys`](../../../ansible/services/tasks/hermes-profile-keys.yaml) post-task:
 

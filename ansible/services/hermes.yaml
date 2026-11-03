@@ -73,9 +73,12 @@ hermes:
         HERMES_LANGFUSE_CAPTURE: metadata
       web:
         FIRECRAWL_API_KEY: "{{ bws_secrets.HERMES_FIRECRAWL_API_KEY }}"
+      # The aven-mcp container's bearer token (aven.yaml), read by config.yaml's mcp_servers.aven header.
+      aven:
+        AVEN_MCP_TOKEN: "{{ bws_secrets.AVEN_MCP_TOKEN }}"
     # Profile name: the key sets its .env gets. A listed profile that doesn't exist yet is skipped.
     hermes_profiles:
-      default: [model, web]
+      default: [model, web, aven]
       orchestrator: [model, web]
       researcher: [model, web]
       writer: [model, web]

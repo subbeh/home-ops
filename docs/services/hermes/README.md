@@ -33,6 +33,7 @@ covers:
 - **Dashboard**: Hermes's web UI for sessions, config and logs, at <https://hermes.vps.sbbh.cloud> behind basic auth.
 - **Plugins**: installed into the data dir, so they survive a container recreate. hermes-memory-wiki adds long-term notes, langfuse sends traces to Langfuse Cloud, advanced-delegation picks the model for subagents, and claude-subscription-directsdk gives the default Profile its Claude fallback ([profiles.md](profiles.md#models-and-costs)).
 - **Socket proxy**: the separate `docker-socket-proxy` Service lets Hermes list containers and read their logs, and nothing else. See [safety.md](safety.md).
+- **Tasks**: the default Profile reads and changes your aven tasks over MCP. See [Tasks over MCP](#tasks-over-mcp).
 
 Why one container and not one per bot: the vps has little memory free and no swap, and each extra gateway costs about 400 MiB. So every new bot is a new Profile, never a new container. The price is weaker isolation between Profiles, covered in [safety.md](safety.md).
 
@@ -47,6 +48,16 @@ Why one container and not one per bot: the vps has little memory free and no swa
 7. `/kanban create --triage "<goal>"` hands a goal to the Kanban team instead. Results come back as notices in the same channel ([kanban.md](kanban.md)).
 
 Upstream: [multi-profile gateways](https://hermes-agent.nousresearch.com/docs/user-guide/multi-profile-gateways).
+
+## Tasks over MCP
+
+The default Profile manages aven tasks through the `aven-mcp` container, which runs beside the sync server in the `aven` Service ([`aven.yaml`](../../../ansible/services/aven.yaml)):
+
+- **A device of its own**: `aven-mcp` runs `aven mcp --http --sync`, a synced aven device with its own database, so tasks Hermes creates show up on your other devices, and yours reach Hermes within the 30-second sync interval. The sync server alone can't serve MCP: it only relays encrypted changes and can't read a task.
+- **Connection**: Hermes reaches `http://aven-mcp:3747/mcp` over the services network. No port is published. Hermes's `config.yaml` sends `Authorization: Bearer ${AVEN_MCP_TOKEN}`, and Hermes fills that in from the Profile's `.env` (the `aven` Key set in [keys.md](keys.md)).
+- **Scope**: the token gives full access to every aven workspace, and aven has no read-only mode. Only default gets it.
+
+The join and config steps are in `aven.yaml`'s header.
 
 ## Read next
 

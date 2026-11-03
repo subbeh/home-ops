@@ -6,7 +6,7 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 | Service | Description | Host(s) | URL | Notes |
 |---|---|---|---|---|
 | [atuin](../../ansible/services/atuin.yaml) | Sync server for Atuin shell history, plus an Atuin AI server backed by OpenAI | vps | [atuin.vps.sbbh.cloud](https://atuin.vps.sbbh.cloud)<br>[atuin-ai.vps.sbbh.cloud](https://atuin-ai.vps.sbbh.cloud) |  |
-| [aven](../../ansible/services/aven.yaml) | Sync server for the Aven task manager | vps | [aven.vps.sbbh.cloud](https://aven.vps.sbbh.cloud) |  |
+| [aven](../../ansible/services/aven.yaml) | Sync server for the Aven task manager, plus the MCP server hermes uses | vps | [aven.vps.sbbh.cloud](https://aven.vps.sbbh.cloud) |  |
 | [backrest](../../ansible/services/backrest.yaml) | Web UI to browse and restore the restic backups | vps | [backups.vps.sbbh.cloud](https://backups.vps.sbbh.cloud) |  |
 | [docker-socket-proxy](../../ansible/services/docker-socket-proxy.yaml) | Docker socket proxy that lets hermes list containers and read their logs | vps |  |  |
 | [gatus](../../ansible/services/gatus.yaml) | Status dashboard, plus the dead-man's switch for restic backups | vps | [status.vps.sbbh.cloud](https://status.vps.sbbh.cloud) |  |

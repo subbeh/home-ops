@@ -2,16 +2,37 @@
 # Run `docker run --rm -v /opt/data/aven/data:/data ghcr.io/raine/aven:0.1.46 setup --url http://vps.tailnet-7233.ts.net:3746 --invitation-only`
 # once by hand (docker run --rm, not managed here) to initialize the database and print the invitation for the first device.
 # See https://aventasks.dev/sync/#run-with-docker
+#
+# aven-mcp is Aven's MCP server over HTTP for hermes: a synced device with its own database, so its
+# own volume. No port is published: only containers on the services network reach
+# http://aven-mcp:3747/mcp, with `Authorization: Bearer <AVEN_MCP_TOKEN>` (`openssl rand -hex 32`;
+# full access to every workspace). It syncs through the tailnet URL the invitation carries.
+# One-time setup, before its first Deploy (joining needs an empty database):
+#   1. `install -d -o 65532 -g 65532 /opt/data/aven/mcp` on the vps.
+#   2. On a synced device run `aven sync invite`, then on the vps paste it into
+#      `docker run --rm -it -v /opt/data/aven/mcp:/data -e AVEN_DB=/data/db.sqlite
+#      -e AVEN_CONFIG_DIR=/data/config -e XDG_STATE_HOME=/data/state ghcr.io/raine/aven:<tag> sync join`.
+#   3. Deploy aven; `docker logs aven-mcp` shows daemon-synced lines once sync works.
+#   4. In hermes's /opt/data/config.yaml (default Profile), add under `mcp_servers:`
+#      `aven: {url: "http://aven-mcp:3747/mcp", headers: {Authorization: "Bearer ${AVEN_MCP_TOKEN}"}}`;
+#      Hermes fills the token from the Profile's .env (the aven Key set in hermes.yaml). Deploy hermes.
+# See https://aventasks.dev/mcp/#http-and-containers
 aven:
-  description: Sync server for the Aven task manager
+  description: Sync server for the Aven task manager, plus the MCP server hermes uses
+
+  no_log: true
 
   files:
     - dest: "{{ services_data_dir }}/aven/data"
       owner: 65532
       group: 65532
+    - dest: "{{ services_data_dir }}/aven/mcp"
+      owner: 65532
+      group: 65532
 
   containers:
-    - image: ghcr.io/raine/aven:0.1.54@sha256:06ec1b172d6aa6343657404512be0fceefc25bb8ca0328fc8675cdeb391b7e1e
+    - name: aven
+      image: ghcr.io/raine/aven:0.1.54@sha256:06ec1b172d6aa6343657404512be0fceefc25bb8ca0328fc8675cdeb391b7e1e
       labels:
         traefik.enable: "true"
         traefik.http.services.aven.loadbalancer.server.port: "3746"
@@ -20,6 +41,19 @@ aven:
       volumes:
         - "{{ services_data_dir }}/aven/data:/data"
         - "{{ services_data_dir }}/shared:/shared"
+    - name: aven-mcp
+      image: ghcr.io/raine/aven:0.1.54@sha256:06ec1b172d6aa6343657404512be0fceefc25bb8ca0328fc8675cdeb391b7e1e
+      # Wildcard bind so hermes can reach it over the services network; --sync replaces aven daemon.
+      command: [mcp, --http, --bind, "0.0.0.0:3747", --unsafe-public-bind, --sync]
+      memory: 128m
+      volumes:
+        - "{{ services_data_dir }}/aven/mcp:/data"
+      env:
+        AVEN_MCP_TOKEN: "{{ bws_secrets.AVEN_MCP_TOKEN }}"
+        AVEN_DB: /data/db.sqlite
+        AVEN_CONFIG_DIR: /data/config
+        # This device's sync keys live in the state dir, so keep it on the volume.
+        XDG_STATE_HOME: /data/state
 
   gatus:
     endpoints:
@@ -31,3 +65,9 @@ aven:
         conditions:
           - "[STATUS] == 404"
           - "[BODY].error == not-found"
+      # Without the token it answers 401, which shows the server is up; sync health isn't checked.
+      - name: aven-mcp
+        group: services
+        url: "http://aven-mcp:3747/mcp"
+        conditions:
+          - "[STATUS] == 401"
