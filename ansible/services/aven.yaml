@@ -11,7 +11,7 @@ aven:
       group: 65532
 
   containers:
-    - image: ghcr.io/raine/aven:0.1.52@sha256:565a3c35689c0914c81263d73f428c2d4c38a7b87b442ef2bb8d8604a54434f1
+    - image: ghcr.io/raine/aven:0.1.54@sha256:06ec1b172d6aa6343657404512be0fceefc25bb8ca0328fc8675cdeb391b7e1e
       labels:
         traefik.enable: "true"
         traefik.http.services.aven.loadbalancer.server.port: "3746"
