@@ -61,13 +61,14 @@ The join and config steps are in `aven.yaml`'s header.
 
 ## Planning and focus skills
 
-Three skills in the default Profile help with starting and finishing tasks. They work on aven tasks in the default workspace only, and their tone is direct and warm: no guilt, no streaks, never a wall of overdue items.
+Four skills in the default Profile help start the day and start and finish tasks. Three of them work on aven tasks in the default workspace only, and their tone is direct and warm: no guilt, no streaks, never a wall of overdue items.
 
 - **plan-day**: asks about energy, then helps pick 1-3 tasks for today, each with a two-minute first step. Picks get today's due date and a note with that step. It names at most one stalled task (active, no update or note for 3+ days).
 - **start-task**: gives one ~2-minute first step and offers a 10-25 minute session. A one-off cron job (`in <N>m`) posts the single check-in to the thread at the end; nothing is sent during the session. With no task named it asks which one.
+- **morning-brief**: the weather at the USER.md location and the last day's 1-2 top stories per USER.md news topic, with links. Tell Hermes a new location or topic and the next brief follows it.
 - **wrap-up**: marks today's finished picks done, moves carry-overs to tomorrow and clears the due date of dropped ones. On Fridays it adds a recap of the week's done tasks.
 
-plan-day and wrap-up also start on their own each day, at 06:45 and 21:00 ([cron jobs](profiles.md#cron-jobs)). Run one by typing `/plan-day`, `/start-task <task>` or `/wrap-up` as a message, or through Discord's `/skill` command: Hermes registers one `/skill` command with autocomplete instead of one command per skill, so these don't show in the command picker on their own. The skills live only on the vps, in `/opt/data/skills/productivity/` (setup step 11 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). After editing one, run `/reload-skills` in Discord.
+morning-brief, plan-day and wrap-up also start on their own each day, at 06:30, 06:45 and 21:00 ([cron jobs](profiles.md#cron-jobs)). Run one by typing `/plan-day`, `/start-task <task>`, `/wrap-up` or `/morning-brief` as a message, or through Discord's `/skill` command: Hermes registers one `/skill` command with autocomplete instead of one command per skill, so these don't show in the command picker on their own. The skills live only on the vps, in `/opt/data/skills/productivity/` (setup steps 11 to 13 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). After editing one, run `/reload-skills` in Discord.
 
 ## Read next
 

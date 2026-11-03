@@ -73,6 +73,10 @@
 #      then wait for the reply." --name plan-day --skill plan-day --deliver discord`, and
 #      `hermes cron create "0 21 * * *" "Start the wrap-up skill: open with its first question
 #      about today, then wait for the reply." --name wrap-up --skill wrap-up --deliver discord`.
+#  13. Default cron job morning-brief (docs/services/hermes/profiles.md): the morning-brief skill,
+#      written beside the focus skills, reads the weather location and news topics from USER.md.
+#      `hermes cron create "30 6 * * *" "Write today's morning brief." --name morning-brief
+#      --skill morning-brief --deliver discord` (the home channel; the container's TZ is local).
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.

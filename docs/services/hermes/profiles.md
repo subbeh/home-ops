@@ -43,6 +43,7 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 | Job | Profile | Schedule | What it does |
 |---|---|---|---|
 | `actions-failures` | `ops` | every 15 min | Posts one diagnosis in #ops per GitHub Actions run of home-ops that failed since the last check |
+| `morning-brief` | `default` | daily 06:30 | Posts the weather and the last day's headlines on the USER.md topics to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)) |
 | `plan-day` | `default` | daily 06:45 | Starts the [plan-day skill](README.md#planning-and-focus-skills) in the home channel |
 | `wrap-up` | `default` | daily 21:00 | Starts the wrap-up skill in the home channel |
 
