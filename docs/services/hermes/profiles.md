@@ -43,13 +43,15 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 | Job | Profile | Schedule | What it does |
 |---|---|---|---|
 | `actions-failures` | `ops` | every 15 min | Posts one diagnosis in #ops per GitHub Actions run of home-ops that failed since the last check |
-| `morning-brief` | `default` | daily 06:30 | Posts the weather and the last day's headlines on the USER.md topics to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)) |
+| `morning-brief` | `default` | daily 06:30 | Posts the weather and the last day's headlines on the USER.md topics to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)), as a plain message: the job's `attach_to_session: false` keeps it out of a thread |
 | `plan-day` | `default` | daily 06:45 | Starts the [plan-day skill](README.md#planning-and-focus-skills) in the home channel |
 | `wrap-up` | `default` | daily 21:00 | Starts the wrap-up skill in the home channel |
 
 `actions-failures` runs [`actions-failures.py`](../../../ansible/services/data/hermes/actions-failures.py), which Ansible ships into ops' `scripts/` dir. It lists the repo's latest 50 finished runs, keeps the failed ones it hasn't seen (a re-run that fails again counts as new), and prints each with the last 60 log lines up to its error, so ops diagnoses it in one model call. Its first run only records what already failed. Runs from fork PRs are left out, since their logs are a stranger's text. When GitHub is down it stays silent; a rejected token fails the job, and Hermes posts the error.
 
 **Not posted yet:** Hermes doesn't deliver a routed Profile's cron output once that Profile has had a local session ([upstream #144455](https://github.com/NousResearch/hermes-agent/issues/144455)): the run's record says `platform 'discord' not configured/enabled`. Until a Hermes release fixes it, each diagnosis is written only to `/opt/data/profiles/ops/cron/output/<job id>/` and `hermes -p ops cron list` shows the failed delivery.
+
+**Private threads:** with `cron.mirror_delivery` on, a cron run in the home channel opens a new thread so a reply continues the run's session. Hermes's Discord adapter creates it without a starter message, which Discord makes a private thread: only the bot and server admins can open it, and it never shows in the channel. A job with `attach_to_session: false` posts a plain message instead.
 
 Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) reaches the script through ops' `terminal.env_passthrough`. That also hands it to ops' terminal in chats: a read-only token for a public repo's Actions.
 
