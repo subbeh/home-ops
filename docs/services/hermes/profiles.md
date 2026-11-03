@@ -18,7 +18,7 @@ A **Profile** is one persona of Hermes: its own model, persona, memory, skills, 
 | `reviewer` | Checks the writer's work against the card: PASS or FAIL with a punch-list, never edits | kimi-k3.1-pro | Default toolsets |
 | `ops` | The homelab specialist, in #ops: checks status and logs, proposes changes as repo edits and Deploys, never makes them live by hand | deepseek-v4.1-flash | Default toolsets without web and browser on Discord, plus the [homelab plugin](#the-homelab-plugin) |
 
-The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`, and its `memories/USER.md` holds the user's profile (timezone, location, reply style, brief topics, workday and quiet hours), which Hermes wrote from a Discord chat. To change it, tell Hermes in Discord: it rewrites the file itself, within `memory.user_char_limit`. The file goes to the model provider every turn.
+The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`, and its `memories/USER.md` holds the user's profile (timezone, location, reply style, brief topics, workday, personal day and quiet hours), which Hermes wrote from a Discord chat. To change it, tell Hermes in Discord: it rewrites the file itself, within `memory.user_char_limit`. The file goes to the model provider every turn.
 
 `ops` is reached through the #ops route ([README.md](README.md#how-a-message-flows)), not the board. It has no web or browser tools because it will hold Deploy power, so no web page should reach its context; it names what to look up instead. Its `SOUL.md` was drafted for it and approved by the user.
 
@@ -43,12 +43,16 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 | Job | Profile | Schedule | What it does |
 |---|---|---|---|
 | `actions-failures` | `ops` | every 15 min | Posts one diagnosis in #ops per GitHub Actions run of home-ops that failed since the last check |
+| `plan-day` | `default` | daily 06:45 | Starts the [plan-day skill](README.md#planning-and-focus-skills) in the home channel |
+| `wrap-up` | `default` | daily 21:00 | Starts the wrap-up skill in the home channel |
 
 `actions-failures` runs [`actions-failures.py`](../../../ansible/services/data/hermes/actions-failures.py), which Ansible ships into ops' `scripts/` dir. It lists the repo's latest 50 finished runs, keeps the failed ones it hasn't seen (a re-run that fails again counts as new), and prints each with the last 60 log lines up to its error, so ops diagnoses it in one model call. Its first run only records what already failed. Runs from fork PRs are left out, since their logs are a stranger's text. When GitHub is down it stays silent; a rejected token fails the job, and Hermes posts the error.
 
 **Not posted yet:** Hermes doesn't deliver a routed Profile's cron output once that Profile has had a local session ([upstream #144455](https://github.com/NousResearch/hermes-agent/issues/144455)): the run's record says `platform 'discord' not configured/enabled`. Until a Hermes release fixes it, each diagnosis is written only to `/opt/data/profiles/ops/cron/output/<job id>/` and `hermes -p ops cron list` shows the failed delivery.
 
 Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) reaches the script through ops' `terminal.env_passthrough`. That also hands it to ops' terminal in chats: a read-only token for a public repo's Actions.
+
+`plan-day` and `wrap-up` follow the personal day in USER.md (06:30-21:00, every day: the tasks are for life outside work), with `plan-day` 15 minutes after the morning brief. Each opens with the skill's first question, and `cron.mirror_delivery` in the default Profile's `config.yaml` makes a reply to it continue with that message in context. To move them, tell Hermes the new day: a MEMORY.md entry tells it to edit both jobs' schedules to match, outside quiet hours.
 
 ## What Profiles share, and what they don't
 

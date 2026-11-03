@@ -65,6 +65,14 @@
 #      (docs/services/hermes/README.md): drafted by Hermes, approved by the user, in
 #      /opt/data/skills/productivity/<name>/SKILL.md. Edit them there, then `/reload-skills` in
 #      Discord.
+#  12. Cron jobs plan-day and wrap-up, default Profile (docs/services/hermes/profiles.md): daily
+#      at the start and end of the personal day in USER.md, and a MEMORY.md entry tells Hermes to
+#      move both when that changes. `hermes config set cron.mirror_delivery true`, so a reply to a
+#      home-channel cron message keeps its context (plan-day waits for an answer). Then
+#      `hermes cron create "45 6 * * *" "Start the plan-day skill: send only its energy question,
+#      then wait for the reply." --name plan-day --skill plan-day --deliver discord`, and
+#      `hermes cron create "0 21 * * *" "Start the wrap-up skill: open with its first question
+#      about today, then wait for the reply." --name wrap-up --skill wrap-up --deliver discord`.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.

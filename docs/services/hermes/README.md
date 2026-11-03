@@ -65,9 +65,9 @@ Three skills in the default Profile help with starting and finishing tasks. They
 
 - **plan-day**: asks about energy, then helps pick 1-3 tasks for today, each with a two-minute first step. Picks get today's due date and a note with that step. It names at most one stalled task (active, no update or note for 3+ days).
 - **start-task**: gives one ~2-minute first step and offers a 10-25 minute session. A one-off cron job (`in <N>m`) posts the single check-in to the thread at the end; nothing is sent during the session. With no task named it asks which one.
-- **wrap-up**: marks today's finished picks done, moves carry-overs to the next workday and clears the due date of dropped ones. On Fridays it adds a recap of the week's done tasks.
+- **wrap-up**: marks today's finished picks done, moves carry-overs to tomorrow and clears the due date of dropped ones. On Fridays it adds a recap of the week's done tasks.
 
-Run one by typing `/plan-day`, `/start-task <task>` or `/wrap-up` as a message, or through Discord's `/skill` command: Hermes registers one `/skill` command with autocomplete instead of one command per skill, so these don't show in the command picker on their own. The skills live only on the vps, in `/opt/data/skills/productivity/` (setup step 11 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). After editing one, run `/reload-skills` in Discord.
+plan-day and wrap-up also start on their own each day, at 06:45 and 21:00 ([cron jobs](profiles.md#cron-jobs)). Run one by typing `/plan-day`, `/start-task <task>` or `/wrap-up` as a message, or through Discord's `/skill` command: Hermes registers one `/skill` command with autocomplete instead of one command per skill, so these don't show in the command picker on their own. The skills live only on the vps, in `/opt/data/skills/productivity/` (setup step 11 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). After editing one, run `/reload-skills` in Discord.
 
 ## Read next
 
