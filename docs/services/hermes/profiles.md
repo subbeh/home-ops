@@ -44,13 +44,15 @@ Confusing part: DeepSeek models bill double during peak hours, but Langfuse has 
 
 To read traces through the API, use `/api/public/v2/observations` with a time range and `fields=core,basic,usage,model`. Without `model` and `usage` in `fields`, those come back empty, which looks like missing data.
 
-**Planned:** the Claude subscription as the default Profile's fallback when OpenCode Go fails.
+**Fallback.** When OpenCode Go fails a default-Profile turn (rate limit or the 5-hour/weekly allowance, a 5xx, an auth error, an unknown model), Hermes retries that turn on Sonnet through the Claude Pro/Max subscription, and says so in the reply. The claude-subscription-directsdk plugin ([upstream](https://github.com/NousResearch/hermes-official-plugins/tree/main/claude-subscription-directsdk)) runs each such call through the Claude Code CLI, logged in under `/opt/data/.claude`. Fallback is per turn: the next message tries OpenCode Go first again. It lives in `fallback_providers` in default's `config.yaml` only, so the Kanban Profiles and the subagents on the `fast` and `deep` routes get none. A Profile cloned from default copies it, so clear it there ([Adding a Profile](#adding-a-profile)); `hermes fallback list` shows a Profile's chain. Each fallback call starts a `claude` process, which added about 0.3 GB to the container while it ran.
+
+To check it, ask for a model OpenCode Go doesn't have: `docker exec hermes hermes chat --oneshot --provider opencode-go -m no-such-model -q "Reply with ok."` should answer from Sonnet, with a "Model fallback" notice. A bad `OPENCODE_GO_API_KEY` in the exec env doesn't work as a test, since the Profile's `.env` wins.
 
 ## Adding a Profile
 
 1. Check `docker exec hermes hermes kanban list` for running cards, since step 4 restarts the container ([running.md](running.md)).
 2. `docker exec -it hermes hermes profile create <name> --clone`. `--clone` copies default's config, skills and `.env`.
-3. Set its model (`docker exec -it hermes hermes -p <name> model`), and write its description and `SOUL.md`.
+3. Set its model (`docker exec -it hermes hermes -p <name> model`), and write its description and `SOUL.md`. Drop the copied Claude fallback with `hermes -p <name> fallback clear`: only default has one.
 4. List it under `hermes_profiles` in [`hermes.yaml`](../../../ansible/services/hermes.yaml) with the Key sets it needs, commit, and Deploy hermes. The Deploy writes its keys ([keys.md](keys.md)).
 5. In its `.env`, delete any key outside the managed block that it shouldn't have: the clone copied default's.
 6. Add one line for each lasting setting to the `hermes.yaml` header, and a row to the table above.

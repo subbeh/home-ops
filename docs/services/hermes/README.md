@@ -30,7 +30,7 @@ covers:
 - **Gateway**: the long-running Hermes process (`gateway run`). It holds the Discord connection, runs each conversation and dispatches Kanban cards.
 - **Profile**: one persona of Hermes, with its own model, persona (`SOUL.md`), memory, skills and keys. All Profiles live in the one container and share its filesystem and its Discord bot. See [profiles.md](profiles.md).
 - **Dashboard**: Hermes's web UI for sessions, config and logs, at <https://hermes.vps.sbbh.cloud> behind basic auth.
-- **Plugins**: installed into the data dir, so they survive a container recreate. hermes-memory-wiki adds long-term notes, langfuse sends traces to Langfuse Cloud, and advanced-delegation picks the model for subagents.
+- **Plugins**: installed into the data dir, so they survive a container recreate. hermes-memory-wiki adds long-term notes, langfuse sends traces to Langfuse Cloud, advanced-delegation picks the model for subagents, and claude-subscription-directsdk gives the default Profile its Claude fallback ([profiles.md](profiles.md#models-and-costs)).
 - **Socket proxy**: the separate `docker-socket-proxy` Service lets Hermes list containers and read their logs, and nothing else. See [safety.md](safety.md).
 
 Why one container and not one per bot: the vps has little memory free and no swap, and each extra gateway costs about 400 MiB. So every new bot is a new Profile, never a new container. The price is weaker isolation between Profiles, covered in [safety.md](safety.md).
