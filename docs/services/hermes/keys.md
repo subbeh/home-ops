@@ -28,8 +28,9 @@ A **Key set** is a named group of secrets a Profile may get. [`hermes.yaml`](../
 | `web` | `HERMES_FIRECRAWL_API_KEY` | `FIRECRAWL_API_KEY` |
 | `aven` | `AVEN_MCP_TOKEN` | `AVEN_MCP_TOKEN`, the bearer token for the aven MCP server ([README.md](README.md#tasks-over-mcp)) |
 | `semaphore` | `HERMES_OPS_SEMAPHORE_TOKEN` | `HERMES_OPS_SEMAPHORE_TOKEN`, the `hermes-ops` Semaphore user's token, read by the homelab plugin ([profiles.md](profiles.md#the-homelab-plugin)) |
+| `github` | `HERMES_GITHUB_ACTIONS_TOKEN` | `GITHUB_ACTIONS_TOKEN`, a fine-grained token for the home-ops repo with Actions: read, for the actions-failures cron job ([profiles.md](profiles.md#cron-jobs)) |
 
-`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model` and `semaphore`. Only default gets `aven`.
+`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model`, `semaphore` and `github`. Only default gets `aven`.
 
 On each Deploy, the [`hermes-profile-keys`](../../../ansible/services/tasks/hermes-profile-keys.yaml) post-task:
 

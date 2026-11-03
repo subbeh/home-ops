@@ -1,6 +1,7 @@
 ---
 covers:
   - ansible/services/hermes.yaml
+  - ansible/services/data/hermes/actions-failures.py
 ---
 # Profiles and models
 
@@ -34,6 +35,18 @@ Read-only tools that let ops answer "what's down?" or "how did the last Deploy g
 The plugin reads `HERMES_OPS_SEMAPHORE_TOKEN` from ops' `.env` on each call ([keys.md](keys.md)), so the token never reaches the terminal or the model. Gatus and Semaphore are reached over the services network, without a login for Gatus. `scripts/hermes-homelab.test.py` (`just docs-test`) checks the response parsing; `hermes plugins doctor ansible/services/data/hermes/homelab --ci` checks that it loads.
 
 Why these models: researcher does many tool calls, so it gets the model with a large request allowance. The reviewer judges in few turns, and it is from a different model family than the writer, so it doesn't favour its own family's output.
+
+## Cron jobs
+
+A cron job runs a prompt on a schedule, each run in a fresh session, and posts the answer to its delivery target. A pre-check script can run first: when its last stdout line is `{"wakeAgent": false}` the run ends there, with no model call, and otherwise its output becomes part of the prompt. Upstream: [cron](https://hermes-agent.nousresearch.com/docs/user-guide/features/cron). Jobs live in each Profile's `cron/` dir, created by hand ([`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header has the commands).
+
+| Job | Profile | Schedule | What it does |
+|---|---|---|---|
+| `actions-failures` | `ops` | every 15 min | Posts one diagnosis in #ops per GitHub Actions run of home-ops that failed since the last check |
+
+`actions-failures` runs [`actions-failures.py`](../../../ansible/services/data/hermes/actions-failures.py), which Ansible ships into ops' `scripts/` dir. It lists the repo's latest 50 finished runs, keeps the failed ones it hasn't seen (a re-run that fails again counts as new), and prints each with the last 60 log lines up to its error, so ops diagnoses it in one model call. Its first run only records what already failed. Runs from fork PRs are left out, since their logs are a stranger's text. When GitHub is down it stays silent; a rejected token fails the job, and Hermes posts the error.
+
+Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) reaches the script through ops' `terminal.env_passthrough`. That also hands it to ops' terminal in chats: a read-only token for a public repo's Actions.
 
 ## What Profiles share, and what they don't
 

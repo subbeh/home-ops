@@ -63,7 +63,7 @@ The join and config steps are in `aven.yaml`'s header.
 
 | Page | Answers |
 |---|---|
-| [profiles.md](profiles.md) | Which Profiles exist, their models and jobs, model costs and Langfuse, how to add a Profile |
+| [profiles.md](profiles.md) | Which Profiles exist, their models and jobs, cron jobs, model costs and Langfuse, how to add a Profile |
 | [keys.md](keys.md) | How keys get from Bitwarden into each Profile, and why not through the dashboard |
 | [kanban.md](kanban.md) | How a goal becomes cards, the review loop, Discord notices, what a Deploy does to running cards |
 | [safety.md](safety.md) | Approvals, the socket proxy, resource limits, what one Profile can see of another |

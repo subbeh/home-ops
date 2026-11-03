@@ -48,6 +48,16 @@
 #      sends #ops (`platform: discord`, `chat_id: "1567034921732808805"`) and its threads to ops.
 #   9. homelab plugin, ops Profile only (docs/services/hermes/profiles.md): after the Deploy that
 #      first copies it, `hermes -p ops plugins enable homelab`, then `docker restart hermes`.
+#  10. ops cron job actions-failures (docs/services/hermes/profiles.md): every 15 min the
+#      actions-failures.py pre-check, shipped below, wakes ops only for a newly failed GitHub
+#      Actions run. Cron scripts get a scrubbed env, so
+#      `hermes -p ops config set terminal.env_passthrough '[GITHUB_ACTIONS_TOKEN]'`, then
+#      `hermes -p ops cron create "every 15m" "<prompt>" --name actions-failures
+#      --script actions-failures.py --deliver discord:1567034921732808805`, with the prompt:
+#      "The script output lists GitHub Actions runs of subbeh/home-ops that failed since the last
+#      check, each with the log tail of its failed jobs. For each run, reply with its workflow,
+#      branch and link, the failing step, the likely cause quoting the decisive log line, and the
+#      fix to try. Diagnose only; change nothing."
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -81,6 +91,10 @@ hermes:
       # The hermes-ops Semaphore user's token (Task Runner role), read by the homelab plugin.
       semaphore:
         HERMES_OPS_SEMAPHORE_TOKEN: "{{ bws_secrets.HERMES_OPS_SEMAPHORE_TOKEN }}"
+      # Fine-grained, home-ops repo only, Actions: read. The actions-failures pre-check reads it;
+      # job logs need a token even on a public repo.
+      github:
+        GITHUB_ACTIONS_TOKEN: "{{ bws_secrets.HERMES_GITHUB_ACTIONS_TOKEN }}"
     # Profile name: the key sets its .env gets. A listed profile that doesn't exist yet is skipped.
     hermes_profiles:
       default: [model, web, aven]
@@ -88,7 +102,7 @@ hermes:
       researcher: [model, web]
       writer: [model, web]
       reviewer: [model, web]
-      ops: [model, semaphore]
+      ops: [model, semaphore, github]
 
   tasks:
     post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml]
@@ -98,6 +112,8 @@ hermes:
     # In ops' own plugins dir, so no other Profile can load its tools (ansible/services/data/).
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/plugins/homelab"
       src: hermes/homelab
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/actions-failures.py"
+      src: hermes/actions-failures.py
 
   containers:
     - image: nousresearch/hermes-agent:v0.22.5@sha256:9c5561579f3ffdf333401797094ac3a743738d6c25d40f4331c7bf77b694238d
