@@ -11,7 +11,7 @@ A **Profile** is one persona of Hermes: its own model, persona, memory, skills, 
 
 | Profile | Job | Model | Tools |
 |---|---|---|---|
-| `default` | The assistant you chat with in Discord; owns the Discord settings | deepseek-v4.1-flash | The default toolsets, web search included, plus aven tasks over MCP ([README.md](README.md#tasks-over-mcp)) |
+| `default` | The assistant you chat with in Discord; owns the Discord settings | deepseek-v4.1-flash | The default toolsets, web search included, plus aven tasks over MCP ([README.md](README.md#tasks-over-mcp)) and the planning and focus skills ([README.md](README.md#planning-and-focus-skills)) |
 | `orchestrator` | Splits a Kanban goal into cards, routes them, writes the final summary | deepseek-v4.1-flash | Board only: kanban and memory, so it routes work instead of doing it |
 | `researcher` | Gathers facts with web search, cites sources | glm-5.3-flash | Default toolsets |
 | `writer` | Turns research notes into the deliverable | deepseek-v4-pro | Default toolsets |
