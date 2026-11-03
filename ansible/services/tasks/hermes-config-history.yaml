@@ -1,0 +1,35 @@
+---
+# Commits Hermes's hand-edited config to a local git repo every hour; see
+# docs/services/hermes/running.md#rolling-back-config. The git dir sits beside the data dir,
+# outside the container's mount, so Hermes can't rewrite its own history. Never pushed: restic
+# already backs it up.
+- name: hermes | Create config history repo
+  ansible.builtin.command:
+    cmd: >-
+      git --git-dir={{ services_data_dir }}/hermes/config-history
+      --work-tree={{ services_data_dir }}/hermes/data init -q
+    creates: "{{ services_data_dir }}/hermes/config-history/HEAD"
+  become_user: "{{ services_user }}"
+
+- name: hermes | Write config history ignore list
+  ansible.builtin.copy:
+    src: "{{ services_root }}/data/hermes/config-history-exclude"
+    dest: "{{ services_data_dir }}/hermes/config-history/info/exclude"
+    owner: "{{ services_uid }}"
+    group: "{{ services_gid }}"
+    mode: "0644"
+  # Fails in check mode when the repo wasn't really created.
+  ignore_errors: "{{ ansible_check_mode }}"
+
+# At :50, so restic's backup on the hour holds the latest snapshot. An hour with no change commits
+# nothing. shortcut: a failing run only mails the local apps user, so it goes unseen; add a Gatus
+# heartbeat like restic's if snapshots ever matter enough to alert on.
+- name: hermes | Snapshot config hourly
+  ansible.builtin.cron:
+    name: hermes config history
+    user: "{{ services_user }}"
+    minute: "50"
+    job: >-
+      export GIT_DIR={{ services_data_dir }}/hermes/config-history && git add -A &&
+      git diff --cached --quiet ||
+      git -c user.name=hermes -c user.email=hermes@localhost commit -q --allow-empty-message -m ''

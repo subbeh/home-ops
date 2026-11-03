@@ -78,6 +78,6 @@ morning-brief, plan-day and wrap-up also start on their own each day, at 06:30, 
 | [keys.md](keys.md) | How keys get from Bitwarden into each Profile, and why not through the dashboard |
 | [kanban.md](kanban.md) | How a goal becomes cards, the review loop, Discord notices, what a Deploy does to running cards |
 | [safety.md](safety.md) | Approvals, the socket proxy, resource limits, what one Profile can see of another |
-| [running.md](running.md) | Deploying hermes, rotating a key, reading logs, common failures |
+| [running.md](running.md) | Deploying hermes, rotating a key, rolling back config, reading logs, common failures |
 
 The one-time setup steps (picking the model, installing plugins, ...) are the checklist in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header. Hermes owns its `config.yaml` and edits it itself, so Ansible never writes it: those settings are made by hand and recorded in that header.

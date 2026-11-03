@@ -81,6 +81,13 @@
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
 #
+# Config history: the hermes-config-history post-task commits the hand-edited config (config.yaml,
+# SOUL.md, memories, skills, cron jobs, keys; data/hermes/config-history-exclude lists it) to a
+# local git repo at :50 every hour. Roll a file back on the vps, from /opt/data/hermes/data:
+# `sudo -u apps git --git-dir=../config-history log -p -- <file>`, then
+# `sudo -u apps git --git-dir=../config-history checkout <commit> -- <file>`
+# (docs/services/hermes/running.md#rolling-back-config).
+#
 # Provider and tool keys go into each profile's own .env, never into env below or the dashboard:
 # the hermes-profile-keys post-task writes each hermes_profiles entry's key sets from BWS
 # (docs/services/hermes/keys.md, https://github.com/NousResearch/hermes-agent/issues/147922).
@@ -124,7 +131,7 @@ hermes:
       ops: [model, semaphore, github]
 
   tasks:
-    post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml]
+    post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml, hermes-config-history.yaml]
 
   files:
     - dest: "{{ services_data_dir }}/hermes/data"

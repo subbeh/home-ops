@@ -1,0 +1,33 @@
+# The hermes config history's ignore list (info/exclude), written by hermes-config-history.yaml.
+# An allowlist: everything is ignored except the config Hermes and the user edit by hand, at the
+# data dir's root (the default Profile) and in each Profile's home. Runtime state (sessions, logs,
+# caches, databases, installs) stays out, including new dirs a Hermes upgrade adds.
+/*
+/profiles/*/*
+!/profiles/
+!/config.yaml
+!/profiles/*/config.yaml
+!/profile.yaml
+!/profiles/*/profile.yaml
+!/SOUL.md
+!/profiles/*/SOUL.md
+!/.env
+!/profiles/*/.env
+!/auth.json
+!/profiles/*/auth.json
+!/memories/
+!/profiles/*/memories/
+!/skills/
+!/profiles/*/skills/
+# Of the cron dir only the job list: output and run history are runtime state.
+!/cron/
+!/profiles/*/cron/
+/cron/*
+/profiles/*/cron/*
+!/cron/jobs.json
+!/profiles/*/cron/jobs.json
+# Lock files, Hermes's own .bak copies, and skill usage counters that change on every use.
+*.lock
+*.bak-*
+.usage.json
+.curator_state

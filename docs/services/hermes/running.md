@@ -19,7 +19,7 @@ A hermes Deploy recreates the container, so it restarts every Profile at once an
    just ansible::playbook services --tags hermes
    ```
 
-The Deploy also runs the two post-tasks: it writes each Profile's keys ([keys.md](keys.md)) and keeps Kanban notices plain. Its output is hidden (`no_log`), since it renders secrets.
+The Deploy also runs the three post-tasks: it writes each Profile's keys ([keys.md](keys.md)), keeps Kanban notices plain and sets up the hourly config history ([Rolling back config](#rolling-back-config)). Its output is hidden (`no_log`), since it renders secrets.
 
 Settings that Hermes owns (`config.yaml`, Profiles, plugins, `SOUL.md`) don't change with a Deploy: they're made by hand inside the container and survive recreates in the data dir. Record each lasting one as a line in `hermes.yaml`'s header and update these docs, since no hook catches changes made only on the vps.
 
@@ -28,6 +28,26 @@ Settings that Hermes owns (`config.yaml`, Profiles, plugins, `SOUL.md`) don't ch
 - **Add a Profile**: [profiles.md](profiles.md#adding-a-profile).
 - **Rotate or add a key**: [keys.md](keys.md#rotating-a-key).
 - **Change a Profile's model**: `docker exec -it hermes hermes -p <profile> model`, then update the table in [profiles.md](profiles.md) and the header line.
+
+## Rolling back config
+
+Hermes edits its own config, so a Deploy can't restore it. Instead, the `hermes-config-history` post-task sets up a local git repo that snapshots it every hour.
+
+- **What's kept**: the hand-edited files only, at the data dir's root (the default Profile) and in each Profile's home. That means `config.yaml`, `profile.yaml`, `SOUL.md`, `.env`, `auth.json`, `memories/`, `skills/` and `cron/jobs.json`. The allowlist is [`config-history-exclude`](../../../ansible/services/data/hermes/config-history-exclude). Sessions, logs, caches and databases never enter the history.
+- **When**: a host cron job, run as the `apps` user at :50 each hour, commits whatever changed, with an empty message. In an hour with no change it commits nothing. Restic's backup on the hour then picks the repo up, so nothing is ever pushed.
+- **Where**: the git dir is `/opt/data/hermes/config-history`, beside the data dir rather than in it. The container never sees it, so Hermes can't rewrite its own history. Its `core.worktree` points at the data dir, so every command passes `--git-dir` and runs as `apps`, which owns the files.
+
+On the vps, from `/opt/data/hermes/data`:
+
+```sh
+alias hgit='sudo -u apps git --git-dir=../config-history'
+hgit log --format='%h %ci' --stat     # which hours changed what
+hgit log -p -- config.yaml            # one file's earlier versions
+hgit checkout <commit> -- config.yaml # restore that file as of <commit>
+hgit checkout <commit> -- .           # restore every tracked file as of <commit>
+```
+
+A restore writes into the live data dir. Run `docker restart hermes` afterwards so the gateway reloads it. The next hourly run commits the rollback as a new snapshot, so the history only ever grows.
 
 ## Health and logs
 
