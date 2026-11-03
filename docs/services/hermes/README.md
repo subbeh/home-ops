@@ -14,6 +14,7 @@ covers:
  ┌─────────────── hermes container (vps) ───────────────┐
  │  gateway ── routes each message to a Profile          │
  │    ├─ default        the assistant you chat with      │
+ │    ├─ ops            the homelab specialist, in #ops  │
  │    ├─ orchestrator ┐                                  │
  │    ├─ researcher   │ the Kanban team: they work on    │
  │    ├─ writer       │ cards, never chat in Discord     │
@@ -40,14 +41,12 @@ Why one container and not one per bot: the vps has little memory free and no swa
 1. You post in Discord. Only the users in `DISCORD_ALLOWED_USERS` get an answer.
 2. In the home channel (`DISCORD_HOME_CHANNEL`), Hermes answers without being mentioned and opens a thread for each conversation. Scheduled messages are delivered there too. Elsewhere, mention the bot.
 3. The gateway runs in multiplexed mode: one bot serves several Profiles. It checks `gateway.profile_routes` in the default Profile's `config.yaml` for a route matching the channel, thread or user. The most specific match wins, and a channel route also covers that channel's threads.
-4. No route matches today, so every message goes to the **default** Profile. A message that matches no route always falls to default: routing isn't a deny list, so the Discord allowlist is what keeps strangers out.
+4. One route exists: #ops and its threads go to the **ops** Profile. Every other message falls to the **default** Profile: routing isn't a deny list, so the Discord allowlist is what keeps strangers out.
 5. A route whose target Profile doesn't exist makes the gateway reject the message. It doesn't fall back to default.
-6. The default Profile answers. It may spawn subagents on cheaper or stronger models ([profiles.md](profiles.md)), and it asks you in Discord before any dangerous command ([safety.md](safety.md)).
+6. That Profile answers. It may spawn subagents on cheaper or stronger models ([profiles.md](profiles.md)), and it asks you in Discord before any dangerous command ([safety.md](safety.md)).
 7. `/kanban create --triage "<goal>"` hands a goal to the Kanban team instead. Results come back as notices in the same channel ([kanban.md](kanban.md)).
 
 Upstream: [multi-profile gateways](https://hermes-agent.nousresearch.com/docs/user-guide/multi-profile-gateways).
-
-**Planned:** an `ops` Profile for the homelab, reached by posting in a new #ops channel. A `profile_routes` entry will send #ops and its threads to `ops`, and everything else stays on default.
 
 ## Read next
 

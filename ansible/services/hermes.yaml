@@ -41,6 +41,11 @@
 #      `fallback_providers: [{provider: claude-subscription-directsdk-experimental, model: sonnet}]`;
 #      a Profile cloned from default copies it, so `hermes -p <name> fallback clear` there.
 #      Upgrade the CLI with the same npm install; the plugin turns off its auto-update.
+#   8. ops Profile (docs/services/hermes/profiles.md): cloned from default, model
+#      deepseek-v4.1-flash, the user-approved SOUL.md, fallback cleared, no Kanban description.
+#      `hermes -p ops tools disable --platform discord web browser`: ops will hold Deploy
+#      power, so no web page reaches its context. In default's config.yaml, `gateway.profile_routes`
+#      sends #ops (`platform: discord`, `chat_id: "1567034921732808805"`) and its threads to ops.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -75,6 +80,7 @@ hermes:
       researcher: [model, web]
       writer: [model, web]
       reviewer: [model, web]
+      ops: [model]
 
   tasks:
     post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml]
