@@ -18,7 +18,7 @@ Hermes reads the web and runs commands, so a web page can try to steer it (promp
 
 ## The Docker socket proxy
 
-Hermes may list containers and read their logs, so it can tell what's wrong with a Service (the planned `ops` Profile's homelab plugin is the user). It gets that through the [`docker-socket-proxy`](../../../ansible/services/docker-socket-proxy.yaml) Service ([wollomatic/socket-proxy](https://github.com/wollomatic/socket-proxy)), never the Docker socket itself:
+Hermes may list containers and read their logs, so it can tell what's wrong with a Service (the `ops` Profile's [homelab plugin](profiles.md#the-homelab-plugin) does). It gets that through the [`docker-socket-proxy`](../../../ansible/services/docker-socket-proxy.yaml) Service ([wollomatic/socket-proxy](https://github.com/wollomatic/socket-proxy)), never the Docker socket itself:
 
 - The proxy allows only `GET` on `/containers/json` (the list) and `/containers/<id>/logs`. Everything else gets 403 or 405.
 - Inspect stays blocked on purpose: a container's inspect output holds its env, and on the vps that includes the BWS access token, the Semaphore admin password, the restic credentials and the Cloudflare token.

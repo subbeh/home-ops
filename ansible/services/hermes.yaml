@@ -46,6 +46,8 @@
 #      `hermes -p ops tools disable --platform discord web browser`: ops will hold Deploy
 #      power, so no web page reaches its context. In default's config.yaml, `gateway.profile_routes`
 #      sends #ops (`platform: discord`, `chat_id: "1567034921732808805"`) and its threads to ops.
+#   9. homelab plugin, ops Profile only (docs/services/hermes/profiles.md): after the Deploy that
+#      first copies it, `hermes -p ops plugins enable homelab`, then `docker restart hermes`.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -76,6 +78,9 @@ hermes:
       # The aven-mcp container's bearer token (aven.yaml), read by config.yaml's mcp_servers.aven header.
       aven:
         AVEN_MCP_TOKEN: "{{ bws_secrets.AVEN_MCP_TOKEN }}"
+      # The hermes-ops Semaphore user's token (Task Runner role), read by the homelab plugin.
+      semaphore:
+        HERMES_OPS_SEMAPHORE_TOKEN: "{{ bws_secrets.HERMES_OPS_SEMAPHORE_TOKEN }}"
     # Profile name: the key sets its .env gets. A listed profile that doesn't exist yet is skipped.
     hermes_profiles:
       default: [model, web, aven]
@@ -83,13 +88,16 @@ hermes:
       researcher: [model, web]
       writer: [model, web]
       reviewer: [model, web]
-      ops: [model]
+      ops: [model, semaphore]
 
   tasks:
     post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml]
 
   files:
     - dest: "{{ services_data_dir }}/hermes/data"
+    # In ops' own plugins dir, so no other Profile can load its tools (ansible/services/data/).
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/plugins/homelab"
+      src: hermes/homelab
 
   containers:
     - image: nousresearch/hermes-agent:v0.22.5@sha256:9c5561579f3ffdf333401797094ac3a743738d6c25d40f4331c7bf77b694238d

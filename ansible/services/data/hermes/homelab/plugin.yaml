@@ -1,0 +1,10 @@
+---
+name: homelab
+version: 1.0.0
+description: Read-only homelab tools for the ops Profile - Gatus status, Semaphore tasks, container list and logs
+provides_tools:
+  - homelab_status
+  - homelab_tasks
+  - homelab_task_output
+  - homelab_containers
+  - homelab_container_logs

@@ -15,11 +15,23 @@ A **Profile** is one persona of Hermes: its own model, persona, memory, skills, 
 | `researcher` | Gathers facts with web search, cites sources | glm-5.3-flash | Default toolsets |
 | `writer` | Turns research notes into the deliverable | deepseek-v4-pro | Default toolsets |
 | `reviewer` | Checks the writer's work against the card: PASS or FAIL with a punch-list, never edits | kimi-k3.1-pro | Default toolsets |
-| `ops` | The homelab specialist, in #ops: checks status and logs, proposes changes as repo edits and Deploys, never makes them live by hand | deepseek-v4.1-flash | Default toolsets without web and browser on Discord |
+| `ops` | The homelab specialist, in #ops: checks status and logs, proposes changes as repo edits and Deploys, never makes them live by hand | deepseek-v4.1-flash | Default toolsets without web and browser on Discord, plus the [homelab plugin](#the-homelab-plugin) |
 
 The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`, and its `memories/USER.md` holds the user's profile (timezone, location, reply style, brief topics, workday and quiet hours), which Hermes wrote from a Discord chat. To change it, tell Hermes in Discord: it rewrites the file itself, within `memory.user_char_limit`. The file goes to the model provider every turn.
 
 `ops` is reached through the #ops route ([README.md](README.md#how-a-message-flows)), not the board. It has no web or browser tools because it will hold Deploy power, so no web page should reach its context; it names what to look up instead. Its `SOUL.md` was drafted for it and approved by the user.
+
+### The homelab plugin
+
+Read-only tools that let ops answer "what's down?" or "how did the last Deploy go?" from the homelab itself. The plugin is in the repo at [`ansible/services/data/hermes/homelab/`](../../../ansible/services/data/hermes/homelab/), and each Deploy of hermes copies it into ops' own `plugins/` dir, so no other Profile can load it. It is enabled once by hand (step 9 of the `hermes.yaml` header).
+
+| Tool | Reads |
+|---|---|
+| `homelab_status` | Gatus: each endpoint up or down, recent results, the last failure's errors |
+| `homelab_tasks`, `homelab_task_output` | Semaphore: recent tasks (each one a Deploy) and a task's Ansible output |
+| `homelab_containers`, `homelab_container_logs` | Docker, through the [socket proxy](safety.md#the-docker-socket-proxy): the container list and a container's logs |
+
+The plugin reads `HERMES_OPS_SEMAPHORE_TOKEN` from ops' `.env` on each call ([keys.md](keys.md)), so the token never reaches the terminal or the model. Gatus and Semaphore are reached over the services network, without a login for Gatus. `scripts/hermes-homelab.test.py` (`just docs-test`) checks the response parsing; `hermes plugins doctor ansible/services/data/hermes/homelab --ci` checks that it loads.
 
 Why these models: researcher does many tool calls, so it gets the model with a large request allowance. The reviewer judges in few turns, and it is from a different model family than the writer, so it doesn't favour its own family's output.
 
