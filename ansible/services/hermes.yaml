@@ -74,12 +74,15 @@
 #      then wait for the reply." --name plan-day --skill plan-day --deliver discord`, and
 #      `hermes cron create "0 21 * * *" "Start the wrap-up skill: open with its first question
 #      about today, then wait for the reply." --name wrap-up --skill wrap-up --deliver discord`.
+#      Each run opens a thread, which Hermes creates without a starter message, so Discord makes
+#      it private and the user can't see it. In the home channel's permissions, deny the bot
+#      "Create Private Threads": Hermes then falls back to a seed message, whose thread is public.
 #  13. Default cron job morning-brief (docs/services/hermes/profiles.md): the morning-brief skill,
 #      written beside the focus skills, reads the weather location and news topics from USER.md.
 #      `hermes cron create "30 6 * * *" "Write today's morning brief." --name morning-brief
 #      --skill morning-brief --deliver discord` (the home channel; the container's TZ is local).
-#      With cron.mirror_delivery on, a Discord cron run opens a private thread the user can't
-#      see, so the brief opts out: in /opt/hermes, `HERMES_HOME=/opt/data .venv/bin/python -c
+#      With cron.mirror_delivery on, a Discord cron run opens a thread; the brief needs no reply
+#      context, so it opts out and posts a plain message: in /opt/hermes, `HERMES_HOME=/opt/data .venv/bin/python -c
 #      'from cron.jobs import update_job; update_job("<id>", {"attach_to_session": False})'`.
 #  14. Auxiliary models, every Profile (docs/services/hermes/profiles.md): on `auto` they use the
 #      Profile's main model. For each Profile and each of compression, title_generation, approval

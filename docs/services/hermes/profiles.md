@@ -52,7 +52,7 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 
 **Not posted yet:** Hermes doesn't deliver a routed Profile's cron output once that Profile has had a local session ([upstream #144455](https://github.com/NousResearch/hermes-agent/issues/144455)): the run's record says `platform 'discord' not configured/enabled`. Until a Hermes release fixes it, each diagnosis is written only to `/opt/data/profiles/ops/cron/output/<job id>/` and `hermes -p ops cron list` shows the failed delivery.
 
-**Private threads:** with `cron.mirror_delivery` on, a cron run in the home channel opens a new thread so a reply continues the run's session. Hermes's Discord adapter creates it without a starter message, which Discord makes a private thread: only the bot and server admins can open it, and it never shows in the channel. A job with `attach_to_session: false` posts a plain message instead.
+**Private threads:** with `cron.mirror_delivery` on, a cron run in the home channel opens a new thread so a reply continues the run's session. Hermes's Discord adapter creates it without a starter message, which Discord makes a private thread: only the bot and server admins can open it, and it never shows in the channel. So the bot is denied **Create Private Threads** in the home channel: the direct create fails, and Hermes falls back to posting a seed line (`🧵 Hermes handoff: …`) and opening a public thread from it. A job with `attach_to_session: false` skips the thread and posts a plain message.
 
 Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) reaches the script through ops' `terminal.env_passthrough`. That also hands it to ops' terminal in chats: a read-only token for a public repo's Actions.
 
