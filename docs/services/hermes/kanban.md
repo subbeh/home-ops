@@ -11,7 +11,7 @@ Hermes's [Kanban board](https://hermes-agent.nousresearch.com/docs/user-guide/fe
 1. In Discord, `/kanban create --triage "<goal>"` creates a root card for the goal.
 2. Triage splits the goal into child cards with dependencies: research first, then writing, then review.
 3. After the split, the **orchestrator** owns the root card (`kanban.orchestrator_profile: orchestrator`). It routes each child to a Profile by its description. A child that names no existing Profile goes to researcher (`kanban.default_assignee`).
-4. The gateway's dispatcher starts a worker for each card that is ready. The worker runs as its Profile, does the job and puts its notes or deliverable in the card's result. Results go in the card, not in files, because a card's scratch workspace is deleted when it completes.
+4. The gateway's dispatcher starts a worker for each card that is ready, at most two at once (`kanban.max_in_progress`, for memory: [safety.md](safety.md#resource-limits)). The worker runs as its Profile, does the job and puts its notes or deliverable in the card's result. Results go in the card, not in files, because a card's scratch workspace is deleted when it completes.
 5. Workers never create cards. Follow-ups go in their summary, and the orchestrator plans them.
 6. When every child is done, the orchestrator writes a short summary on the root card (what was delivered, what is uncertain, what is left) and closes it.
 

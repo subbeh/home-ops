@@ -22,7 +22,8 @@
 #      deepseek-v4.1-flash, researcher glm-5.3-flash, writer deepseek-v4-pro, reviewer
 #      kimi-k3.1-pro (docs/services/hermes/profiles.md says why). Hermes drafted each description
 #      and SOUL.md; the user approved them. `kanban.orchestrator_profile: orchestrator`,
-#      `kanban.default_assignee: researcher`, `kanban.review_dispatch: false`, and the
+#      `kanban.default_assignee: researcher`, `kanban.review_dispatch: false`,
+#      `kanban.max_in_progress: 2` (read at gateway start, so `docker restart hermes`), and the
 #      orchestrator's cli toolsets are kanban and memory only. No ops profile on the board. Discord
 #      subscriptions stay on plain notices; the hermes-kanban-notices post-task keeps it that way.
 #   6. Langfuse prices (docs/services/hermes/profiles.md): Hermes sends no cost for opencode-go, so
@@ -151,7 +152,8 @@ hermes:
       # host; the default (the container ID) changes on each recreate, leaving cards to the 15m TTL.
       hostname: hermes
       # The vps has no swap, so a runaway agent would OOM other Services; this keeps it in its own
-      # cgroup. About 0.8 GB at rest; the rest is headroom for Kanban workers and tool runs.
+      # cgroup. About 0.8-1.05 GB at rest, plus about 290 MB per Kanban worker, capped at 2 by
+      # kanban.max_in_progress (docs/services/hermes/safety.md#resource-limits).
       memory: 2g
       cpus: 1.5
       labels:
