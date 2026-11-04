@@ -81,6 +81,11 @@
 #      With cron.mirror_delivery on, a Discord cron run opens a private thread the user can't
 #      see, so the brief opts out: in /opt/hermes, `HERMES_HOME=/opt/data .venv/bin/python -c
 #      'from cron.jobs import update_job; update_job("<id>", {"attach_to_session": False})'`.
+#  14. Auxiliary models, every Profile (docs/services/hermes/profiles.md): on `auto` they use the
+#      Profile's main model. For each Profile and each of compression, title_generation, approval
+#      and background_review, `hermes -p <name> config set auxiliary.<task>.provider opencode-go`
+#      and `... auxiliary.<task>.model deepseek-v4.1-flash`; `auxiliary.compression.reasoning_effort
+#      low`; and `auxiliary.vision` the same way on glm-5.3-flash. `docker restart hermes` after.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.

@@ -76,7 +76,9 @@ All Profiles use provider `opencode-go`. [OpenCode Go](https://opencode.ai/docs/
 
 Subagents don't spawn subagents of their own (depth 1). `hermes delegation config --show` lists the routes.
 
-**Traces and prices.** The langfuse plugin sends a trace of every model call to Langfuse Cloud, with metadata only (`HERMES_LANGFUSE_CAPTURE: metadata`), so chat content stays off it. Hermes knows no prices for opencode-go and sends no cost, so Langfuse computes it from its own model definitions (Settings > Models), one per model at OpenCode Go's off-peak rates. Because Go's allowance is counted in dollars at those rates, the cost Langfuse shows is the allowance used.
+**Auxiliary tasks.** Hermes runs side tasks on a model of their own (`auxiliary.<task>` in each Profile's `config.yaml`). On `auto`, a task uses the Profile's main model, so writer and reviewer would spend their small allowances on compaction and titles. In every Profile, compression (at low reasoning effort), title generation, approval and the background review run on deepseek-v4.1-flash instead. Vision runs on glm-5.3-flash, since writer's model reads no images. The other auxiliary tasks stay on `auto`. To see which models a Profile's calls used, side tasks included, run `hermes -p <profile> insights --days 1` and read "Models Used".
+
+**Traces and prices.** The langfuse plugin sends a trace of every main-agent model call to Langfuse Cloud (auxiliary calls aren't traced), with metadata only (`HERMES_LANGFUSE_CAPTURE: metadata`), so chat content stays off it. Hermes knows no prices for opencode-go and sends no cost, so Langfuse computes it from its own model definitions (Settings > Models), one per model at OpenCode Go's off-peak rates. Because Go's allowance is counted in dollars at those rates, the cost Langfuse shows is the allowance used.
 
 Confusing part: DeepSeek models bill double during peak hours, but Langfuse has one price per model, so peak-hour calls show at half their real cost. The response carries the exact charge, but Hermes doesn't read it yet.
 
