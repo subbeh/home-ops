@@ -40,4 +40,12 @@ All Profiles share one container and its filesystem. Any Profile with a terminal
 
 Langfuse traces carry metadata only, so chat content stays off Langfuse Cloud ([profiles.md](profiles.md)).
 
-**Planned:** the `ops` Profile gets a Deploy tool, gated the same way as dangerous commands. Each Deploy asks in Discord and fails closed on Deny, timeout or error, and the approval can't be remembered, so no "Always Allow" covers a later Deploy. It holds its own Semaphore token, outside the terminal, and can never Deploy semaphore or hermes. Because Profiles share a filesystem, the default Profile could still read that token: the gate stops mistakes, not a determined attacker.
+## The Deploy tool
+
+The `ops` Profile's `homelab_deploy` ([profiles.md](profiles.md#the-homelab-plugin)) starts a Deploy of one Service through Semaphore, gated like a dangerous command. Upstream: [pre_tool_call](https://hermes-agent.nousresearch.com/docs/user-guide/features/hooks#pre_tool_call).
+
+- A `pre_tool_call` hook in the plugin checks the Service against `deployable.json`, which each hermes Deploy writes into the plugin dir from the vps's Services in `inventory.yml`, minus semaphore (recreating it kills the running task) and hermes (ops' own container). Anything else is refused before any prompt; a missing file refuses everything.
+- For a deployable Service, the hook asks for approval, which posts the usual approval card. Deny, a timeout, an error in the gate, or a run with nobody to ask (cron) starts nothing.
+- Each call gets its own `rule_key`, so "Allow Session" or "Always Allow" never covers a later Deploy. The cost: "Always Allow" leaves a dead entry in `command_allowlist`.
+- The tool uses the `hermes-ops` Semaphore user's token from ops' `.env` ([keys.md](keys.md)), which the plugin reads per call, outside the terminal. Because Profiles share a filesystem, any Profile's terminal could still read it: the gate stops mistakes, not a determined attacker.
+- `approvals.mode: off` or `/yolo` would skip this gate too.

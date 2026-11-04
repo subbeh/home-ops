@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# Self-test for the hermes homelab plugin's response parsing. Run with `just docs-test`.
+# Self-test for the hermes homelab plugin's response parsing and Deploy gate. Run with `just docs-test`.
 import importlib.util
 import json
 import pathlib
 import sys
+import tempfile
 import unittest
 
 # The plugin dir is copied to the vps as-is, so keep __pycache__ out of it.
@@ -67,6 +68,36 @@ class Docker(unittest.TestCase):
     def test_bad_name_refused_before_any_request(self):
         out = json.loads(homelab.container_logs({"name": "../info"}))
         self.assertIn("not a container name", out["error"])
+
+
+class Deploy(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        homelab.DEPLOYABLE_FILE = pathlib.Path(tmp.name, "deployable.json")
+        homelab.DEPLOYABLE_FILE.write_text('["gatus", "atuin"]')
+
+    def test_deployable_asks_with_a_fresh_rule_key(self):
+        first = homelab.gate("homelab_deploy", {"service": "gatus"})
+        second = homelab.gate("homelab_deploy", {"service": "gatus"})
+        self.assertEqual(first["action"], "approve")
+        self.assertNotEqual(first["rule_key"], second["rule_key"])
+
+    def test_refused_before_any_prompt(self):
+        for service in ["semaphore", "hermes", "nope", None, ["gatus"]]:
+            self.assertEqual(homelab.gate("homelab_deploy", {"service": service})["action"], "block", service)
+        self.assertEqual(homelab.gate("homelab_deploy", None)["action"], "block")
+
+    def test_missing_list_refuses_everything(self):
+        homelab.DEPLOYABLE_FILE.unlink()
+        self.assertEqual(homelab.gate("homelab_deploy", {"service": "gatus"})["action"], "block")
+
+    def test_other_tools_pass(self):
+        self.assertIsNone(homelab.gate("homelab_status", {}))
+
+    def test_handler_refuses_before_any_request(self):
+        out = json.loads(homelab.deploy({"service": "semaphore"}))
+        self.assertIn("not deployable", out["error"])
 
 
 if __name__ == "__main__":

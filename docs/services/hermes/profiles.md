@@ -24,15 +24,16 @@ The four Kanban Profiles have no Discord bot of their own: they only work on car
 
 ### The homelab plugin
 
-Read-only tools that let ops answer "what's down?" or "how did the last Deploy go?" from the homelab itself. The plugin is in the repo at [`ansible/services/data/hermes/homelab/`](../../../ansible/services/data/hermes/homelab/), and each Deploy of hermes copies it into ops' own `plugins/` dir, so no other Profile can load it. It is enabled once by hand (step 9 of the `hermes.yaml` header).
+Tools that let ops answer "what's down?" or "how did the last Deploy go?" from the homelab itself, and start a Deploy once the user approves it. The plugin is in the repo at [`ansible/services/data/hermes/homelab/`](../../../ansible/services/data/hermes/homelab/), and each Deploy of hermes copies it into ops' own `plugins/` dir, so no other Profile can load it. It is enabled once by hand (step 9 of the `hermes.yaml` header).
 
 | Tool | Reads |
 |---|---|
 | `homelab_status` | Gatus: each endpoint up or down, recent results, the last failure's errors |
 | `homelab_tasks`, `homelab_task_output` | Semaphore: recent tasks (each one a Deploy) and a task's Ansible output |
 | `homelab_containers`, `homelab_container_logs` | Docker, through the [socket proxy](safety.md#the-docker-socket-proxy): the container list and a container's logs |
+| `homelab_deploy` | Starts the Semaphore `services` template for one Service, after approval in Discord ([safety.md](safety.md#the-deploy-tool)), and returns the task id; ops follows it with `homelab_tasks` |
 
-The plugin reads `HERMES_OPS_SEMAPHORE_TOKEN` from ops' `.env` on each call ([keys.md](keys.md)), so the token never reaches the terminal or the model. Gatus and Semaphore are reached over the services network, without a login for Gatus. `scripts/hermes-homelab.test.py` (`just docs-test`) checks the response parsing; `hermes plugins doctor ansible/services/data/hermes/homelab --ci` checks that it loads.
+The plugin reads `HERMES_OPS_SEMAPHORE_TOKEN` from ops' `.env` on each call ([keys.md](keys.md)), so the token never reaches the terminal or the model. Gatus and Semaphore are reached over the services network, without a login for Gatus. `scripts/hermes-homelab.test.py` (`just docs-test`) checks the response parsing and the Deploy gate; `hermes plugins doctor ansible/services/data/hermes/homelab --ci` checks that it loads.
 
 Why these models: researcher does many tool calls, so it gets the model with a large request allowance. The reviewer judges in few turns, and it is from a different model family than the writer, so it doesn't favour its own family's output.
 

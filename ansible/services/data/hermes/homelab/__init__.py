@@ -1,4 +1,5 @@
-"""Read-only homelab tools for the ops Profile; see docs/services/hermes/profiles.md.
+"""Homelab tools for the ops Profile: read-only ones plus a gated Deploy; see
+docs/services/hermes/profiles.md.
 
 The Deploy copies this dir into the ops Profile's own plugins dir, so no other Profile can load it.
 Tokens are read here, per call, so they never reach the terminal or the model's context.
@@ -6,14 +7,20 @@ Tokens are read here, per call, so they never reach the terminal or the model's 
 
 import http.client
 import json
+import pathlib
 import re
 import socket
 import urllib.request
+import uuid
 
 # Both on the services network, which hermes joins; no traefik or tailnet in between.
 GATUS_URL = "http://gatus:8080/api/v1/endpoints/statuses"
-# Project 1, as in .github/workflows/deploy.yaml.
+# Project 1 and the services template 1, as in .github/workflows/deploy.yaml.
 SEMAPHORE_API = "http://semaphore:3000/api/project/1"
+SEMAPHORE_TEMPLATE_ID = 1
+SEMAPHORE_HISTORY = "https://semaphore.vps.sbbh.cloud/project/1/history?t="
+# Written by the hermes Deploy from inventory.yml: the vps Services minus semaphore and hermes.
+DEPLOYABLE_FILE = pathlib.Path(__file__).with_name("deployable.json")
 # The docker-socket-proxy Service's filtered socket: GET list and logs only.
 DOCKER_SOCKET = "/run/docker-proxy/proxy.sock"
 # The proxy's allowlist pattern for a container name; also keeps a name from changing the path.
@@ -88,12 +95,13 @@ def demux_logs(data):
     return b"".join(chunks).decode(errors="replace")
 
 
-def _get_json(url, headers=None):
-    with urllib.request.urlopen(urllib.request.Request(url, headers=headers or {}), timeout=15) as r:
+def _get_json(url, headers=None, body=None):
+    data = json.dumps(body).encode() if body is not None else None
+    with urllib.request.urlopen(urllib.request.Request(url, data, headers or {}), timeout=15) as r:
         return json.load(r)
 
 
-def _semaphore(path):
+def _semaphore(path, body=None):
     # Per call, from the ops Profile's .env (the semaphore Key set): non-default Profiles never
     # see the container env under the multiplexed gateway.
     from agent.secret_scope import get_secret
@@ -101,7 +109,33 @@ def _semaphore(path):
     token = get_secret("HERMES_OPS_SEMAPHORE_TOKEN")
     if not token:
         raise RuntimeError("HERMES_OPS_SEMAPHORE_TOKEN is not set in this Profile's .env")
-    return _get_json(SEMAPHORE_API + path, {"Authorization": f"Bearer {token}"})
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    return _get_json(SEMAPHORE_API + path, headers, body)
+
+
+def deployable():
+    """The Services ops may Deploy; empty, so everything is refused, when the file is missing."""
+    try:
+        return set(json.loads(DEPLOYABLE_FILE.read_text()))
+    except (OSError, ValueError, TypeError):
+        return set()
+
+
+def is_deployable(service):
+    return isinstance(service, str) and service in deployable()
+
+
+def gate(tool_name, args, **kwargs):
+    """pre_tool_call hook: refuse a non-deployable Service outright, else ask in Discord. Hermes
+    blocks the call on Deny, timeout or any error in the gate."""
+    if tool_name != "homelab_deploy":
+        return None
+    service = (args or {}).get("service")
+    if not is_deployable(service):
+        return {"action": "block", "message": f"{service!r} is not deployable; choose one of {sorted(deployable())}"}
+    # A unique key per call, so an "Allow Session" or "Always Allow" click never covers a later Deploy.
+    return {"action": "approve", "message": f"Deploy {service} with the Semaphore services template",
+            "rule_key": f"homelab_deploy:{uuid.uuid4().hex}"}
 
 
 class _UnixConnection(http.client.HTTPConnection):
@@ -159,6 +193,18 @@ def task_output(params):
 
 
 @_tool
+def deploy(params):
+    # Runs only after approval; checked again in case the hook isn't registered.
+    service = params.get("service")
+    if not is_deployable(service):
+        raise ValueError(f"{service!r} is not deployable")
+    task = _semaphore("/tasks", {"template_id": SEMAPHORE_TEMPLATE_ID, "message": f"Deploy {service} by ops",
+                                 "params": {"tags": [service]}})
+    return {"task_id": task.get("id"), "status": task.get("status"), "service": service,
+            "url": f"{SEMAPHORE_HISTORY}{task.get('id')}"}
+
+
+@_tool
 def containers(params):
     return summarize_containers(json.loads(_docker("/containers/json?all=true")))
 
@@ -198,9 +244,16 @@ TOOLS = [
         {"name": {"type": "string", "description": "Container name from homelab_containers"},
          "tail": {"type": "integer", "description": "Lines from the end, default 100, max 1000"}},
         ["name"])),
+    (deploy, _schema("homelab_deploy",
+        "Deploy one Service to the vps by starting the Semaphore services template with its tag. The "
+        "user approves each call in Discord; semaphore and hermes are never deployable. Returns once the "
+        "task starts: follow it with homelab_tasks and homelab_task_output.",
+        {"service": {"type": "string", "description": "Service name, as in ansible/services/<name>.yaml"}},
+        ["service"])),
 ]
 
 
 def register(ctx):
     for handler, schema in TOOLS:
         ctx.register_tool(name=schema["name"], toolset="homelab", schema=schema, handler=handler)
+    ctx.register_hook("pre_tool_call", gate)

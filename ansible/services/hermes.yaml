@@ -142,6 +142,10 @@ hermes:
     # In ops' own plugins dir, so no other Profile can load its tools (ansible/services/data/).
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/plugins/homelab"
       src: hermes/homelab
+    # What homelab_deploy may start: this Host's Services minus semaphore (recreating it kills the
+    # running task) and hermes (ops' own container).
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/plugins/homelab/deployable.json"
+      content: "{{ services | difference(['semaphore', 'hermes']) | to_json }}"
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/actions-failures.py"
       src: hermes/actions-failures.py
 
