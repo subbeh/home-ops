@@ -9,7 +9,7 @@ covers:
 
 [docs/services/hermes/](../../../docs/services/hermes/README.md) explains the setup, and [running.md](../../../docs/services/hermes/running.md) is the runbook. Read the page for the area you're changing first. Hermes owns its `config.yaml`, Profiles, cron jobs, skills and plugins: Ansible never writes them, so they change by hand on the vps and are recorded in the repo.
 
-Run Hermes commands as `ssh vps docker exec hermes hermes [-p <profile>] <command>`, with `ssh -t` and `docker exec -it` for interactive ones (`model`, `profile create`). Add `-u hermes` when the command writes under `HOME` (npm, `claude`), so it lands in the data dir. Paths below are inside the container: `/opt/data` is `/opt/data/hermes/data` on the vps.
+Run Hermes commands as `ssh vps docker exec hermes hermes [-p <profile>] <command>`, with `ssh -t` and `docker exec -it` for interactive ones (`model`, `profile create`). Add `-u hermes` when the command writes under `HOME` (npm), so it lands in the data dir. Paths below are inside the container: `/opt/data` is `/opt/data/hermes/data` on the vps.
 
 ## Steps for every live change
 
@@ -27,7 +27,7 @@ To undo, restore from the backup or the config history ([Rolling back config](..
 
 Follow [Adding a Profile](../../../docs/services/hermes/profiles.md#adding-a-profile). Besides the steps listed there:
 
-- `--clone` copies default's Claude fallback and `.env`: run `hermes -p <name> fallback clear`, and after the Deploy delete every key outside the managed block that the Profile shouldn't have.
+- `--clone` copies default's fallback (glm-5.3-flash) and `.env`. A Profile whose own model is GLM gets a fallback from another family ([Models and costs](../../../docs/services/hermes/profiles.md#models-and-costs)). After the Deploy, delete every key outside the managed block that the Profile shouldn't have.
 - Keys come from BWS through `hermes_key_sets` and `hermes_profiles` in `hermes.yaml`, never from the dashboard ([keys.md](../../../docs/services/hermes/keys.md#why-not-the-dashboard)).
 - Create the Profile before adding a `gateway.profile_routes` entry for it: a route to a missing Profile makes the gateway reject the message.
 

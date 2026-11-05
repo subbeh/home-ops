@@ -7,8 +7,6 @@ covers:
 
 Every Hermes secret lives in Bitwarden Secrets Manager (BWS), like the rest of the repo's. They reach Hermes two ways: the container env, for what only the default Profile uses, and each Profile's `.env`, for the provider and tool keys.
 
-One exception: the Claude login for the default Profile's fallback ([profiles.md](profiles.md#models-and-costs)). It's an OAuth login the Claude Code CLI keeps and refreshes in `/opt/data/.claude`, so it can't live in BWS. If it expires, run `claude auth login` again as the hermes user. Keep `ANTHROPIC_*` keys and endpoints out of every env: the plugin refuses to run when it inherits one.
-
 ## Container env (default Profile only)
 
 | BWS key | Used for |

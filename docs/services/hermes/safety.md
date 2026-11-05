@@ -36,7 +36,7 @@ The vps has no swap, so a runaway agent could get other Services killed for memo
 
 ## What one Profile can see of another
 
-All Profiles share one container and its filesystem. Any Profile with a terminal can read every other Profile's files, `.env` keys and memory. That includes the Claude login in `/opt/data/.claude`, so any such Profile could run `claude` on the subscription itself, not only through default's fallback. This was a deliberate choice for the vps's memory ([README.md](README.md)): the guards above stop mistakes and casual prompt injection, not a determined attacker who has taken over a Profile.
+All Profiles share one container and its filesystem. Any Profile with a terminal can read every other Profile's files, `.env` keys and memory. This was a deliberate choice for the vps's memory ([README.md](README.md)): the guards above stop mistakes and casual prompt injection, not a determined attacker who has taken over a Profile.
 
 Langfuse traces carry metadata only, so chat content stays off Langfuse Cloud ([profiles.md](profiles.md)).
 

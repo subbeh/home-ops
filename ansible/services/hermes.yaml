@@ -31,19 +31,15 @@
 #      `(?i)^(opencode-go/)?<model>$`) at the off-peak rates on https://opencode.ai/docs/go/, with
 #      output_reasoning_tokens at the output rate. shortcut: DeepSeek peak hours bill double and
 #      show at half; upgrade when Hermes reads the response's opencode.allowance as the actual cost.
-#   7. Claude subscription fallback, default Profile only (docs/services/hermes/profiles.md),
-#      https://github.com/NousResearch/hermes-official-plugins/tree/main/claude-subscription-directsdk.
-#      As the hermes user (`docker exec -it -u hermes hermes ...`), so HOME is the data dir:
-#      `npm install -g --prefix /opt/data/.local --allow-scripts=@anthropic-ai/claude-code
-#      @anthropic-ai/claude-code` (the postinstall fetches the native binary;
-#      the README lists the CLI version each model needs),
-#      `hermes plugins install claude-subscription-directsdk --yes-deps`, then `claude auth login`
-#      (the user's browser; credentials land in /opt/data/.claude). In default's config.yaml only,
-#      `fallback_providers: [{provider: claude-subscription-directsdk-experimental, model: sonnet}]`;
-#      a Profile cloned from default copies it, so `hermes -p <name> fallback clear` there.
-#      Upgrade the CLI with the same npm install; the plugin turns off its auto-update.
+#   7. Fallback, every Profile (docs/services/hermes/profiles.md): Go's caps are per model, so each
+#      Profile falls back to an OpenCode Go model of another family.
+#      `hermes [-p <name>] config set fallback_providers '[{provider: opencode-go, model:
+#      glm-5.3-flash}]'` for default, ops, orchestrator, writer and reviewer, and
+#      deepseek-v4.1-flash for researcher (it runs GLM). `hermes config set
+#      delegation.fallback_providers` to the same glm-5.3-flash list: the `fast` and `deep` routes
+#      inherit it. A Profile cloned from default copies default's chain.
 #   8. ops Profile (docs/services/hermes/profiles.md): cloned from default, model
-#      deepseek-v4.1-flash, the user-approved SOUL.md, fallback cleared, no Kanban description.
+#      deepseek-v4.1-flash, the user-approved SOUL.md, no Kanban description.
 #      `hermes -p ops tools disable --platform discord web browser`: ops will hold Deploy
 #      power, so no web page reaches its context. In default's config.yaml, `gateway.profile_routes`
 #      sends #ops (`platform: discord`, `chat_id: "1567034921732808805"`) and its threads to ops.
