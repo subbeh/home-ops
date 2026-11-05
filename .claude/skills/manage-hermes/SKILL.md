@@ -13,7 +13,7 @@ Run Hermes commands as `ssh vps docker exec hermes hermes [-p <profile>] <comman
 
 ## Steps for every live change
 
-1. **Ask**: name the exact commands and any restart, and get the user's go-ahead. A live change is a real run, like a Deploy.
+1. **Ask**: name the exact commands and any restart, and get the user's go-ahead. A live change is a real run, like a Deploy. First run `agent-manager reservations` (when it's on PATH): if another session holds `live/vps/hermes`, it is changing Hermes live, so name it and its note in the question.
 2. **Check cards**: `hermes kanban list`. A restart or Deploy kills running workers, and their cards rerun from the start. If any are running, wait, or ask.
 3. **Back up**: `cp <file> /opt/data/backups/<file>.pre-<change>` before editing. The hourly config history only snapshots at :50, so an edit and its rollback within the hour aren't in it.
 4. **Change**: prefer `hermes config set <key> <value>`, because `hermes config` is interactive only. Edit `config.yaml` directly only for structures `config set` can't express (lists such as `gateway.profile_routes`). Profiles keep theirs in `/opt/data/profiles/<name>/config.yaml`.
