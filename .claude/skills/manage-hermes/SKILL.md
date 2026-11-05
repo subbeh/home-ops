@@ -13,12 +13,12 @@ Run Hermes commands as `ssh vps docker exec hermes hermes [-p <profile>] <comman
 
 ## Steps for every live change
 
-1. **Ask**: name the exact commands and any restart, and get the user's go-ahead. A live change is a real run, like a Deploy. First run `agent-manager reservations` (when it's on PATH): if another session holds `live/vps/hermes`, it is changing Hermes live, so name it and its note in the question.
+1. **Ask**: name the exact commands and any restart, and get the user's go-ahead. A live change is a real run, like a Deploy. First, when `agent-manager` is on PATH, lease Hermes: `agent-manager reserve live/vps/hermes --note "<what and why>" --ttl 1h --json`. A non-empty `conflicts` list means another session is changing Hermes live: release yours (`agent-manager release-files live/vps/hermes`) and name the holder and its note in the question. Hold the lease through step 6; reserving again from the same session renews it, so a Deploy handed to the deploy skill doesn't conflict with it.
 2. **Check cards**: `hermes kanban list`. A restart or Deploy kills running workers, and their cards rerun from the start. If any are running, wait, or ask.
 3. **Back up**: `cp <file> /opt/data/backups/<file>.pre-<change>` before editing. The hourly config history only snapshots at :50, so an edit and its rollback within the hour aren't in it.
 4. **Change**: prefer `hermes config set <key> <value>`, because `hermes config` is interactive only. Edit `config.yaml` directly only for structures `config set` can't express (lists such as `gateway.profile_routes`). Profiles keep theirs in `/opt/data/profiles/<name>/config.yaml`.
 5. **Reload**: the gateway reads routes, Kanban dispatcher settings, plugins and `.env` only at startup, so run `docker restart hermes` (step 2 first). Skills need only `/reload-skills` in Discord.
-6. **Test**: `hermes -p <profile> chat --oneshot -Q -q "<prompt>"` for a Profile, model, tool or plugin. Done when the answer shows the change working.
+6. **Test**: `hermes -p <profile> chat --oneshot -Q -q "<prompt>"` for a Profile, model, tool or plugin. Done when the answer shows the change working. Then `agent-manager release-files live/vps/hermes`.
 7. **Record**: add or edit a line in the one-time setup list in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header, and update the docs page it touches. No hook catches a change made only on the vps. Commit on main with the hooks on.
 
 To undo, restore from the backup or the config history ([Rolling back config](../../../docs/services/hermes/running.md#rolling-back-config)), then restart.

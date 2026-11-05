@@ -14,8 +14,8 @@ covers:
 
 1. **Scope**: work out which Services changed and which Hosts they're assigned to (`docs/hosts.md`). A Service on more than one Host needs `--limit <host>`.
 2. **Preview**: run `just ansible::playbook services --tags <services> [--limit <host>] --check --diff`. Done when it ends with no failed tasks. Summarize the changes for the user; Services with `no_log` show none, so say so.
-3. **Leases**: when `agent-manager` is on PATH, run `agent-manager reservations` and look for `live/<host>/<service>` on each selected Service. A holder is another session changing that Service live: name it and its note when you ask for the go-ahead, and ask even when the Deploy was already asked for.
-4. **Deploy**: only when the user asked for a real Deploy in the current turn. `/deploy <services>` is that ask; `--check` or "preview" means stop after step 2. Run the same command without `--check --diff`, and report the recap.
+3. **Lease**: when `agent-manager` is on PATH, reserve each selected Service on its Host: `agent-manager reserve live/<host>/<service> --note "<what and why>" --ttl 1h --json`. It always succeeds; a non-empty `conflicts` list means another session is changing that Service live. Then release yours (`agent-manager release-files live/<host>/<service>`), name the holder and its note to the user, and ask before going on, even when the Deploy was already asked for.
+4. **Deploy**: only when the user asked for a real Deploy in the current turn. `/deploy <services>` is that ask; `--check` or "preview" means stop after step 2. Run the same command without `--check --diff`, and report the recap. Release the leases by path once the result is checked (`release-files` with no path drops every lease you hold).
 
 ## Gotchas
 
