@@ -26,6 +26,9 @@
 #      `kanban.max_in_progress: 2` (read at gateway start, so `docker restart hermes`), and the
 #      orchestrator's cli toolsets are kanban and memory only. No ops profile on the board. Discord
 #      subscriptions stay on plain notices; the hermes-kanban-notices post-task keeps it that way.
+#      A notice posts only the summary's first line, so the researcher, writer and reviewer SOUL.md
+#      each write their full output to a markdown file listed in kanban_complete's `artifacts`,
+#      which Discord gets as an upload.
 #   6. Langfuse prices (docs/services/hermes/profiles.md): Hermes sends no cost for opencode-go, so
 #      each model gets a Langfuse model definition (Settings > Models, match
 #      `(?i)^(opencode-go/)?<model>$`) at the off-peak rates on https://opencode.ai/docs/go/, with

@@ -11,7 +11,7 @@ Hermes's [Kanban board](https://hermes-agent.nousresearch.com/docs/user-guide/fe
 1. In Discord, `/kanban create --triage "<goal>"` creates a root card for the goal.
 2. Triage splits the goal into child cards with dependencies: research first, then writing, then review.
 3. After the split, the **orchestrator** owns the root card (`kanban.orchestrator_profile: orchestrator`). It routes each child to a Profile by its description. A child that names no existing Profile goes to researcher (`kanban.default_assignee`).
-4. The gateway's dispatcher starts a worker for each card that is ready, at most two at once (`kanban.max_in_progress`, for memory: [safety.md](safety.md#resource-limits)). The worker runs as its Profile, does the job and puts its notes or deliverable in the card's result. Results go in the card, not in files, because a card's scratch workspace is deleted when it completes.
+4. The gateway's dispatcher starts a worker for each card that is ready, at most two at once (`kanban.max_in_progress`, for memory: [safety.md](safety.md#resource-limits)). The worker runs as its Profile, does the job and hands in its full notes or deliverable as a markdown file listed in `kanban_complete`'s `artifacts`, for Discord ([Notices in Discord](#notices-in-discord)). The card's `result` field goes unused: it reaches neither Discord nor the next worker. A child card's context carries each done parent's summary and `metadata`, each cut short. A card's scratch workspace is deleted when it completes, but Hermes first copies declared artifacts into the card's attachments.
 5. Workers never create cards. Follow-ups go in their summary, and the orchestrator plans them.
 6. When every child is done, the orchestrator writes a short summary on the root card (what was delivered, what is uncertain, what is left) and closes it.
 
@@ -31,6 +31,8 @@ The chat that created a goal is subscribed to its cards' events. A subscription 
 
 - `notify`: a plain notice in the channel, with the card's summary and its result files.
 - `notify+wake`: the notice, and the subscribed Profile also takes a turn to act on it.
+
+A notice shows only the card's title and the first line of its summary, cut at 200 characters. The card's result isn't posted. Files reach the channel only as uploads: each path in `kanban_complete`'s `artifacts`, or a file path named in the summary or result. So each worker's SOUL.md tells it to write its full output to a markdown file and list it in `artifacts`. Without that, the researcher once put its whole deliverable in `metadata`, and Discord got a cut-short line.
 
 `/kanban create` always subscribes with `notify+wake`, and cards copy their parent's and creator's subscriptions, so cards the orchestrator adds mid-run get it too. Waking is wrong here: it wakes the default Profile, which has no kanban tools in Discord and digs through `kanban.db` by hand instead of posting the result.
 
