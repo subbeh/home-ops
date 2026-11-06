@@ -34,7 +34,7 @@ aven:
 
   containers:
     - name: aven
-      image: ghcr.io/raine/aven:0.1.54@sha256:06ec1b172d6aa6343657404512be0fceefc25bb8ca0328fc8675cdeb391b7e1e
+      image: ghcr.io/raine/aven:0.1.55@sha256:6c401ceef9fbab0dfa58301ddc0735b969c9326e74593f150705e4e119c63098
       labels:
         traefik.enable: "true"
         traefik.http.services.aven.loadbalancer.server.port: "3746"
@@ -44,7 +44,7 @@ aven:
         - "{{ services_data_dir }}/aven/data:/data"
         - "{{ services_data_dir }}/shared:/shared"
     - name: aven-mcp
-      image: ghcr.io/raine/aven:0.1.54@sha256:06ec1b172d6aa6343657404512be0fceefc25bb8ca0328fc8675cdeb391b7e1e
+      image: ghcr.io/raine/aven:0.1.55@sha256:6c401ceef9fbab0dfa58301ddc0735b969c9326e74593f150705e4e119c63098
       # Wildcard bind so hermes can reach it over the services network; --sync replaces aven daemon.
       # shortcut: --workspace only sets the default, every tool can still name another workspace;
       # upgrade when aven can scope a token or device to one workspace.
