@@ -10,6 +10,9 @@
       --work-tree={{ services_data_dir }}/hermes/data init -q
     creates: "{{ services_data_dir }}/hermes/config-history/HEAD"
   become_user: "{{ services_user }}"
+  # The apps user has no home, so Ansible's default ~/.ansible/tmp can't be created.
+  vars:
+    ansible_remote_tmp: /tmp/.ansible-apps
 
 - name: hermes | Write config history ignore list
   ansible.builtin.copy:
