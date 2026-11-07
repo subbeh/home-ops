@@ -247,7 +247,7 @@ TOOLS = [
     (deploy, _schema("homelab_deploy",
         "Deploy one Service to the vps by starting the Semaphore services template with its tag. The "
         "user approves each call in Discord; semaphore and hermes are never deployable. Returns once the "
-        "task starts: follow it with homelab_tasks and homelab_task_output.",
+        "task starts: give the user its url, then follow it with homelab_tasks and homelab_task_output.",
         {"service": {"type": "string", "description": "Service name, as in ansible/services/<name>.yaml"}},
         ["service"])),
 ]
