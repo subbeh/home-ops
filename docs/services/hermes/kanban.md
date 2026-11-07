@@ -8,7 +8,7 @@ Hermes's [Kanban board](https://hermes-agent.nousresearch.com/docs/user-guide/fe
 
 ## How a goal becomes cards
 
-1. In Discord, `/kanban create --triage "<goal>"` creates a root card for the goal.
+1. In the Discord home channel, `/thread name:<goal> message:/kanban create --triage "<goal>"` opens a public thread for the goal and creates its root card from inside it ([Goal threads](#goal-threads)).
 2. Triage splits the goal into child cards with dependencies: research first, then writing, then review.
 3. After the split, the **orchestrator** owns the root card (`kanban.orchestrator_profile: orchestrator`). It routes each child to a Profile by its description. A child that names no existing Profile goes to researcher (`kanban.default_assignee`).
 4. The gateway's dispatcher starts a worker for each card that is ready, at most two at once (`kanban.max_in_progress`, for memory: [safety.md](safety.md#resource-limits)). The worker runs as its Profile, does the job and hands in its full notes or deliverable as a markdown file listed in `kanban_complete`'s `artifacts`, for Discord ([Notices in Discord](#notices-in-discord)). The card's `result` field goes unused: it reaches neither Discord nor the next worker. A child card's context carries each done parent's summary and `metadata`, each cut short. A card's scratch workspace is deleted when it completes, but Hermes first copies declared artifacts into the card's attachments.
@@ -27,9 +27,9 @@ Review is the costly part of a goal: the reviewer's model is the most expensive 
 
 ## Notices in Discord
 
-The chat that created a goal is subscribed to its cards' events. A subscription has a delivery mode:
+The chat that created a goal is subscribed to its cards' events: the channel, or the thread when the goal was created inside one. A subscription has a delivery mode:
 
-- `notify`: a plain notice in the channel, with the card's summary and its result files.
+- `notify`: a plain notice in that chat, with the card's summary and its result files.
 - `notify+wake`: the notice, and the subscribed Profile also takes a turn to act on it.
 
 A notice shows only the card's title and the first line of its summary, cut at 200 characters. The card's result isn't posted. Files reach the channel only as uploads: each path in `kanban_complete`'s `artifacts`, or a file path named in the summary or result. So each worker's SOUL.md tells it to write its full output to a markdown file and list it in `artifacts`. Without that, the researcher once put its whole deliverable in `metadata`, and Discord got a cut-short line.
@@ -44,6 +44,16 @@ So every Discord subscription is kept on plain `notify`. The [`hermes-kanban-not
 Before the gateway first creates `kanban.db`, the task does nothing; the next Deploy adds the triggers.
 
 Confusing part: the triggers depend on `kanban.db`'s schema, which an image Version Bump can change. They are a shortcut until Hermes has a setting for notify-only subscriptions.
+
+## Goal threads
+
+Each goal gets its own thread, so its notices and result uploads stay out of the channel.
+
+- The subscription records the thread the goal was created in, and cards copy it, so every card's notices go there, including cards the orchestrator adds mid-run.
+- The native `/kanban` slash command never opens a thread: run in the channel, its notices land in the channel.
+- Hermes's `/thread` command does both steps at once: it opens the thread, then runs its `message` there as a command.
+- Run it in the home channel. Hermes opens `/thread` without a starter message, which Discord makes a private thread. The bot is denied private threads there ([profiles.md](profiles.md)), so Hermes posts the message in the channel and opens a public thread from it. In other channels the thread is private.
+- Running `/kanban create` inside an existing thread works too.
 
 ## What a Deploy does to running cards
 

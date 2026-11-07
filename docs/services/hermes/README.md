@@ -45,7 +45,7 @@ Why one container and not one per bot: the vps has little memory free and no swa
 4. One route exists: #ops and its threads go to the **ops** Profile. Every other message falls to the **default** Profile: routing isn't a deny list, so the Discord allowlist is what keeps strangers out.
 5. A route whose target Profile doesn't exist makes the gateway reject the message. It doesn't fall back to default.
 6. That Profile answers. It may spawn subagents on cheaper or stronger models ([profiles.md](profiles.md)), and it asks you in Discord before any dangerous command ([safety.md](safety.md)).
-7. `/kanban create --triage "<goal>"` hands a goal to the Kanban team instead. Results come back as notices in the same channel ([kanban.md](kanban.md)).
+7. `/thread name:<goal> message:/kanban create --triage "<goal>"` hands a goal to the Kanban team instead. It opens a thread for the goal, and results come back there as notices ([kanban.md](kanban.md)).
 
 Upstream: [multi-profile gateways](https://hermes-agent.nousresearch.com/docs/user-guide/multi-profile-gateways).
 

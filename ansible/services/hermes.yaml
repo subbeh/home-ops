@@ -18,7 +18,8 @@
 #   4. `hermes config set approvals.mode manual`: the default `smart` lets a model approve
 #      dangerous commands; manual asks in Discord and denies after 5 minutes.
 #   5. Kanban team (docs/services/hermes/kanban.md): profiles cloned from default, no own bots;
-#      goals start with `/kanban create --triage` in Discord. Models: orchestrator
+#      goals start with `/thread name:<goal> message:/kanban create --triage "<goal>"` in the
+#      home channel, which gives each goal a public thread for its notices. Models: orchestrator
 #      deepseek-v4.1-flash, researcher glm-5.3-flash, writer deepseek-v4-pro, reviewer
 #      kimi-k3.1-pro (docs/services/hermes/profiles.md says why). Hermes drafted each description
 #      and SOUL.md; the user approved them. `kanban.orchestrator_profile: orchestrator`,
