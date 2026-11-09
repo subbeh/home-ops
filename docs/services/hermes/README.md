@@ -92,7 +92,7 @@ morning-brief, plan-day and wrap-up also start on their own each day, at 06:30, 
 |---|---|
 | [profiles.md](profiles.md) | Which Profiles exist, their models and jobs, cron jobs, model costs and Langfuse, how to add a Profile |
 | [keys.md](keys.md) | How keys get from Bitwarden into each Profile, and why not through the dashboard |
-| [kanban.md](kanban.md) | How a goal becomes cards, the review loop, Discord notices, what a Deploy does to running cards |
+| [kanban.md](kanban.md) | How a goal becomes cards, the review loop, Discord notices, quota alerts, what a Deploy does to running cards |
 | [safety.md](safety.md) | Approvals, the socket proxy, resource limits, what one Profile can see of another |
 | [running.md](running.md) | Deploying hermes, rotating a key, rolling back config, reading logs, common failures |
 

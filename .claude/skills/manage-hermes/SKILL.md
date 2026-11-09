@@ -39,6 +39,7 @@ The `cron create` commands in the `hermes.yaml` header are working examples; the
 - **Threads**: with `cron.mirror_delivery` on, a home-channel run opens a thread, which can end up private. A job that should post a plain message gets `attach_to_session: false` (header step 13 has the command).
 - **Routed Profiles** (ops): their cron output isn't delivered yet ([upstream #144455](https://github.com/NousResearch/hermes-agent/issues/144455)). Read it in `/opt/data/profiles/<name>/cron/output/<job id>/`.
 - **Pre-check scripts** get a scrubbed env: pass a key through with `hermes -p <profile> config set terminal.env_passthrough '[<KEY>]'`. Ship the script from the repo through `hermes.yaml`, as `actions-failures.py` is.
+- **No-model jobs**: `--no-agent` runs only the script and delivers its stdout. To post somewhere else, such as a goal's thread, the script calls `hermes send -t discord:<chat id>` itself, as `quota-alerts.py` does.
 - **Test** with `hermes [-p <profile>] cron run <id>` and check Discord. Test a delivery change with a throwaway job, and remove it afterwards.
 
 ## Hermes skills

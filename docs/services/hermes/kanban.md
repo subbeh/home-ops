@@ -1,6 +1,7 @@
 ---
 covers:
   - ansible/services/tasks/hermes-kanban-notices.yaml
+  - ansible/services/data/hermes/quota-alerts.py
 ---
 # The Kanban team
 
@@ -44,6 +45,22 @@ So every Discord subscription is kept on plain `notify`. The [`hermes-kanban-not
 Before the gateway first creates `kanban.db`, the task does nothing; the next Deploy adds the triggers.
 
 Confusing part: the triggers depend on `kanban.db`'s schema, which an image Version Bump can change. They are a shortcut until Hermes has a setting for notify-only subscriptions.
+
+## Quota alerts
+
+The `quota-alerts` cron job ([profiles.md](profiles.md#cron-jobs)) runs [`quota-alerts.py`](../../../ansible/services/data/hermes/quota-alerts.py) every 15 minutes. It posts three kinds of notice:
+
+| Notice | When | Where |
+|---|---|---|
+| Stuck card | A `ready` or `running` card's last 3 finished runs were all rate-limited. Says the Profile, model, how long, the reset time from its worker log, and how to switch model | The goal's thread, else the home channel |
+| Review round | A goal with an open card reaches its third reviewer card, and again on each later one | The goal's thread |
+| Spend spike | OpenCode Go spend, as Langfuse prices it, over the last 60 minutes passes the limit in the script (`SPEND_LIMIT`). Traces from other tools in the same Langfuse project don't count | The home channel |
+
+A stuck card needs this because Hermes requeues a rate-limited run without counting a failure: the card never blocks, nothing reaches Discord, and it holds a Kanban slot. A stuck card or a spike alerts once per spell, and alerts again only after a normal run, or once spend drops back under the limit. State is in `/opt/data/scripts/quota-alerts.seen.json`.
+
+The job runs with `--no-agent` and posts through `hermes send`, so it makes no model call, even when a notice goes out, and still works when the limit has hit every model. A crash in the script posts its error to the home channel. The script reads `kanban.db` and the Langfuse keys in `/opt/data/.env` directly.
+
+Confusing part: the review count groups cards by their goal's thread, so a goal started in a channel rather than a thread isn't counted, and the spend figure inherits Langfuse's off-peak prices ([profiles.md](profiles.md#models-and-costs)).
 
 ## Goal threads
 

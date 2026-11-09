@@ -99,6 +99,10 @@
 #      `hermes -p <name> config set web.search_backend searxng` and
 #      `... web.extract_backend firecrawl`, so searches go to the searxng Service and only page
 #      reads spend Firecrawl credits. Without the pins, autodetect picks Firecrawl for both.
+#  16. Default cron job quota-alerts (docs/services/hermes/kanban.md#quota-alerts): every 15 min the
+#      quota-alerts.py script, shipped below, posts its own notices with no model call.
+#      `hermes cron create "every 15m" --name quota-alerts --script quota-alerts.py --no-agent
+#      --deliver discord` (the target for the script's own errors; notices choose their own).
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -168,6 +172,8 @@ hermes:
       content: "{{ services | difference(['semaphore', 'hermes']) | to_json }}"
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/actions-failures.py"
       src: hermes/actions-failures.py
+    - dest: "{{ services_data_dir }}/hermes/data/scripts/quota-alerts.py"
+      src: hermes/quota-alerts.py
 
   containers:
     - image: nousresearch/hermes-agent:v0.23.0@sha256:adb7890916de63245523492be8f68f9d2095fecbec4e2a6dab7960381f0fc002

@@ -48,6 +48,7 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 | Job | Profile | Schedule | What it does |
 |---|---|---|---|
 | `actions-failures` | `ops` | every 15 min | Posts one diagnosis in #ops per GitHub Actions run of home-ops that failed since the last check |
+| `quota-alerts` | `default` | every 15 min | Posts a notice for a Kanban card stuck on the usage limit, a goal's third or later review round, or a spend spike. No model call ([kanban.md](kanban.md#quota-alerts)) |
 | `morning-brief` | `default` | daily 06:30 | Posts the weather, the last day's headlines on the USER.md topics and today's aven tasks to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)), as a plain message: the job's `attach_to_session: false` keeps it out of a thread |
 | `plan-day` | `default` | daily 06:45 | Starts the [plan-day skill](README.md#planning-and-focus-skills) in the home channel |
 | `wrap-up` | `default` | daily 21:00 | Starts the wrap-up skill in the home channel |
