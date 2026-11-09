@@ -16,6 +16,13 @@
       dependencyDashboardApproval: true,
     },
     {
+      // Tags are <date>-<commit>, and docker versioning reads the commit as a compatibility
+      // suffix, so no tag would ever count as newer. Compare the date only.
+      description: "SearXNG date tags",
+      matchPackageNames: ["searxng/searxng"],
+      versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-[0-9a-f]+$",
+    },
+    {
       description: "Reduce Terraform lock file update frequency",
       matchManagers: ["terraform"],
       matchUpdateTypes: ["lockFileMaintenance"],
