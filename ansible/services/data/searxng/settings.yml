@@ -1,0 +1,9 @@
+---
+# Only what differs from upstream's defaults: https://docs.searxng.org/admin/settings/index.html
+use_default_settings:
+  engines:
+    # A short list keeps each query fast and light; engines that block the vps's datacenter IP get dropped.
+    keep_only: [bing, brave, duckduckgo, google, mojeek, startpage, wikipedia]
+search:
+  # Hermes reads /search?format=json.
+  formats: [html, json]

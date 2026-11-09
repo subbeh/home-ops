@@ -89,6 +89,11 @@
 #      and background_review, `hermes -p <name> config set auxiliary.<task>.provider opencode-go`
 #      and `... auxiliary.<task>.model deepseek-v4.1-flash`; `auxiliary.compression.reasoning_effort
 #      low`; and `auxiliary.vision` the same way on glm-5.3-flash. `docker restart hermes` after.
+#  15. Web backends, for default, researcher, writer and reviewer
+#      (docs/services/hermes/README.md#web-search-and-page-reads):
+#      `hermes -p <name> config set web.search_backend searxng` and
+#      `... web.extract_backend firecrawl`, so searches go to the searxng Service and only page
+#      reads spend Firecrawl credits. Without the pins, autodetect picks Firecrawl for both.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -123,6 +128,8 @@ hermes:
         HERMES_LANGFUSE_CAPTURE: metadata
       web:
         FIRECRAWL_API_KEY: "{{ bws_secrets.HERMES_FIRECRAWL_API_KEY }}"
+        # The searxng Service, over the services network; used once web.search_backend pins it.
+        SEARXNG_URL: http://searxng:8080
       # The aven-mcp container's bearer token (aven.yaml), read by config.yaml's mcp_servers.aven header.
       aven:
         AVEN_MCP_TOKEN: "{{ bws_secrets.AVEN_MCP_TOKEN }}"

@@ -14,6 +14,7 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 | [karakeep](../../ansible/services/karakeep.yaml) | Bookmark manager with full-text search and page archiving | vps | [karakeep.vps.sbbh.cloud](https://karakeep.vps.sbbh.cloud) |  |
 | [opengym](../../ansible/services/opengym.yaml) | Workout tracker | vps | [gym.vps.sbbh.cloud](https://gym.vps.sbbh.cloud) |  |
 | [restic](../../ansible/services/restic.yaml) | Hourly encrypted backups of /opt/data to a Hetzner Storage Box | vps |  |  |
+| [searxng](../../ansible/services/searxng.yaml) | SearXNG metasearch, the web search backend for Hermes | vps |  |  |
 | [semaphore](../../ansible/services/semaphore.yaml) | Ansible UI that runs Auto-deploys | vps | [semaphore.vps.sbbh.cloud](https://semaphore.vps.sbbh.cloud) |  |
 | [syncthing](../../ansible/services/syncthing.yaml) | File sync between devices | vps | [syncthing.vps.sbbh.cloud](https://syncthing.vps.sbbh.cloud) |  |
 | [traefik](../../ansible/services/traefik.yaml) | Reverse proxy with a wildcard TLS cert for tailnet-only Services | vps | [traefik.vps.sbbh.cloud](https://traefik.vps.sbbh.cloud) |  |

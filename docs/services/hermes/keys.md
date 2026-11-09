@@ -23,7 +23,7 @@ A **Key set** is a named group of secrets a Profile may get. [`hermes.yaml`](../
 | Key set | BWS keys | Lands in `.env` as |
 |---|---|---|
 | `model` | `HERMES_OPENCODE_GO_API_KEY`, `HERMES_LANGFUSE_PUBLIC_KEY`, `HERMES_LANGFUSE_SECRET_KEY` | `OPENCODE_GO_API_KEY`, `HERMES_LANGFUSE_PUBLIC_KEY`, `HERMES_LANGFUSE_SECRET_KEY` (plus `HERMES_LANGFUSE_CAPTURE`, not a secret) |
-| `web` | `HERMES_FIRECRAWL_API_KEY` | `FIRECRAWL_API_KEY` |
+| `web` | `HERMES_FIRECRAWL_API_KEY` | `FIRECRAWL_API_KEY` (plus `SEARXNG_URL`, not a secret: [README.md](README.md#web-search-and-page-reads)) |
 | `aven` | `AVEN_MCP_TOKEN` | `AVEN_MCP_TOKEN`, the bearer token for the aven MCP server ([README.md](README.md#tasks-over-mcp)) |
 | `semaphore` | `HERMES_OPS_SEMAPHORE_TOKEN` | `HERMES_OPS_SEMAPHORE_TOKEN`, the `hermes-ops` Semaphore user's token, read by the homelab plugin ([profiles.md](profiles.md#the-homelab-plugin)) |
 | `github` | `HERMES_GITHUB_ACTIONS_TOKEN` | `GITHUB_ACTIONS_TOKEN`, a fine-grained token for the home-ops repo with Actions: read, for the actions-failures cron job ([profiles.md](profiles.md#cron-jobs)) |
