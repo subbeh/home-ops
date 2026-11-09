@@ -58,7 +58,7 @@ The `quota-alerts` cron job ([profiles.md](profiles.md#cron-jobs)) runs [`quota-
 
 A stuck card needs this because Hermes requeues a rate-limited run without counting a failure: the card never blocks, nothing reaches Discord, and it holds a Kanban slot. A stuck card or a spike alerts once per spell, and alerts again only after a normal run, or once spend drops back under the limit. State is in `/opt/data/scripts/quota-alerts.seen.json`.
 
-The job runs with `--no-agent` and posts through `hermes send`, so it makes no model call, even when a notice goes out, and still works when the limit has hit every model. A crash in the script posts its error to the home channel. The script reads `kanban.db` and the Langfuse keys in `/opt/data/.env` directly.
+The job runs with `--no-agent` and posts through `hermes send`, so it makes no model call, even when a notice goes out, and still works when the limit has hit every model. A crash in the script posts its error to the home channel. The script reads `kanban.db` and the Langfuse keys in `/opt/data/.env` directly. Cron strips the bot token from a script's env, so `hermes send` reads it from that `.env` too, written there by the `discord` Key set ([keys.md](keys.md)).
 
 Confusing part: the review count groups cards by their goal's thread, so a goal started in a channel rather than a thread isn't counted, and the spend figure inherits Langfuse's off-peak prices ([profiles.md](profiles.md#models-and-costs)).
 

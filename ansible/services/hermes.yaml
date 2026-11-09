@@ -149,9 +149,13 @@ hermes:
       # job logs need a token even on a public repo.
       github:
         GITHUB_ACTIONS_TOKEN: "{{ bws_secrets.HERMES_GITHUB_ACTIONS_TOKEN }}"
+      # The bot token again, for quota-alerts' `hermes send`: cron strips bot tokens from a script's
+      # env, and `hermes send` falls back to the Profile's .env.
+      discord:
+        DISCORD_BOT_TOKEN: "{{ bws_secrets.HERMES_DISCORD_BOT_TOKEN }}"
     # Profile name: the key sets its .env gets. A listed profile that doesn't exist yet is skipped.
     hermes_profiles:
-      default: [model, web, aven]
+      default: [model, web, aven, discord]
       orchestrator: [model, web]
       researcher: [model, web]
       writer: [model, web]

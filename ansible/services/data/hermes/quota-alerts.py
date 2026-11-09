@@ -31,7 +31,7 @@ DATA = Path(__file__).resolve().parent.parent
 
 
 def post(target, text):
-    r = subprocess.run(["hermes", "send", "-q", "-t", target, text], capture_output=True, text=True, timeout=60)
+    r = subprocess.run(["hermes", "send", "-t", target, text], capture_output=True, text=True, timeout=60)
     if r.returncode:
         sys.exit(f"hermes send to {target} failed: {r.stderr or r.stdout}")
 
