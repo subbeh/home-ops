@@ -19,11 +19,11 @@ Hermes's [Kanban board](https://hermes-agent.nousresearch.com/docs/user-guide/fe
 
 The reviewer reads the card's acceptance criteria, the writer's output and the researcher's sources. It returns PASS, FAIL or BLOCKED, with a punch-list, and never edits the work.
 
-On FAIL, the orchestrator adds two chained cards: a writer fix, then a reviewer recheck. That repeats until a recheck passes. A blocked card is unblocked only once its cause is fixed, since a card that is still broken just fails again.
+On FAIL, the orchestrator adds two chained cards: a writer fix, then a reviewer recheck. After two failed rechecks on one deliverable it adds no more: it blocks the root card with kind `needs_input`, giving the latest punch-list and asking the user what to do. Without that cap, one goal looped through three more drafts and spent about $13 in three hours. A blocked card is unblocked only once its cause is fixed, since a card that is still broken just fails again.
 
 `kanban.review_dispatch` is `false`. When true, Hermes runs its own review step on finished cards. Off, the reviewer is an ordinary card and review stays a manual gate.
 
-Review is the costly part of a goal: the reviewer's model is the most expensive one and reads everything the others wrote.
+Review is the costly part of a goal: the reviewer reads everything the others wrote, and re-reads it on every call. So it spot-checks about 5 citations rather than all of them, within a turn cap ([profiles.md](profiles.md)).
 
 ## Notices in Discord
 

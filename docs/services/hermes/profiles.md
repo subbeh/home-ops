@@ -15,7 +15,7 @@ A **Profile** is one persona of Hermes: its own model, persona, memory, skills, 
 | `orchestrator` | Splits a Kanban goal into cards, routes them, writes the final summary | deepseek-v4.1-flash | Board only: kanban and memory, so it routes work instead of doing it |
 | `researcher` | Gathers facts with web search, cites sources | glm-5.3-flash | Default toolsets |
 | `writer` | Turns research notes into the deliverable | deepseek-v4-pro | Default toolsets |
-| `reviewer` | Checks the writer's work against the card: PASS or FAIL with a punch-list, never edits | kimi-k3.1-pro | Default toolsets |
+| `reviewer` | Checks the writer's work against the card: PASS or FAIL with a punch-list, never edits | mimo-v2.6-pro | Default toolsets |
 | `ops` | The homelab specialist, in #ops: checks status and logs, proposes changes as repo edits and Deploys, never makes them live by hand | deepseek-v4.1-flash | Default toolsets without web and browser on Discord, plus the [homelab plugin](#the-homelab-plugin) |
 
 The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`, and its `memories/USER.md` holds the user's profile (timezone, location, reply style, brief topics, workday, personal day and quiet hours), which Hermes wrote from a Discord chat. To change it, tell Hermes in Discord: it rewrites the file itself, within `memory.user_char_limit`. The file goes to the model provider every turn.
@@ -35,7 +35,11 @@ Tools that let ops answer "what's down?" or "how did the last Deploy go?" from t
 
 The plugin reads `HERMES_OPS_SEMAPHORE_TOKEN` from ops' `.env` on each call ([keys.md](keys.md)), so the token never reaches the terminal or the model. Gatus and Semaphore are reached over the services network, without a login for Gatus. `scripts/hermes-homelab.test.py` (`just docs-test`) checks the response parsing and the Deploy gate; `hermes plugins doctor ansible/services/data/hermes/homelab --ci` checks that it loads.
 
-Why these models: researcher does many tool calls, so it gets the model with a large request allowance. The reviewer judges in few turns, and it is from a different model family than the writer, so it doesn't favour its own family's output.
+Why these models: researcher does many tool calls, so it gets the model with a large request allowance. The reviewer is from a different model family than the writer, so it doesn't favour its own family's output.
+
+The reviewer re-reads its whole context on every call, so cached-read price sets its cost. On kimi-k3.1-pro one review took 55 calls at about 150k cached tokens each, and reviews used about $5.90 of the week's $8. mimo-v2.6-pro prices cached reads at about 2% of Kimi's. For a high-stakes review, put one card back on Kimi with `hermes kanban set-model <card> kimi-k3.1-pro --provider opencode-go`.
+
+Its `agent.max_turns` is 40, where the other Profiles keep 500. A worker that reaches the cap is told to answer without tools, so it can't call `kanban_complete`: the card counts as a protocol violation and reruns, up to 3 in a row, and the review is lost. So its `SOUL.md` spot-checks about 5 citations and finishes by turn 30.
 
 ## Cron jobs
 
@@ -69,6 +73,8 @@ Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set
 
 All Profiles use provider `opencode-go`. [OpenCode Go](https://opencode.ai/docs/go/) is a subscription with a monthly allowance per model, counted in dollars at per-token prices, with shorter 5-hour and weekly caps on top. A model that runs out stops answering until its window resets, so the cheap model with the largest allowance does the everyday work.
 
+OpenCode's page lists these caps per model, but in practice the weekly cap is shared: when reviews on one model hit it (`GoUsageLimitError`, `limitName: weekly`), every Profile stopped, whichever model it runs.
+
 **Subagents.** When the default Profile delegates a subtask, the advanced-delegation plugin picks the model by route ([upstream](https://github.com/NousResearch/hermes-official-plugins/tree/main/advanced-delegation)):
 
 - `fast` (the default): deepseek-v4.1-flash, for lookups and research.
@@ -78,13 +84,13 @@ Subagents don't spawn subagents of their own (depth 1). `hermes delegation confi
 
 **Auxiliary tasks.** Hermes runs side tasks on a model of their own (`auxiliary.<task>` in each Profile's `config.yaml`). On `auto`, a task uses the Profile's main model, so writer and reviewer would spend their small allowances on compaction and titles. In every Profile, compression (at low reasoning effort), title generation, approval and the background review run on deepseek-v4.1-flash instead. Vision runs on glm-5.3-flash, since writer's model reads no images. The other auxiliary tasks stay on `auto`. To see which models a Profile's calls used, side tasks included, run `hermes -p <profile> insights --days 1` and read "Models Used".
 
-**Traces and prices.** The langfuse plugin sends a trace of every main-agent model call to Langfuse Cloud (auxiliary calls aren't traced), with metadata only (`HERMES_LANGFUSE_CAPTURE: metadata`), so chat content stays off it. Hermes knows no prices for opencode-go and sends no cost, so Langfuse computes it from its own model definitions (Settings > Models), one per model at OpenCode Go's off-peak rates. Because Go's allowance is counted in dollars at those rates, the cost Langfuse shows is the allowance used.
+**Traces and prices.** The langfuse plugin sends a trace of every main-agent model call to Langfuse Cloud (auxiliary calls aren't traced), with metadata only (`HERMES_LANGFUSE_CAPTURE: metadata`), so chat content stays off it. Hermes knows no prices for opencode-go and sends no cost, so Langfuse computes it from its own model definitions (Settings > Models), one per model at OpenCode Go's off-peak rates. Because Go's allowance is counted in dollars at those rates, the cost Langfuse shows is the allowance used. A definition prices only calls made after it exists, and Langfuse doesn't backfill, so earlier calls show no cost.
 
 Confusing part: DeepSeek models bill double during peak hours, but Langfuse has one price per model, so peak-hour calls show at half their real cost. The response carries the exact charge, but Hermes doesn't read it yet.
 
 To read traces through the API, use `/api/public/v2/observations` with a time range and `fields=core,basic,usage,model`. Without `model` and `usage` in `fields`, those come back empty, which looks like missing data.
 
-**Fallback.** OpenCode Go's 5-hour, weekly and monthly caps are per model, so when a Profile's model fails a turn (its cap, a rate limit, a 5xx, an unknown model), Hermes retries that turn on another Go model from a different family, and says so in the reply. Fallback is per turn: the next message tries the Profile's own model first again.
+**Fallback.** When a Profile's model fails a turn (its cap, a rate limit, a 5xx, an unknown model), Hermes retries that turn on another Go model from a different family, and says so in the reply. Fallback is per turn: the next message tries the Profile's own model first again. It doesn't help once the shared weekly cap is hit, since the fallback model is refused too.
 
 - **glm-5.3-flash**: default, ops, orchestrator, writer and reviewer. Reviewer's fallback still differs from writer's family.
 - **deepseek-v4.1-flash**: researcher, which runs GLM itself.
