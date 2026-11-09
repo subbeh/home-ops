@@ -2,16 +2,12 @@
 # Only what differs from upstream's defaults: https://docs.searxng.org/admin/settings/index.html
 use_default_settings:
   engines:
-    # A short list keeps each query fast and light. google (403) and duckduckgo (CAPTCHA) block the
-    # vps's datacenter IP, so they're left out.
-    keep_only: [bing, brave, mojeek, startpage, wikipedia]
-# Upstream disables these by default.
+    # A short list keeps each query fast and light. Left out: google (403) and duckduckgo (CAPTCHA)
+    # block the vps's datacenter IP; mojeek and startpage are inactive upstream (proof-of-work CAPTCHAs).
+    keep_only: [bing, brave, wikipedia]
 engines:
+  # Upstream disables it by default.
   - name: bing
-    disabled: false
-  - name: mojeek
-    disabled: false
-  - name: startpage
     disabled: false
 search:
   # Hermes reads /search?format=json.
