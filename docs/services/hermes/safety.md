@@ -15,6 +15,23 @@ Hermes reads the web and runs commands, so a web page can try to steer it (promp
 - Runs with nobody to ask, such as cron jobs, get Deny.
 - "Allow Session" and "Always Allow" skip the question for that kind of command from then on. Review `command_allowlist` in `config.yaml` now and then.
 - `approvals.mode: off` and a session's `/yolo` skip approvals. Don't use them.
+- `hermes approvals suggest` proposes allowlist entries from past approvals. Apply only read-only ones: cron runs anything on the allowlist unattended. Its one proposal so far, the whole "script execution via -e/-c flag" class, was rejected.
+
+## Hard deny rules
+
+`approvals.deny` in every Profile's `config.yaml` holds globs for commands no Profile should run. A match is blocked outright, with no approval card, even under `/yolo`. So a mis-tap on a card can't let one through. Setup step 17 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header sets them. Upstream: [security](https://hermes-agent.nousresearch.com/docs/user-guide/security).
+
+| Blocks | Globs |
+|---|---|
+| Deleting the data dir | `*rm -rf /opt/data*`, `*rm -fr /opt/data*` |
+| Permissions on Profile homes | `*chmod */opt/data*`, `*chown */opt/data*` |
+| Piping a download into a shell | for `curl` and `wget`, each with `sh` and `bash`: `*curl *\| sh`, `*curl *\| sh *`, `*curl *\|sh`, `*curl *\|sh *`, `*curl *\| sudo sh*` |
+| Writing `config.yaml` or `.env` | for each file: `*>*config.yaml`, `*>*config.yaml *`, `*tee *config.yaml*`, `*sed -i*config.yaml*`, `*cp *config.yaml`, `*mv *config.yaml` |
+
+- **Matching**: case-insensitive fnmatch against the whole command and against each command in it (`cd x && rm …`). That's why every glob starts with `*`. `cp` and `mv` match only when the file is the last argument, so copying a config out still works.
+- **Test a change**: `hermes -p <name> approvals test -- "<command>"` runs the real guards without executing anything. Exit 3 means denied.
+- **Not blocked**: `hermes config set` (it doesn't name the file), reads such as `cat config.yaml`, and `curl … | jq` or `| grep sh`.
+- **Terminal only**: the globs see terminal commands, not the write_file and patch tools. Those already refuse the Profile's own `config.yaml`, but not another Profile's. Relative paths, `python -c` and similar also get past the globs. Like the rest of this page, they stop mistakes, not a determined attacker.
 
 ## The Docker socket proxy
 

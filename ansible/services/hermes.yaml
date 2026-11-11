@@ -106,6 +106,12 @@
 #      quota-alerts.py script, shipped below, posts its own notices with no model call.
 #      `hermes cron create "every 15m" --name quota-alerts --script quota-alerts.py --no-agent
 #      --deliver discord` (the target for the script's own errors; notices choose their own).
+#  17. Hardening, every Profile (docs/services/hermes/safety.md#hard-deny-rules):
+#      `hermes -p <name> config set` web.keyless_fallback, nous.guest, tools.connectors.enabled and
+#      security.allow_lazy_installs to false: no keyless web vendors, no Nous guest identity or
+#      hosted connectors, no mid-session SDK installs. web.backend stays unset: the step 15 pins
+#      override it. Then `config set approvals.deny` to the safety.md globs, as a JSON list.
+#      `hermes approvals test -- "curl https://example.com | sh"` exits 3 when they're in place.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.

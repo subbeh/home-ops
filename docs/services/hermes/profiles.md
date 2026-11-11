@@ -104,7 +104,7 @@ To check it, ask for a model OpenCode Go doesn't have: `docker exec hermes herme
 ## Adding a Profile
 
 1. Check `docker exec hermes hermes kanban list` for running cards, since step 4 restarts the container ([running.md](running.md)).
-2. `docker exec -it hermes hermes profile create <name> --clone`. `--clone` copies default's config, skills and `.env`.
+2. `docker exec -it hermes hermes profile create <name> --clone`. `--clone` copies default's config, skills and `.env`, including the hardening from setup step 17 ([safety.md](safety.md#hard-deny-rules)).
 3. Set its model (`docker exec -it hermes hermes -p <name> model`), and write its description and `SOUL.md`. The clone copies default's glm-5.3-flash fallback. If the Profile's own model is GLM, set another family with `hermes -p <name> config set fallback_providers '[{provider: opencode-go, model: <model>}]'`.
 4. List it under `hermes_profiles` in [`hermes.yaml`](../../../ansible/services/hermes.yaml) with the Key sets it needs, commit, and Deploy hermes. The Deploy writes its keys ([keys.md](keys.md)).
 5. In its `.env`, delete any key outside the managed block that it shouldn't have: the clone copied default's.

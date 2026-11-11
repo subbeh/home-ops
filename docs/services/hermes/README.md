@@ -73,6 +73,7 @@ Hermes has two web tools, and each goes to its own backend:
 - **The pins matter**: without them Hermes autodetects one backend for both tools, and a paid key wins over `SEARXNG_URL`. The Firecrawl key still reaches each Profile, unused, as a fallback if Tavily's free tier goes.
 - **Internal only**: `searxng` has no Traefik route. Only containers on the services network reach it.
 - **Engines**: `ansible/services/data/searxng/settings.yml` keeps a short engine list. Some engines block datacenter IPs like the vps's; drop one that keeps showing in a response's `unresponsive_engines`.
+- **No keyless vendors**: every Profile sets `web.keyless_fallback: false` (setup step 17). Otherwise a Profile without a backend or key, or a failed call, would spread queries across the free tiers of Exa, Parallel, Firecrawl and Keenable.
 - **Credits**: Tavily's credits move only for page reads; check them in its dashboard. When they run out, `web_extract` fails and workers can only search.
 
 ## Planning and focus skills
