@@ -25,7 +25,10 @@
 #      `hermes -p reviewer config set agent.max_turns 40`. Hermes drafted each description
 #      and SOUL.md; the user approved them. The reviewer's SOUL.md spot-checks about 5 citations
 #      and finishes by turn 30, since a worker out of turns can't call kanban_complete; the
-#      orchestrator's blocks the goal after two failed rechecks. `kanban.orchestrator_profile: orchestrator`,
+#      orchestrator's blocks the goal after two failed rechecks. No further reviewer cap: on mimo a
+#      review costs under 1% of its monthly allowance (kimi took 114% in 11 days), so the 40-turn
+#      limit is the only one. shortcut: no cap on review rounds, upgrade if reviewer spend passes
+#      about 10% of mimo's allowance in a month. `kanban.orchestrator_profile: orchestrator`,
 #      `kanban.default_assignee: researcher`, `kanban.review_dispatch: false`,
 #      `kanban.max_in_progress: 1` (read at gateway start, so `docker restart hermes`), and the
 #      orchestrator's cli toolsets are kanban and memory only. No ops profile on the board. Discord
