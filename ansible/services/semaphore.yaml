@@ -38,7 +38,7 @@ semaphore:
       group: 0
 
   containers:
-    - image: semaphoreui/semaphore:v2.19.17@sha256:008dacd9f1adbd92e8a048f1786ae1dd9bed2a352aca2eb30b9837de5706e7f7
+    - image: semaphoreui/semaphore:v2.20.24@sha256:c547d31cba238bee4a9f2b5eec9d0f42b2d5ecb399377a2e63008500d74fbf3a
       labels:
         traefik.enable: "true"
         traefik.http.services.semaphore.loadbalancer.server.port: "3000"
