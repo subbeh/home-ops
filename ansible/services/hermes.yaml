@@ -27,7 +27,7 @@
 #      and finishes by turn 30, since a worker out of turns can't call kanban_complete; the
 #      orchestrator's blocks the goal after two failed rechecks. `kanban.orchestrator_profile: orchestrator`,
 #      `kanban.default_assignee: researcher`, `kanban.review_dispatch: false`,
-#      `kanban.max_in_progress: 2` (read at gateway start, so `docker restart hermes`), and the
+#      `kanban.max_in_progress: 1` (read at gateway start, so `docker restart hermes`), and the
 #      orchestrator's cli toolsets are kanban and memory only. No ops profile on the board. Discord
 #      subscriptions stay on plain notices; the hermes-kanban-notices post-task keeps it that way.
 #      A notice posts only the summary's first line, so the researcher, writer and reviewer SOUL.md
@@ -97,8 +97,8 @@
 #  15. Web backends, for default, researcher, writer and reviewer
 #      (docs/services/hermes/README.md#web-search-and-page-reads):
 #      `hermes -p <name> config set web.search_backend searxng` and
-#      `... web.extract_backend firecrawl`, so searches go to the searxng Service and only page
-#      reads spend Firecrawl credits. Without the pins, autodetect picks Firecrawl for both.
+#      `... web.extract_backend tavily`, so searches go to the searxng Service and only page
+#      reads spend Tavily credits. Without the pins, autodetect picks one paid backend for both.
 #  16. Default cron job quota-alerts (docs/services/hermes/kanban.md#quota-alerts): every 15 min the
 #      quota-alerts.py script, shipped below, posts its own notices with no model call.
 #      `hermes cron create "every 15m" --name quota-alerts --script quota-alerts.py --no-agent
@@ -136,6 +136,9 @@ hermes:
         HERMES_LANGFUSE_SECRET_KEY: "{{ bws_secrets.HERMES_LANGFUSE_SECRET_KEY }}"
         HERMES_LANGFUSE_CAPTURE: metadata
       web:
+        # Page reads (web.extract_backend tavily): the free tier's monthly credits.
+        TAVILY_API_KEY: "{{ bws_secrets.HERMES_TAVILY_API_KEY }}"
+        # The old page-read backend, unused while the pins name tavily; a fallback if its free tier goes.
         FIRECRAWL_API_KEY: "{{ bws_secrets.HERMES_FIRECRAWL_API_KEY }}"
         # The searxng Service, over the services network; used once web.search_backend pins it.
         SEARXNG_URL: http://searxng:8080
@@ -186,7 +189,7 @@ hermes:
       # host; the default (the container ID) changes on each recreate, leaving cards to the 15m TTL.
       hostname: hermes
       # The vps has no swap, so a runaway agent would OOM other Services; this keeps it in its own
-      # cgroup. About 0.8-1.05 GB at rest, plus about 290 MB per Kanban worker, capped at 2 by
+      # cgroup. About 0.8-1.05 GB at rest, plus about 290 MB per Kanban worker, capped at 1 by
       # kanban.max_in_progress (docs/services/hermes/safety.md#resource-limits).
       memory: 2g
       cpus: 1.5

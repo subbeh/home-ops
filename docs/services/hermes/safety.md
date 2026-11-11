@@ -30,7 +30,7 @@ Hermes may list containers and read their logs, so it can tell what's wrong with
 The vps has no swap, so a runaway agent could get other Services killed for memory. The container has its own memory and CPU caps in `hermes.yaml`: 2 GiB and 1.5 CPUs.
 
 - **At rest**: about 0.8 GB after a restart, growing to about 1.05 GB over a day. The gateway and the dashboard take about 450 MB each.
-- **Kanban workers**: each running card is a worker of about 290 MB. `kanban.max_in_progress: 2` in the default Profile's `config.yaml` lets at most two run at once; the rest wait as `ready`. Two workers on top of a day-old baseline come to about 1.65 GB, leaving the rest for tool runs.
+- **Kanban workers**: each running card is a worker of about 290 MB. `kanban.max_in_progress: 1` in the default Profile's `config.yaml` lets one run at a time; the rest wait as `ready`. Memory allows two (about 1.65 GB on a day-old baseline), but workers run inside the gateway's Python process: two at once held its lock long enough to freeze the gateway for over 10 seconds, which dropped Discord and killed both workers.
 - Confusing part: unset isn't unlimited. Hermes then derives a cap from `/proc/meminfo`, which shows the vps's whole memory and not the container's limit, so it allowed 7 workers.
 - The gateway reads the cap at startup: after changing it, `docker restart hermes` (check `hermes kanban list` first, since a restart kills running workers).
 

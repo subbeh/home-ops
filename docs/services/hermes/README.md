@@ -34,7 +34,7 @@ covers:
 - **Plugins**: installed into the data dir, so they survive a container recreate. hermes-memory-wiki adds long-term notes, langfuse sends traces to Langfuse Cloud, and advanced-delegation picks the model for subagents ([profiles.md](profiles.md#models-and-costs)). The ops Profile also gets the homelab plugin, which lives in this repo ([profiles.md](profiles.md#the-homelab-plugin)).
 - **Socket proxy**: the separate `docker-socket-proxy` Service lets Hermes list containers and read their logs, and nothing else. See [safety.md](safety.md).
 - **Tasks**: the default Profile reads and changes your aven tasks over MCP. See [Tasks over MCP](#tasks-over-mcp).
-- **Web**: web search goes to the `searxng` Service, and page reads go to Firecrawl. See [Web search and page reads](#web-search-and-page-reads).
+- **Web**: web search goes to the `searxng` Service, and page reads go to Tavily. See [Web search and page reads](#web-search-and-page-reads).
 
 Why one container and not one per bot: the vps has little memory free and no swap, and each extra gateway costs about 400 MiB. So every new bot is a new Profile, never a new container. The price is weaker isolation between Profiles, covered in [safety.md](safety.md).
 
@@ -67,13 +67,13 @@ Hermes has two web tools, and each goes to its own backend:
 | Tool | Backend | Why |
 |---|---|---|
 | `web_search` | The `searxng` Service ([`searxng.yaml`](../../../ansible/services/searxng.yaml)) at `http://searxng:8080` | Free. Searches were about three quarters of the Firecrawl credits, at about 2 credits each |
-| `web_extract` (page reads) | Firecrawl's hosted API | SearXNG only searches and can't fetch pages. A self-hosted Firecrawl needs 8 GB+ and five containers, more than the vps has |
+| `web_extract` (page reads) | Tavily's hosted API | SearXNG only searches and can't fetch pages. Tavily's free tier gives about 1,000 credits a month, at about 1 credit per 5 pages. Firecrawl's free credits ran out mid-goal, and a self-hosted Firecrawl needs 8 GB+ and five containers, more than the vps has. A reader on the vps itself would fetch from a datacenter IP, which Cloudflare-fronted sites block |
 
-- **Where it's set**: each searching Profile (default, researcher, writer, reviewer) pins `web.search_backend: searxng` and `web.extract_backend: firecrawl` in its `config.yaml` (setup step 15 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). `SEARXNG_URL` reaches each Profile's `.env` through the `web` Key set ([keys.md](keys.md)).
-- **The pins matter**: without them Hermes autodetects one backend for both tools, and a Firecrawl key wins over `SEARXNG_URL`.
+- **Where it's set**: each searching Profile (default, researcher, writer, reviewer) pins `web.search_backend: searxng` and `web.extract_backend: tavily` in its `config.yaml` (setup step 15 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). `SEARXNG_URL` reaches each Profile's `.env` through the `web` Key set ([keys.md](keys.md)).
+- **The pins matter**: without them Hermes autodetects one backend for both tools, and a paid key wins over `SEARXNG_URL`. The Firecrawl key still reaches each Profile, unused, as a fallback if Tavily's free tier goes.
 - **Internal only**: `searxng` has no Traefik route. Only containers on the services network reach it.
 - **Engines**: `ansible/services/data/searxng/settings.yml` keeps a short engine list. Some engines block datacenter IPs like the vps's; drop one that keeps showing in a response's `unresponsive_engines`.
-- **Credits**: Firecrawl's `/v2/team/credit-usage` should now move only for page reads.
+- **Credits**: Tavily's credits move only for page reads; check them in its dashboard. When they run out, `web_extract` fails and workers can only search.
 
 ## Planning and focus skills
 

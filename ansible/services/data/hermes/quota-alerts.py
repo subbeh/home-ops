@@ -130,7 +130,7 @@ def hourly_spend():
             "fromStartTime": (now - timedelta(hours=1)).isoformat(),
             "toStartTime": now.isoformat(),
             "fields": "core,basic,usage,model,metadata",
-            "limit": 1000,  # far above an hour's generations; at most two workers run at once
+            "limit": 1000,  # far above an hour's generations; one worker runs at a time
         }
     )
     req = urllib.request.Request(
