@@ -2,6 +2,7 @@
 covers:
   - ansible/services/hermes.yaml
   - ansible/services/data/hermes/actions-failures.py
+  - ansible/services/data/hermes/go-usage.py
 ---
 # Profiles and models
 
@@ -49,7 +50,7 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 |---|---|---|---|
 | `actions-failures` | `ops` | every 15 min | Posts one diagnosis in #ops per GitHub Actions run of home-ops that failed since the last check |
 | `quota-alerts` | `default` | every 15 min | Posts a notice for a Kanban card stuck on the usage limit, a goal's third or later review round, or a spend spike. No model call ([kanban.md](kanban.md#quota-alerts)) |
-| `morning-brief` | `default` | daily 06:30 | Posts the weather, the last day's headlines on the USER.md topics and today's aven tasks to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)), as a plain message: the job's `attach_to_session: false` keeps it out of a thread |
+| `morning-brief` | `default` | daily 06:30 | Posts the weather, the last day's headlines on the USER.md topics, today's aven tasks and OpenCode Go usage to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)), as a plain message: the job's `attach_to_session: false` keeps it out of a thread |
 | `plan-day` | `default` | daily 06:45 | Starts the [plan-day skill](README.md#planning-and-focus-skills) in the home channel |
 | `wrap-up` | `default` | daily 21:00 | Starts the wrap-up skill in the home channel |
 
@@ -58,6 +59,8 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 **Not posted yet:** Hermes doesn't deliver a routed Profile's cron output once that Profile has had a local session ([upstream #144455](https://github.com/NousResearch/hermes-agent/issues/144455)): the run's record says `platform 'discord' not configured/enabled`. Until a Hermes release fixes it, each diagnosis is written only to `/opt/data/profiles/ops/cron/output/<job id>/` and `hermes -p ops cron list` shows the failed delivery.
 
 **Private threads:** with `cron.mirror_delivery` on, a cron run in the home channel opens a new thread so a reply continues the run's session. Hermes's Discord adapter creates it without a starter message, which Discord makes a private thread: only the bot and server admins can open it, and it never shows in the channel. So the bot is denied **Create Private Threads** in the home channel: the direct create fails, and Hermes falls back to posting a seed line (`🧵 Hermes handoff: …`) and opening a public thread from it. A job with `attach_to_session: false` skips the thread and posts a plain message.
+
+`morning-brief` runs [`go-usage.py`](../../../ansible/services/data/hermes/go-usage.py) as its pre-check script, which Ansible ships into default's `scripts/` dir. It reads the plan's usage meters and this billing month's spend per model from the OpenCode console API, the one behind the console's Billing drawer, with default's `OPENCODE_GO_API_KEY` from `/opt/data/.env`, and prints them for the brief, flagging anything over 75%. The API is undocumented, so a change on OpenCode's side shows up as "usage unavailable" in the brief rather than a missing brief: the script prints that on any failure. A manual `/morning-brief` has no pre-check, so the skill runs the script in the terminal.
 
 Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) reaches the script through ops' `terminal.env_passthrough`. That also hands it to ops' terminal in chats: a read-only token for a public repo's Actions.
 
@@ -72,9 +75,9 @@ Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set
 
 ## Models and costs
 
-All Profiles use provider `opencode-go`. [OpenCode Go](https://opencode.ai/docs/go/) is a subscription with a monthly allowance per model, counted in dollars at per-token prices, with shorter 5-hour and weekly caps on top. A model that runs out stops answering until its window resets, so the cheap model with the largest allowance does the everyday work.
+All Profiles use provider `opencode-go`. [OpenCode Go](https://opencode.ai/docs/go/) is a subscription (Go Plus here) counted in dollars at per-token prices. OpenCode's page lists a monthly allowance per model, with 5-hour and weekly caps at 20% and 50% of it, so the cheap model with the largest allowance does the everyday work.
 
-OpenCode's page lists these caps per model, but in practice the weekly cap is shared: when reviews on one model hit it (`GoUsageLimitError`, `limitName: weekly`), every Profile stopped, whichever model it runs.
+Confusing part: what actually blocks is one meter per window for the whole plan, shared by every model: 5 hours, the week (resets Monday 00:00 UTC) and the billing month (resets on the subscription date, not the 1st). The console's `go/status` API shows each meter's limit, use and reset time, and the morning brief prints them ([cron jobs](#cron-jobs)). When the weekly meter ran out (`GoUsageLimitError`, `limitName: weekly`), every Profile stopped, whichever model it runs.
 
 **Subagents.** When the default Profile delegates a subtask, the advanced-delegation plugin picks the model by route ([upstream](https://github.com/NousResearch/hermes-official-plugins/tree/main/advanced-delegation)):
 

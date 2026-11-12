@@ -92,6 +92,8 @@
 #      With cron.mirror_delivery on, a Discord cron run opens a thread; the brief needs no reply
 #      context, so it opts out and posts a plain message: in /opt/hermes, `HERMES_HOME=/opt/data .venv/bin/python -c
 #      'from cron.jobs import update_job; update_job("<id>", {"attach_to_session": False})'`.
+#      Its usage lines come from the go-usage.py pre-check script, shipped below:
+#      `hermes cron edit <id> --script go-usage.py`.
 #  14. Auxiliary models, every Profile (docs/services/hermes/profiles.md): on `auto` they use the
 #      Profile's main model. For each Profile and each of compression, title_generation, approval
 #      and background_review, `hermes -p <name> config set auxiliary.<task>.provider opencode-go`
@@ -190,6 +192,8 @@ hermes:
       src: hermes/actions-failures.py
     - dest: "{{ services_data_dir }}/hermes/data/scripts/quota-alerts.py"
       src: hermes/quota-alerts.py
+    - dest: "{{ services_data_dir }}/hermes/data/scripts/go-usage.py"
+      src: hermes/go-usage.py
 
   containers:
     - image: nousresearch/hermes-agent:v0.23.0@sha256:adb7890916de63245523492be8f68f9d2095fecbec4e2a6dab7960381f0fc002
