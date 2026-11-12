@@ -15,9 +15,6 @@
     ":semanticCommits",
     ":timezone(Australia/Melbourne)",
   ],
-  dependencyDashboard: {
-    title: "Renovate Dashboard 🤖",
-  },
   suppressNotifications: [
     "prEditedNotification",
     "prIgnoreNotification",

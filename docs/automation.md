@@ -12,7 +12,7 @@ How these pieces connect to each other is in [overview.md](overview.md). Only Ve
 
 ## Renovate
 
-The hosted Mend Renovate GitHub App ("Renovate Only", mode "Scan and Alert") reads `.renovaterc.json5` from `main`, which extends the presets in `.renovate/` (also fetched from `main`, so config changes only take effect once pushed). Commits are semantic (`fix(container): update image x ( a ➔ b )`), and the "Renovate Dashboard 🤖" issue lists every dependency, pending update and config problem.
+The hosted Mend Renovate GitHub App ("Renovate Only", mode "Scan and Alert") reads `.renovaterc.json5` from `main`, which extends the presets in `.renovate/` (also fetched from `main`, so config changes only take effect once pushed). Commits are semantic (`fix(container): update image x ( a ➔ b )`), and the "Dependency Dashboard" issue lists every dependency, pending update and config problem.
 
 | Target | Found by | Automerge |
 |---|---|---|
