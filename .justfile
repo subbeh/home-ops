@@ -55,3 +55,4 @@ docs-test:
     python3 -I {{ justfile_directory() }}/scripts/network.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-homelab.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-quota-alerts.test.py
+    python3 -I {{ justfile_directory() }}/scripts/hermes-go-usage.test.py
