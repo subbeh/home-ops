@@ -14,6 +14,13 @@ Draft. Facts that aren't in this repo are marked TODO.
 
 - Install Docker and the Docker Python SDK. The role only checks for them, through its preflight, and never installs them.
   > TODO(you): the exact install steps used.
+- Add a 2 GB swapfile. Without it Hermes's code keeps getting evicted from the page cache and its gateway stalls ([safety.md](../services/hermes/safety.md#gateway-stalls)):
+
+  ```sh
+  fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+  echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  printf 'vm.swappiness = 100\n' > /etc/sysctl.d/91-swap.conf && sysctl -p /etc/sysctl.d/91-swap.conf
+  ```
 
 ## 2. Tailnet
 

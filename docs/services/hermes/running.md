@@ -66,4 +66,5 @@ A restore writes into the live data dir. Run `docker restart hermes` afterwards 
 | The default Profile replies to a card notice by reading `kanban.db` | A subscription is on `notify+wake`. Deploy hermes, which switches it back and re-adds the triggers. |
 | The dashboard acts as if served over plain http behind traefik | `public_url` or `trusted_proxies` under `dashboard:` in `config.yaml` is wrong, so traefik's `X-Forwarded-Proto` is ignored (setup step 2 in the header). |
 | `hermes-gateway` is down in Gatus | The gateway crashed or Discord dropped. Check `docker logs hermes`; a restart (`docker restart hermes`) reconnects. |
+| `heartbeat blocked for more than 10 seconds` in the log, then a Kanban worker dies | The gateway's code is being re-read from disk because the vps is short of memory. Check `swapon --show` lists `/swapfile` ([safety.md](safety.md#gateway-stalls)). |
 | The container restarts under load | It hit its memory cap. Check `docker stats hermes`, and how many Kanban workers were running: more than one means `kanban.max_in_progress` is unset or the gateway wasn't restarted after setting it ([safety.md](safety.md#resource-limits)). |

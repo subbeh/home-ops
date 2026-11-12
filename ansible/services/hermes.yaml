@@ -197,7 +197,7 @@ hermes:
       # Kanban claims carry the hostname, and the dispatcher reclaims dead workers only for its own
       # host; the default (the container ID) changes on each recreate, leaving cards to the 15m TTL.
       hostname: hermes
-      # The vps has no swap, so a runaway agent would OOM other Services; this keeps it in its own
+      # The vps has 3.8 GB, so a runaway agent would OOM other Services; this keeps it in its own
       # cgroup. About 0.8-1.05 GB at rest, plus about 290 MB per Kanban worker, capped at 1 by
       # kanban.max_in_progress (docs/services/hermes/safety.md#resource-limits).
       memory: 2g

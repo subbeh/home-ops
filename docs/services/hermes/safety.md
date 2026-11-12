@@ -44,10 +44,19 @@ Hermes may list containers and read their logs, so it can tell what's wrong with
 
 ## Resource limits
 
-The vps has no swap, so a runaway agent could get other Services killed for memory. The container has its own memory and CPU caps in `hermes.yaml`: 2 GiB and 1.5 CPUs.
+The vps has 3.8 GB of memory, so a runaway agent could get other Services killed for memory. The container has its own memory and CPU caps in `hermes.yaml`: 2 GiB and 1.5 CPUs.
 
 - **At rest**: about 0.8 GB after a restart, growing to about 1.05 GB over a day. The gateway and the dashboard take about 450 MB each.
-- **Kanban workers**: each running card is a worker of about 290 MB. `kanban.max_in_progress: 1` in the default Profile's `config.yaml` lets one run at a time; the rest wait as `ready`. Memory allows two (about 1.65 GB on a day-old baseline), but workers run inside the gateway's Python process: two at once held its lock long enough to freeze the gateway for over 10 seconds, which dropped Discord and killed both workers.
+- **Kanban workers**: each running card is a worker process (`agent.managed_worker`, a child of the gateway) of about 290 MB. `kanban.max_in_progress: 1` in the default Profile's `config.yaml` lets one run at a time; the rest wait as `ready`. Two at once froze the gateway, which dropped Discord and killed both workers ([Gateway stalls](#gateway-stalls)).
+- **Swap**: the vps has a 2 GB swapfile, with `vm.swappiness = 100` ([rebuild-vps.md](../../runbooks/rebuild-vps.md)). Docker lets a capped container swap as much again as its cap, so hermes can reach 2 GiB of RAM plus 2 GiB of swap.
+
+### Gateway stalls
+
+Symptom: `heartbeat blocked for more than 10 seconds` in `docker logs hermes`, then `Managed worker lost: managed_worker_failed`, and the card's worker dies. It hit research cards that read many pages.
+
+- **Cause**: memory, not a lock. Without swap, the vps kept only about 860 MB for its page cache, so the kernel kept evicting Hermes's own code (Python, its venvs) and reading it back from disk: hermes read 841 GB from disk in 20 hours, 10 times more than any other container. A worker shrinks the cache further, and the gateway's event loop then waits seconds on each page it touches.
+- **Telling sign**: the loop thread's traceback, printed with each heartbeat line, lands on trivial code (a path join, a `stat`) and differs every time. Check with `workingset_refault_file` in the container's `memory.stat` under `/sys/fs/cgroup/system.slice/docker-<id>.scope/`, and with `/proc/pressure/io`.
+- **Fix**: the swapfile, so idle memory (karakeep, the dashboard) goes to disk once instead of Hermes's code being re-read all the time. If stalls come back, the vps needs more memory or fewer Services.
 - Confusing part: unset isn't unlimited. Hermes then derives a cap from `/proc/meminfo`, which shows the vps's whole memory and not the container's limit, so it allowed 7 workers.
 - The gateway reads the cap at startup: after changing it, `docker restart hermes` (check `hermes kanban list` first, since a restart kills running workers).
 
