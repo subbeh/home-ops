@@ -41,7 +41,7 @@ Ansible deploys self-hosted Services as Docker containers onto Hosts. Terraform 
 
 ### Issue tracker
 
-Issues are aven tasks in project `home-ops` (refs `HO-*`), kept off the public GitHub repo. See `docs/agents/issue-tracker.md`.
+Issues are aven tasks in project `home-ops` (refs `HO-*`), and Hermes work in project `hermes` (refs `HMS-*`), kept off the public GitHub repo. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

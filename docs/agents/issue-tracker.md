@@ -1,6 +1,6 @@
 # Issue tracker: aven
 
-Issues and specs for this repo live as tasks in aven, a local-first task manager synced over the tailnet, in project `home-ops` (refs `HO-*`). They stay off GitHub because the repo is public. Run `aven skill` for the full primer.
+Issues and specs for this repo live as tasks in aven, a local-first task manager synced over the tailnet, in project `home-ops` (refs `HO-*`), except Hermes work, which has its own project `hermes` (refs `HMS-*`). The repo's directory infers `home-ops`, so pass `--project hermes` for Hermes tasks. They stay off GitHub because the repo is public. Run `aven skill` for the full primer.
 
 ## Conventions
 
