@@ -67,9 +67,6 @@
 #      check, each with the log tail of its failed jobs. For each run, reply with its workflow,
 #      branch and link, the failing step, the likely cause quoting the decisive log line, and the
 #      fix to try. Diagnose only; change nothing."
-#      shortcut: Hermes doesn't deliver a routed Profile's cron output once it has a local session
-#      (https://github.com/NousResearch/hermes-agent/issues/144455), so diagnoses only reach ops'
-#      cron/output; recheck delivery when a Hermes bump carries that fix.
 #  11. Focus skills plan-day, start-task and wrap-up, default Profile only
 #      (docs/services/hermes/README.md): drafted by Hermes, approved by the user, in
 #      /opt/data/skills/productivity/<name>/SKILL.md. Edit them there, then `/reload-skills` in
