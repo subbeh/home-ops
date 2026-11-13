@@ -46,7 +46,7 @@ Each Service keeps its state in `/opt/data/<service>` (`services_data_dir`), own
 
 restic backs up all of `/opt/data` and `/opt/workspace` every hour, on the hour, to a dedicated Hetzner Storage Box sub-account over SFTP (`ansible/services/restic.yaml`). It excludes restic's own SSH key.
 
-- **Retention**: forget runs after every backup, groups snapshots by host alone, and keeps 12 hourly, 7 daily, 4 weekly and 6 monthly snapshots.
+- **Retention**: forget runs after every backup, treats all snapshots as one group (the container's hostname changes on every recreate), and keeps 12 hourly, 7 daily, 4 weekly and 6 monthly snapshots.
 - **Prune**: daily at 04:30, in its own container.
 - **Check**: monthly, reading 5% of the data, in its own container.
 

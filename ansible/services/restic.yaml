@@ -64,8 +64,9 @@ restic:
         # Excludes this service's own ssh key/known_hosts from the backup.
         RESTIC_BACKUP_ARGS: "--one-file-system --exclude-caches --exclude /data/restic"
         # Forget is cheap and runs after every backup; restic-prune reclaims the space.
-        # --group-by host: snapshots from before a source was added age out with the rest.
-        RESTIC_FORGET_ARGS: "--group-by host --keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
+        # --group-by tags: no snapshot has tags, so the keep rules span the whole repo. The
+        # default (host,paths) splits it, as the hostname changes whenever the container is recreated.
+        RESTIC_FORGET_ARGS: "--group-by tags --keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
         # go-cron, with a leading seconds field: every hour, on the hour.
         BACKUP_CRON: "0 0 * * * *"
         # Gatus's dead-man's-switch for this schedule; see `gatus:` above.
