@@ -1,6 +1,8 @@
 ---
 services_root: "{{ inventory_dir }}/services"
 services_data_dir: /opt/data
+# The laptop's workspace, synced by syncthing; outside services_data_dir so any Service can mount it.
+services_workspace_dir: /opt/workspace
 # Gatus reads every YAML file here; Services add theirs under services/ (roles/services/tasks/gatus.yaml).
 services_gatus_dir: "{{ services_data_dir }}/gatus/config"
 services_user: apps

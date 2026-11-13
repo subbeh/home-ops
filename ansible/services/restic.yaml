@@ -1,10 +1,11 @@
 ---
-# Backs up /opt/data to a dedicated Hetzner Storage Box sub-account over SFTP, using
-# mazzolino/restic (https://github.com/djmaze/resticker). Create the sub-account in
-# the Hetzner Robot console (keep it separate from the laptop's); its login, SSH key
-# and the repository password reach Secrets Manager through the dotfiles bws sync.
+# Backs up /opt/data and the synced workspace to a dedicated Hetzner Storage Box
+# sub-account over SFTP, using mazzolino/restic (https://github.com/djmaze/resticker).
+# Create the sub-account in the Hetzner Robot console (keep it separate from the
+# laptop's); its login, SSH key and the repository password reach Secrets Manager
+# through the dotfiles bws sync.
 restic:
-  description: Hourly encrypted backups of /opt/data to a Hetzner Storage Box
+  description: Hourly encrypted backups of /opt/data and the workspace to a Hetzner Storage Box
 
   no_log: true
 
@@ -54,15 +55,17 @@ restic:
       image: mazzolino/restic:1.8.2@sha256:685293a0bc77eb054b74b207561e7d2eda6cfc910984c5a93db8f253055118e2
       volumes:
         - "/opt/data:/data:ro"
+        - "{{ services_workspace_dir }}:/workspace:ro"
         - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
       env:
         RESTIC_REPOSITORY: sftp:storagebox:restic/vps
         RESTIC_PASSWORD: "{{ restic_password }}"
-        RESTIC_BACKUP_SOURCES: /data
+        RESTIC_BACKUP_SOURCES: /data /workspace
         # Excludes this service's own ssh key/known_hosts from the backup.
         RESTIC_BACKUP_ARGS: "--one-file-system --exclude-caches --exclude /data/restic"
         # Forget is cheap and runs after every backup; restic-prune reclaims the space.
-        RESTIC_FORGET_ARGS: "--keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
+        # --group-by host: snapshots from before a source was added age out with the rest.
+        RESTIC_FORGET_ARGS: "--group-by host --keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
         # go-cron, with a leading seconds field: every hour, on the hour.
         BACKUP_CRON: "0 0 * * * *"
         # Gatus's dead-man's-switch for this schedule; see `gatus:` above.

@@ -5,7 +5,7 @@ covers:
 ---
 # Restore Service data from restic
 
-The repository is `sftp:storagebox:restic/vps` on a Hetzner Storage Box sub-account. Its credentials are in Bitwarden Secrets Manager: `RESTIC_VPS_SSH_USER`, `RESTIC_VPS_SSH_KEY` and `RESTIC_VPS_PASSWORD`. Snapshot paths start with `/data/`, which is `/opt/data` on the Host (e.g. `/data/karakeep`).
+The repository is `sftp:storagebox:restic/vps` on a Hetzner Storage Box sub-account. Its credentials are in Bitwarden Secrets Manager: `RESTIC_VPS_SSH_USER`, `RESTIC_VPS_SSH_KEY` and `RESTIC_VPS_PASSWORD`. Snapshot paths start with `/data/`, which is `/opt/data` on the Host (e.g. `/data/karakeep`), or `/workspace/`, which is `/opt/workspace`. Snapshots from before the workspace moved hold it at `/data/syncthing/data/workspace`.
 
 > TODO(you): none of the restore commands below have been run end to end yet. Run them once against a test path and fix this page.
 

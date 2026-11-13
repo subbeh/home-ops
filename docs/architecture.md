@@ -40,13 +40,13 @@ Bitwarden Secrets Manager is the only place secrets live.
 
 ## Data
 
-Each Service keeps its state in `/opt/data/<service>` (`services_data_dir`), owned by the `apps` user (2000:2000). The role creates that directory for any Service with files or containers. Every container joins the `services` bridge network and gets the shared defaults from `services_container_defaults`. Each Deploy pulls images and recreates containers, then removes every image no container uses, so replaced versions don't fill the disk.
+Each Service keeps its state in `/opt/data/<service>` (`services_data_dir`), owned by the `apps` user (2000:2000). The role creates that directory for any Service with files or containers. The laptop's workspace, synced by syncthing, sits outside it in `/opt/workspace` (`services_workspace_dir`), also owned by `apps`, so any Service can mount it. Syncthing mounts it at its old path inside its data dir. Every container joins the `services` bridge network and gets the shared defaults from `services_container_defaults`. Each Deploy pulls images and recreates containers, then removes every image no container uses, so replaced versions don't fill the disk.
 
 ## Backups
 
-restic backs up all of `/opt/data` every hour, on the hour, to a dedicated Hetzner Storage Box sub-account over SFTP (`ansible/services/restic.yaml`). It excludes restic's own SSH key.
+restic backs up all of `/opt/data` and `/opt/workspace` every hour, on the hour, to a dedicated Hetzner Storage Box sub-account over SFTP (`ansible/services/restic.yaml`). It excludes restic's own SSH key.
 
-- **Retention**: forget runs after every backup and keeps 12 hourly, 7 daily, 4 weekly and 6 monthly snapshots.
+- **Retention**: forget runs after every backup, groups snapshots by host alone, and keeps 12 hourly, 7 daily, 4 weekly and 6 monthly snapshots.
 - **Prune**: daily at 04:30, in its own container.
 - **Check**: monthly, reading 5% of the data, in its own container.
 

@@ -5,6 +5,9 @@ syncthing:
   files:
     - dest: "{{ services_data_dir }}/syncthing/config"
     - dest: "{{ services_data_dir }}/syncthing/data"
+    - dest: "{{ services_workspace_dir }}"
+      owner: "{{ services_uid }}"
+      group: "{{ services_gid }}"
 
   containers:
     - image: ghcr.io/syncthing/syncthing:2.1.7@sha256:2b71da7c0d0a91a6ae5285ad079226fecc0a365d08b27720e1f7037b018f7546
@@ -16,6 +19,8 @@ syncthing:
       volumes:
         - "{{ services_data_dir }}/syncthing/config:/var/syncthing/config"
         - "{{ services_data_dir }}/syncthing/data:/var/syncthing/data"
+        # Keeps the workspace folder's path in Syncthing's config unchanged.
+        - "{{ services_workspace_dir }}:/var/syncthing/data/workspace"
       healthcheck:
         test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
         interval: 1m
