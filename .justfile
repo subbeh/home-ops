@@ -54,5 +54,6 @@ docs-test:
     {{ justfile_directory() }}/scripts/worktree-setup.test.sh
     python3 -I {{ justfile_directory() }}/scripts/network.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-homelab.test.py
+    python3 -I {{ justfile_directory() }}/scripts/hermes-homelab-incidents.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-quota-alerts.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-go-usage.test.py

@@ -2,6 +2,7 @@
 covers:
   - ansible/services/hermes.yaml
   - ansible/services/data/hermes/actions-failures.py
+  - ansible/services/data/hermes/homelab-incidents.py
   - ansible/services/data/hermes/go-usage.py
 ---
 # Profiles and models
@@ -17,11 +18,11 @@ A **Profile** is one persona of Hermes: its own model, persona, memory, skills, 
 | `researcher` | Gathers facts with web search, cites sources | glm-5.3-flash | Default toolsets |
 | `writer` | Turns research notes into the deliverable | deepseek-v4-pro | Default toolsets |
 | `reviewer` | Checks the writer's work against the card: PASS or FAIL with a punch-list, never edits | mimo-v2.6-pro | Default toolsets |
-| `ops` | The homelab specialist, in #ops: checks status and logs, proposes changes as repo edits and Deploys, never makes them live by hand | deepseek-v4.1-flash | Default toolsets without web and browser on Discord, plus the [homelab plugin](#the-homelab-plugin) |
+| `ops` | The homelab specialist, in #ops: checks status and logs, proposes changes as repo edits and Deploys, never makes them live by hand | deepseek-v4.1-flash | Default toolsets without web and browser on Discord and in cron jobs, plus the [homelab plugin](#the-homelab-plugin) |
 
 The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`, and its `memories/USER.md` holds the user's profile (timezone, location, reply style, brief topics, workday, personal day and quiet hours), which Hermes wrote from a Discord chat. To change it, tell Hermes in Discord: it rewrites the file itself, within `memory.user_char_limit`. The file goes to the model provider every turn.
 
-`ops` is reached through the #ops route ([README.md](README.md#how-a-message-flows)), not the board. It has no web or browser tools because it will hold Deploy power, so no web page should reach its context; it names what to look up instead. Its `SOUL.md` was drafted for it and approved by the user.
+`ops` is reached through the #ops route ([README.md](README.md#how-a-message-flows)), not the board. It has no web or browser tools, in chats or cron jobs, because it will hold Deploy power, so no web page should reach its context; it names what to look up instead. Its `SOUL.md` was drafted for it and approved by the user.
 
 ### The homelab plugin
 
@@ -49,12 +50,16 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 | Job | Profile | Schedule | What it does |
 |---|---|---|---|
 | `actions-failures` | `ops` | every 15 min | Posts one diagnosis in #ops per GitHub Actions run of home-ops that failed since the last check |
+| `homelab-incidents` | `ops` | every 15 min | Posts one diagnosis in #ops per incident: a Gatus endpoint newly down, read against its container's logs and recent Deploys |
+| `homelab-report` | `ops` | daily 06:30 | Posts what needs attention in the homelab to #ops: endpoints down, containers exited or restarting, failed Deploys. Nothing when all is well |
 | `quota-alerts` | `default` | every 15 min | Posts a notice for a Kanban card stuck on the usage limit, a goal's third or later review round, or a spend spike. No model call ([kanban.md](kanban.md#quota-alerts)) |
 | `morning-brief` | `default` | daily 06:30 | Posts the weather, the last day's headlines on the USER.md topics, today's aven tasks and OpenCode Go usage to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)), as a plain message: the job's `attach_to_session: false` keeps it out of a thread |
 | `plan-day` | `default` | daily 06:45 | Starts the [plan-day skill](README.md#planning-and-focus-skills) in the home channel |
 | `wrap-up` | `default` | daily 21:00 | Starts the wrap-up skill in the home channel |
 
 `actions-failures` runs [`actions-failures.py`](../../../ansible/services/data/hermes/actions-failures.py), which Ansible ships into ops' `scripts/` dir. It lists the repo's latest 50 finished runs, keeps the failed ones it hasn't seen (a re-run that fails again counts as new), and prints each with the last 60 log lines up to its error, so ops diagnoses it in one model call. Its first run only records what already failed. Runs from fork PRs are left out, since their logs are a stranger's text. When GitHub is down it stays silent; a rejected token fails the job, and Hermes posts the error.
+
+`homelab-incidents` runs [`homelab-incidents.py`](../../../ansible/services/data/hermes/homelab-incidents.py), shipped beside `actions-failures.py`. It reads Gatus's statuses over the services network and counts an endpoint as down once its last 3 checks failed, Gatus's own alert threshold, so the wake matches the Pushover alert and a Deploy's restart doesn't count. An endpoint wakes ops once: it stays on the script's down list until a check finds it up, so a long outage gets one diagnosis, and Pushover stays the alert path. When Gatus itself doesn't answer, that is the incident. ops then reads the container's logs and recent Deploys with the [homelab plugin](#the-homelab-plugin). `homelab-report` has no script: it makes one model call each morning and answers `[SILENT]`, which Hermes doesn't post, when nothing needs attention.
 
 **Not posted yet:** Hermes doesn't deliver a routed Profile's cron output once that Profile has had a local session ([upstream #144455](https://github.com/NousResearch/hermes-agent/issues/144455)): the run's record says `platform 'discord' not configured/enabled`. Until a Hermes release fixes it, each diagnosis is written only to `/opt/data/profiles/ops/cron/output/<job id>/` and `hermes -p ops cron list` shows the failed delivery.
 

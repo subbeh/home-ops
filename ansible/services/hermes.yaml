@@ -52,8 +52,8 @@
 #      inherit it. A Profile cloned from default copies default's chain.
 #   8. ops Profile (docs/services/hermes/profiles.md): cloned from default, model
 #      deepseek-v4.1-flash, the user-approved SOUL.md, no Kanban description.
-#      `hermes -p ops tools disable --platform discord web browser`: ops will hold Deploy
-#      power, so no web page reaches its context. In default's config.yaml, `gateway.profile_routes`
+#      `hermes -p ops tools disable --platform discord web browser`, and the same for `--platform
+#      cron`: ops will hold Deploy power, so no web page reaches its context. In default's config.yaml, `gateway.profile_routes`
 #      sends #ops (`platform: discord`, `chat_id: "1567034921732808805"`) and its threads to ops.
 #   9. homelab plugin, ops Profile only (docs/services/hermes/profiles.md): after the Deploy that
 #      first copies it, `hermes -p ops plugins enable homelab`, then `docker restart hermes`.
@@ -114,6 +114,22 @@
 #      hosted connectors, no mid-session SDK installs. web.backend stays unset: the step 15 pins
 #      override it. Then `config set approvals.deny` to the safety.md globs, as a JSON list.
 #      `hermes approvals test -- "curl https://example.com | sh"` exits 3 when they're in place.
+#  18. ops cron jobs homelab-incidents and homelab-report (docs/services/hermes/profiles.md):
+#      every 15 min the homelab-incidents.py pre-check, shipped below, wakes ops only for a Gatus
+#      endpoint newly down. `hermes -p ops cron create "every 15m" "<prompt>" --name
+#      homelab-incidents --script homelab-incidents.py --deliver discord:1567034921732808805`,
+#      with the prompt: "The script output lists homelab endpoints Gatus reports down since the
+#      last check, each with its latest failure. For each, find its container with
+#      homelab_containers, read its logs with homelab_container_logs, and check recent Deploys with
+#      homelab_tasks (and homelab_task_output for one that touched it or failed). Reply with the
+#      endpoint, its container's state, the likely cause quoting the decisive log line, and the fix
+#      to try. Diagnose only; change nothing and start no Deploy." Then `hermes -p ops cron create
+#      "30 6 * * *" "<prompt>" --name homelab-report --deliver discord:1567034921732808805`
+#      (the container's TZ is local), with the prompt: "Morning homelab check. Read
+#      homelab_status, homelab_containers and homelab_tasks with limit 20. If every endpoint is up,
+#      no container has exited or keeps restarting, and no Deploy in the last 24 hours failed, reply
+#      with exactly [SILENT]. Otherwise list only what needs attention, one line each: what, since
+#      when, and the likely cause. Change nothing."
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -190,6 +206,8 @@ hermes:
       content: "{{ services | difference(['semaphore', 'hermes']) | to_json }}"
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/actions-failures.py"
       src: hermes/actions-failures.py
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/homelab-incidents.py"
+      src: hermes/homelab-incidents.py
     - dest: "{{ services_data_dir }}/hermes/data/scripts/quota-alerts.py"
       src: hermes/quota-alerts.py
     - dest: "{{ services_data_dir }}/hermes/data/scripts/go-usage.py"
