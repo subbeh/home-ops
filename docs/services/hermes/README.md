@@ -22,6 +22,7 @@ covers:
  │  dashboard (port 9119) ◄── traefik ◄── hermes.vps.sbbh.cloud
  │  plugins: memory wiki, Langfuse traces, delegation    │
  │  /opt/data: every Profile's files, kanban.db          │
+ │  /vault: the notes vault, synced with the laptop      │
  └────────┬──────────────────────────────────────────────┘
           │ /run/docker-proxy/proxy.sock (read-only mount)
  docker-socket-proxy ── container list and logs only ──► Docker
@@ -34,6 +35,7 @@ covers:
 - **Plugins**: installed into the data dir, so they survive a container recreate. hermes-memory-wiki adds long-term notes, langfuse sends traces to Langfuse Cloud, and advanced-delegation picks the model for subagents ([profiles.md](profiles.md#models-and-costs)). The ops Profile also gets the homelab plugin, which lives in this repo ([profiles.md](profiles.md#the-homelab-plugin)).
 - **Socket proxy**: the separate `docker-socket-proxy` Service lets Hermes list containers and read their logs, and nothing else. See [safety.md](safety.md).
 - **Tasks**: the default Profile reads and changes your aven tasks over MCP. See [Tasks over MCP](#tasks-over-mcp).
+- **Vault**: a folder of markdown notes, synced with the laptop and mounted at `/vault`, where default and the Kanban Profiles keep their notes, with an hourly git history. See [vault.md](vault.md).
 - **Web**: web search goes to the `searxng` Service, and page reads go to Tavily. See [Web search and page reads](#web-search-and-page-reads).
 
 Why one container and not one per bot: the vps has little memory free, and each extra gateway costs about 400 MiB. So every new bot is a new Profile, never a new container. The price is weaker isolation between Profiles, covered in [safety.md](safety.md).
@@ -95,6 +97,7 @@ morning-brief, plan-day and wrap-up also start on their own each day, at 06:30, 
 | [keys.md](keys.md) | How keys get from Bitwarden into each Profile, and why not through the dashboard |
 | [kanban.md](kanban.md) | How a goal becomes cards, the review loop, Discord notices, quota alerts, what a Deploy does to running cards |
 | [safety.md](safety.md) | Approvals, the socket proxy, resource limits, what one Profile can see of another |
+| [vault.md](vault.md) | Where the notes vault lives, which Profiles write it, its hourly history and how to roll a note back |
 | [running.md](running.md) | Deploying hermes, rotating a key, rolling back config, reading logs, common failures |
 
 The one-time setup steps (picking the model, installing plugins, ...) are the checklist in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header. Hermes owns its `config.yaml` and edits it itself, so Ansible never writes it: those settings are made by hand and recorded in that header.

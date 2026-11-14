@@ -138,6 +138,12 @@
 # `sudo -u apps git --git-dir=../config-history checkout <commit> -- <file>`
 # (docs/services/hermes/running.md#rolling-back-config).
 #
+# Vault (docs/services/hermes/vault.md): the laptop's /data/workspace/vault, synced by syncthing to
+# /opt/workspace/vault, is mounted read-write at /vault. The `vault` Key set gives default and the
+# Kanban Profiles WIKI_PATH=/vault (the llm-wiki skill reads it); ops gets none. The
+# hermes-vault-history post-task commits it hourly to the vault's own .git, which syncs too; that
+# cron is its only committer, so never commit from the laptop.
+#
 # Provider and tool keys go into each profile's own .env, never into env below or the dashboard:
 # the hermes-profile-keys post-task writes each hermes_profiles entry's key sets from BWS
 # (docs/services/hermes/keys.md, https://github.com/NousResearch/hermes-agent/issues/147922).
@@ -176,24 +182,31 @@ hermes:
       # job logs need a token even on a public repo.
       github:
         GITHUB_ACTIONS_TOKEN: "{{ bws_secrets.HERMES_GITHUB_ACTIONS_TOKEN }}"
+      # Not a secret: the vault mount below, read by the llm-wiki skill.
+      vault:
+        WIKI_PATH: /vault
       # The bot token again, for quota-alerts' `hermes send`: cron strips bot tokens from a script's
       # env, and `hermes send` falls back to the Profile's .env.
       discord:
         DISCORD_BOT_TOKEN: "{{ bws_secrets.HERMES_DISCORD_BOT_TOKEN }}"
     # Profile name: the key sets its .env gets. A listed profile that doesn't exist yet is skipped.
     hermes_profiles:
-      default: [model, web, aven, discord]
-      orchestrator: [model, web]
-      researcher: [model, web]
-      writer: [model, web]
-      reviewer: [model, web]
+      default: [model, web, aven, discord, vault]
+      orchestrator: [model, web, vault]
+      researcher: [model, web, vault]
+      writer: [model, web, vault]
+      reviewer: [model, web, vault]
       ops: [model, semaphore, github]
 
   tasks:
-    post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml, hermes-config-history.yaml]
+    post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml, hermes-config-history.yaml, hermes-vault-history.yaml]
 
   files:
     - dest: "{{ services_data_dir }}/hermes/data"
+    # Created before the mount, so Docker doesn't create it as root; syncthing fills it.
+    - dest: "{{ services_workspace_dir }}/vault"
+      owner: "{{ services_uid }}"
+      group: "{{ services_gid }}"
     # In ops' own plugins dir, so no other Profile can load its tools (ansible/services/data/).
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/plugins/homelab"
       src: hermes/homelab
@@ -227,6 +240,7 @@ hermes:
       volumes:
         - "{{ services_data_dir }}/hermes/data:/opt/data"
         - "{{ services_data_dir }}/shared:/shared"
+        - "{{ services_workspace_dir }}/vault:/vault"
         # The docker-socket-proxy Service's filtered socket: proxy.sock, list and logs only.
         - "{{ services_data_dir }}/docker-socket-proxy:/run/docker-proxy:ro"
       env:

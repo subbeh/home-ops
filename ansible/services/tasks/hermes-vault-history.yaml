@@ -1,0 +1,39 @@
+---
+# Commits the vault (the synced /opt/workspace/vault) to a git repo inside it every hour; see
+# docs/services/hermes/vault.md#history-and-rollback. The .git syncs to the laptop like the notes,
+# so the history reads on both sides, and this cron is its only committer. Never pushed: restic
+# already backs it up.
+- name: hermes | Create vault history repo
+  ansible.builtin.command:
+    cmd: git init -q {{ services_workspace_dir }}/vault
+    creates: "{{ services_workspace_dir }}/vault/.git/HEAD"
+  become_user: "{{ services_user }}"
+  # The apps user has no home, so Ansible's default ~/.ansible/tmp can't be created.
+  vars:
+    ansible_remote_tmp: /tmp/.ansible-apps
+
+- name: hermes | Write vault history ignore list
+  ansible.builtin.copy:
+    # Syncthing's in-flight transfers and its file versions; conflict copies stay in.
+    content: |
+      .syncthing.*.tmp
+      .stversions/
+    dest: "{{ services_workspace_dir }}/vault/.git/info/exclude"
+    owner: "{{ services_uid }}"
+    group: "{{ services_gid }}"
+    mode: "0644"
+  # Fails in check mode when the repo wasn't really created.
+  ignore_errors: "{{ ansible_check_mode }}"
+
+# At :50 like the config history, so restic's backup on the hour holds the latest snapshot. An
+# hour with no change commits nothing. shortcut: a failing run only mails the local apps user, so
+# it goes unseen; add a Gatus heartbeat like restic's if the vault history ever needs alerting.
+- name: hermes | Snapshot vault hourly
+  ansible.builtin.cron:
+    name: hermes vault history
+    user: "{{ services_user }}"
+    minute: "50"
+    job: >-
+      cd {{ services_workspace_dir }}/vault && git add -A &&
+      git diff --cached --quiet ||
+      git -c user.name=hermes -c user.email=hermes@localhost commit -q --allow-empty-message -m ''

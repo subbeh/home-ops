@@ -27,9 +27,10 @@ A **Key set** is a named group of secrets a Profile may get. [`hermes.yaml`](../
 | `aven` | `AVEN_MCP_TOKEN` | `AVEN_MCP_TOKEN`, the bearer token for the aven MCP server ([README.md](README.md#tasks-over-mcp)) |
 | `semaphore` | `HERMES_OPS_SEMAPHORE_TOKEN` | `HERMES_OPS_SEMAPHORE_TOKEN`, the `hermes-ops` Semaphore user's token, read by the homelab plugin ([profiles.md](profiles.md#the-homelab-plugin)) |
 | `github` | `HERMES_GITHUB_ACTIONS_TOKEN` | `GITHUB_ACTIONS_TOKEN`, a fine-grained token for the home-ops repo with Actions: read, for the actions-failures cron job ([profiles.md](profiles.md#cron-jobs)) |
+| `vault` | none | `WIKI_PATH=/vault`, not a secret: where the `llm-wiki` skill finds the vault ([vault.md](vault.md)) |
 | `discord` | `HERMES_DISCORD_BOT_TOKEN` | `DISCORD_BOT_TOKEN`, the bot token from the container env again, for the quota-alerts cron job's `hermes send`: cron strips bot tokens from a script's env, and `hermes send` falls back to the `.env` ([kanban.md](kanban.md#quota-alerts)) |
 
-`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model`, `semaphore` and `github`. Only default gets `aven` and `discord`.
+`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model`, `semaphore` and `github`. Only default gets `aven` and `discord`. Default and the Kanban Profiles get `vault`; ops doesn't.
 
 On each Deploy, the [`hermes-profile-keys`](../../../ansible/services/tasks/hermes-profile-keys.yaml) post-task:
 

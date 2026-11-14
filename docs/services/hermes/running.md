@@ -19,7 +19,7 @@ A hermes Deploy recreates the container, so it restarts every Profile at once an
    just ansible::playbook services --tags hermes
    ```
 
-The Deploy also runs the three post-tasks: it writes each Profile's keys ([keys.md](keys.md)), keeps Kanban notices plain and sets up the hourly config history ([Rolling back config](#rolling-back-config)). Its output is hidden (`no_log`), since it renders secrets.
+The Deploy also runs the four post-tasks: it writes each Profile's keys ([keys.md](keys.md)), keeps Kanban notices plain, and sets up the hourly config history ([Rolling back config](#rolling-back-config)) and vault history ([vault.md](vault.md#history-and-rollback)). Its output is hidden (`no_log`), since it renders secrets.
 
 Settings that Hermes owns (`config.yaml`, Profiles, plugins, `SOUL.md`) don't change with a Deploy: they're made by hand inside the container and survive recreates in the data dir. Record each lasting one as a line in `hermes.yaml`'s header and update these docs, since no hook catches changes made only on the vps.
 
