@@ -58,3 +58,4 @@ docs-test:
     python3 -I {{ justfile_directory() }}/scripts/hermes-homelab-incidents.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-quota-alerts.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-go-usage.test.py
+    python3 -I {{ justfile_directory() }}/scripts/hermes-github-updates.test.py

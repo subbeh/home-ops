@@ -4,6 +4,7 @@ covers:
   - ansible/services/data/hermes/actions-failures.py
   - ansible/services/data/hermes/homelab-incidents.py
   - ansible/services/data/hermes/go-usage.py
+  - ansible/services/data/hermes/github-updates.py
 ---
 # Profiles and models
 
@@ -78,7 +79,7 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 | `homelab-incidents` | `ops` | every 15 min | Posts one diagnosis in #ops per incident: a Gatus endpoint newly down, read against its container's logs and recent Deploys |
 | `homelab-report` | `ops` | daily 06:30 | Posts what needs attention in the homelab to #ops: endpoints down, containers exited or restarting, failed Deploys. Nothing when all is well |
 | `quota-alerts` | `default` | every 15 min | Posts a notice for a Kanban card stuck on the usage limit, a goal's third or later review round, or a spend spike. No model call ([kanban.md](kanban.md#quota-alerts)) |
-| `morning-brief` | `default` | daily 06:30 | Posts the weather, the last day's headlines on the USER.md topics, today's aven tasks and OpenCode Go usage to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)), as a plain message: the job's `attach_to_session: false` keeps it out of a thread |
+| `morning-brief` | `default` | daily 06:30 | Posts the weather, the last day's headlines on the USER.md topics, today's aven tasks, the user's open GitHub PRs and issue updates, and OpenCode Go usage to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)), as a plain message: the job's `attach_to_session: false` keeps it out of a thread |
 | `plan-day` | `default` | daily 06:45 | Starts the [plan-day skill](README.md#planning-and-focus-skills) in the home channel |
 | `wrap-up` | `default` | daily 21:00 | Starts the wrap-up skill in the home channel |
 | `vault-nightly` | `default` | daily 00:15 | Writes yesterday's daily note, `watching.md` and `now.md` in the vault, through the `vault-notes` skill ([vault.md](vault.md#hermess-own-notes)). Posts nothing |
@@ -92,7 +93,9 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 
 `morning-brief` runs [`go-usage.py`](../../../ansible/services/data/hermes/go-usage.py) as its pre-check script, which Ansible ships into default's `scripts/` dir. It reads the plan's usage meters and this billing month's spend per model from the OpenCode console API, the one behind the console's Billing drawer, with default's `OPENCODE_GO_API_KEY` from `/opt/data/.env`, and prints them for the brief, flagging anything over 75%. The API is undocumented, so a change on OpenCode's side shows up as "usage unavailable" in the brief rather than a missing brief: the script prints that on any failure. A manual `/morning-brief` has no pre-check, so the skill runs the script in the terminal.
 
-Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) reaches the script through ops' `terminal.env_passthrough`. That also hands it to ops' terminal in chats: a read-only token for a public repo's Actions.
+The brief's GitHub lines come from [`github-updates.py`](../../../ansible/services/data/hermes/github-updates.py), shipped beside `go-usage.py`, which the skill runs in the terminal on every run: the job has one pre-check. One GraphQL request runs a search per role. It prints the open PRs the user authored, is assigned or has a review request on, each once with its roles, draft state, review decision, checks and merge conflicts. Then the issues the user created or is assigned to that someone else commented on, closed or reopened in the last 24 hours; the user's own activity doesn't count. It reads `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) from `/opt/data/.env` like `go-usage.py`, so no `env_passthrough` hands it to default's terminal. A fine-grained token covers one account, so other owners' private repos stay out, work orgs included, while their public repos show. On any failure it prints "GitHub unavailable" and the brief posts without it.
+
+Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) reaches the script through ops' `terminal.env_passthrough`. That also hands it to ops' terminal in chats: a read-only token for the user's repos' Actions, issues and PRs.
 
 `plan-day` and `wrap-up` follow the personal day in USER.md (06:30-21:00, every day: the tasks are for life outside work), with `plan-day` 15 minutes after the morning brief. Each opens with the skill's first question, and `cron.mirror_delivery` in the default Profile's `config.yaml` makes a reply to it continue with that message in context. To move them, tell Hermes the new day: a MEMORY.md entry tells it to edit both jobs' schedules to match, outside quiet hours.
 

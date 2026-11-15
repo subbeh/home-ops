@@ -98,7 +98,9 @@
 #      context, so it opts out and posts a plain message: in /opt/hermes, `HERMES_HOME=/opt/data .venv/bin/python -c
 #      'from cron.jobs import update_job; update_job("<id>", {"attach_to_session": False})'`.
 #      Its usage lines come from the go-usage.py pre-check script, shipped below:
-#      `hermes cron edit <id> --script go-usage.py`.
+#      `hermes cron edit <id> --script go-usage.py`. Its PR and issue lines come from
+#      github-updates.py, shipped below, which the skill runs in the terminal; it reads the github
+#      Key set from default's .env.
 #  14. Auxiliary models, every Profile (docs/services/hermes/profiles.md): on `auto` they use the
 #      Profile's main model. For each Profile and each of compression, title_generation, approval
 #      and background_review, `hermes -p <name> config set auxiliary.<task>.provider opencode-go`
@@ -239,8 +241,9 @@ hermes:
       # The hermes-ops Semaphore user's token (Task Runner role), read by the homelab plugin.
       semaphore:
         HERMES_OPS_SEMAPHORE_TOKEN: "{{ bws_secrets.HERMES_OPS_SEMAPHORE_TOKEN }}"
-      # Fine-grained, home-ops repo only, Actions: read. The actions-failures pre-check reads it;
-      # job logs need a token even on a public repo.
+      # Fine-grained, all the user's repositories, Actions, Issues and Pull requests: read. ops'
+      # actions-failures pre-check reads it, since job logs need a token even on a public repo, and
+      # so does the morning brief's github-updates.py.
       github:
         GITHUB_ACTIONS_TOKEN: "{{ bws_secrets.HERMES_GITHUB_ACTIONS_TOKEN }}"
       # Not secrets: the vault mount below, read by the llm-wiki skill. The image sets
@@ -255,7 +258,7 @@ hermes:
         DISCORD_BOT_TOKEN: "{{ bws_secrets.HERMES_DISCORD_BOT_TOKEN }}"
     # Profile name: the key sets its .env gets. A listed profile that doesn't exist yet is skipped.
     hermes_profiles:
-      default: [model, web, aven, opengym, discord, vault]
+      default: [model, web, aven, opengym, discord, vault, github]
       orchestrator: [model, web, vault]
       researcher: [model, web, vault]
       writer: [model, web, vault]
@@ -291,6 +294,8 @@ hermes:
       src: hermes/quota-alerts.py
     - dest: "{{ services_data_dir }}/hermes/data/scripts/go-usage.py"
       src: hermes/go-usage.py
+    - dest: "{{ services_data_dir }}/hermes/data/scripts/github-updates.py"
+      src: hermes/github-updates.py
 
   containers:
     - image: nousresearch/hermes-agent:v0.23.1@sha256:276d44685c65c0cb2a25f190b63c65c8906f9dc76486fb1c05ae71b5826bda08
