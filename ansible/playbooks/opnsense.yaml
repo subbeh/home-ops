@@ -88,7 +88,6 @@
         name: letsencrypt
         description: Let's Encrypt
         ca: letsencrypt
-        register: true
 
     - name: Add the Cloudflare DNS-01 validation
       oxlorg.opnsense.acme_validation:
