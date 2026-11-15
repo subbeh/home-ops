@@ -44,5 +44,12 @@
       matchFileNames: ["ansible/services/semaphore.yaml"],
       automerge: false,
     },
+    {
+      // The git name while requirements.yml pins a commit, the Galaxy one once it pins a release.
+      description: "Never auto merge oxlorg.opnsense",
+      matchDepNames: ["oxlorg.opnsense", "github.com/O-X-L/ansible-opnsense"],
+      automerge: false,
+      prBodyNotes: ["Bump with the OPNsense firmware upgrade: see docs/runbooks/opnsense.md."],
+    },
   ],
 }
