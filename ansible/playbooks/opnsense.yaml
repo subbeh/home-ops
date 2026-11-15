@@ -65,3 +65,56 @@
       oxlorg.opnsense.package:
         name: "{{ plugins }}"
         action: install
+
+    # ACME cert for the UI, issued by Let's Encrypt with a Cloudflare DNS-01 challenge. Traefik's
+    # token is reused: acme.sh finds the zone with it, so no zone or account ID is needed.
+    - name: Enable the ACME client
+      oxlorg.opnsense.acme_general:
+        enabled: true
+
+    - name: Add the Let's Encrypt account
+      oxlorg.opnsense.acme_account:
+        name: letsencrypt
+        description: Let's Encrypt
+        ca: letsencrypt
+        register: true
+
+    - name: Add the Cloudflare DNS-01 validation
+      oxlorg.opnsense.acme_validation:
+        name: cloudflare
+        description: Cloudflare DNS-01
+        method: dns01
+        dns_service: dns_cf
+        dns_cf_token: "{{ bws_secrets.CLOUDFLARE_API_TOKEN }}"
+      no_log: true
+
+    - name: Add the GUI restart action
+      oxlorg.opnsense.acme_action:
+        name: restart-gui
+        description: Restart the GUI
+        type: configd_restart_gui
+
+    # The name the UI is reached by: the Cloudflare record for the tailnet address.
+    - name: Add the UI certificate
+      oxlorg.opnsense.acme_certificate:
+        name: opnsense.sbbh.cloud
+        description: opnsense.sbbh.cloud
+        account: letsencrypt
+        validation: cloudflare
+        restart_actions:
+          - restart-gui
+
+    - name: Read the ACME certificates
+      oxlorg.opnsense.raw:
+        url: acmeclient/certificates/search
+      register: _acme_certs
+      check_mode: false
+
+    # Creating a certificate doesn't issue it; renewal then runs from the plugin's cron job.
+    - name: Issue the UI certificate
+      oxlorg.opnsense.raw:
+        url: "acmeclient/certificates/sign/{{ item.uuid }}"
+        action: post
+      loop: "{{ _acme_certs.response.rows | selectattr('description', '==', 'opnsense.sbbh.cloud') | rejectattr('certRefId', 'truthy') }}"
+      loop_control:
+        label: "{{ item.description }}"

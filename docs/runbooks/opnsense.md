@@ -142,7 +142,15 @@ From the laptop on the tailnet, with the key and secret from Secrets Manager:
 curl -sk -u "$OPNSENSE_API_KEY:$OPNSENSE_API_SECRET" https://<opnsense tailnet name>/api/core/firmware/status
 ```
 
-`-k` is needed until the ACME wildcard cert replaces the self-signed one. A laptop on backdoor gets a `10.11.254.x` lease and reaches `https://10.11.254.1`.
+`-k` is needed until step 7 points the UI at the ACME cert. After that, drop it and use `https://opnsense.sbbh.cloud`. A laptop on backdoor gets a `10.11.254.x` lease and reaches `https://10.11.254.1`.
+
+## 7. UI certificate
+
+The playbook issues the `opnsense.sbbh.cloud` cert through the ACME client, but the UI's certificate setting has no API. After the first playbook run:
+
+1. Services → ACME Client → Certificates: check `opnsense.sbbh.cloud` shows a successful issue.
+2. System → Settings → Administration → Web GUI → SSL Certificate: pick `opnsense.sbbh.cloud`, then Save. Renewals keep the same entry, and the playbook's restart action reloads the UI.
+3. `curl https://opnsense.sbbh.cloud/api/core/firmware/status` (with the API key) works without `-k`.
 
 ## Restore
 
