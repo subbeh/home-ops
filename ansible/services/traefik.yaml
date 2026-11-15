@@ -45,6 +45,11 @@ traefik:
                 # The host resolver goes through MagicDNS; ask Cloudflare directly.
                 resolvers: ["1.1.1.1:53", "1.0.0.1:53"]
 
+        # HTTPS backends (unifi) serve self-signed certs on the private services network, and
+        # docker labels can't define a per-service serversTransport.
+        serversTransport:
+          insecureSkipVerify: true
+
         api: {}
 
         providers:

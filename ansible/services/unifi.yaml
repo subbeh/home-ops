@@ -1,0 +1,106 @@
+---
+# The UniFi Network Application for the home UniFi gear, on the vps so the OPNsense bring-up
+# doesn't wait on a home Host. See https://docs.linuxserver.io/images/docker-unifi-network-application/
+#
+# How a device finds it: a device on mgmt resolves unifi.home.sbbh.cloud through OPNsense's
+# Unbound override to the vps tailnet address (playbooks/opnsense.yaml), and OPNsense masquerades
+# that traffic out of its tailscale interface, so the inform port and STUN listen on the tailnet
+# address only. Forwarding doesn't need the controller; management does.
+#
+# One-time setup:
+#   1. Deploy, open https://unifi.vps.sbbh.cloud and run the first-run wizard (or restore a backup).
+#   2. Settings > System > Advanced: turn on Inform Host Override and set it to
+#      unifi.home.sbbh.cloud, or devices inform to the container's own address and drop off.
+#   3. Adopt each device. One that doesn't show up: `ssh ubnt@<device>` (password ubnt), then
+#      `set-inform http://unifi.home.sbbh.cloud:8080/inform`.
+#
+# Memory: the vps has little to spare, so both containers have limits and MEM_LIMIT caps the
+# Java heap below the unifi one. Running out takes down management, not the network.
+#
+# MongoDB: init-mongo.sh creates the unifi user only on an empty data dir. Bump its major only
+# along the supported path in the upstream docs, never through `latest`.
+unifi:
+  description: UniFi Network Application that adopts and manages the home UniFi gear
+
+  no_log: true
+
+  vars:
+    unifi_mongo_pass: "{{ bws_secrets.UNIFI_MONGO_PASSWORD }}"
+
+  files:
+    - dest: "{{ services_data_dir }}/unifi/config"
+    - dest: "{{ services_data_dir }}/unifi/db"
+    # Upstream's script, verbatim; the ${...} are filled from unifi-db's env on first start.
+    - dest: "{{ services_data_dir }}/unifi/init-mongo.sh"
+      mode: "0755"
+      content: |
+        #!/bin/bash
+
+        if which mongosh > /dev/null 2>&1; then
+          mongo_init_bin='mongosh'
+        else
+          mongo_init_bin='mongo'
+        fi
+        "${mongo_init_bin}" <<EOF
+        use ${MONGO_AUTHSOURCE}
+        db.auth("${MONGO_INITDB_ROOT_USERNAME}", "${MONGO_INITDB_ROOT_PASSWORD}")
+        db.createUser({
+          user: "${MONGO_USER}",
+          pwd: "${MONGO_PASS}",
+          roles: [
+            "clusterMonitor",
+            { db: "${MONGO_DBNAME}", role: "dbOwner" },
+            { db: "${MONGO_DBNAME}_stat", role: "dbOwner" },
+            { db: "${MONGO_DBNAME}_audit", role: "dbOwner" },
+            { db: "${MONGO_DBNAME}_restore", role: "dbOwner" }
+          ]
+        })
+        EOF
+
+  containers:
+    - name: unifi
+      image: lscr.io/linuxserver/unifi-network-application:10.6.109
+      ports:
+        - "{{ networks.tailnet.addresses[inventory_hostname] }}:8080:8080"
+        - "{{ networks.tailnet.addresses[inventory_hostname] }}:3478:3478/udp"
+      labels:
+        traefik.enable: "true"
+        # The UI serves only HTTPS, with a self-signed cert that traefik's serversTransport skips.
+        traefik.http.services.unifi.loadbalancer.server.port: "8443"
+        traefik.http.services.unifi.loadbalancer.server.scheme: https
+      volumes:
+        - "{{ services_data_dir }}/unifi/config:/config"
+      env:
+        MONGO_USER: unifi
+        MONGO_PASS: "{{ unifi_mongo_pass }}"
+        MONGO_HOST: unifi-db
+        MONGO_PORT: "27017"
+        MONGO_DBNAME: unifi
+        MONGO_AUTHSOURCE: admin
+        MEM_LIMIT: "768"
+      memory: 1g
+
+    - name: unifi-db
+      image: mongo:8.0.38
+      # Runs as the services user, so the entrypoint doesn't chown the data dir away from it.
+      user: "{{ services_uid }}:{{ services_gid }}"
+      command: ["--wiredTigerCacheSizeGB", "0.25"]
+      volumes:
+        - "{{ services_data_dir }}/unifi/db:/data/db"
+        - "{{ services_data_dir }}/unifi/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh:ro"
+      env:
+        MONGO_INITDB_ROOT_USERNAME: root
+        MONGO_INITDB_ROOT_PASSWORD: "{{ bws_secrets.UNIFI_MONGO_ROOT_PASSWORD }}"
+        MONGO_USER: unifi
+        MONGO_PASS: "{{ unifi_mongo_pass }}"
+        MONGO_DBNAME: unifi
+        MONGO_AUTHSOURCE: admin
+      memory: 512m
+
+  gatus:
+    endpoints:
+      - name: unifi
+        group: services
+        url: "https://unifi.{{ services_domain }}/status"
+        conditions:
+          - "[STATUS] == 200"
