@@ -84,7 +84,7 @@ unifi:
       memory: 1g
 
     - name: unifi-db
-      image: mongo:8.0.38@sha256:d97fea17ccb8d004cd137be8dab54d70d0df11be69c9f422aefe4484c8414ab7
+      image: mongo:9.0.8@sha256:1444adda2e4b8d6a0d7f242a625d834a78d6e3aa6e4ed1b0b4c2dab2318c5e3d
       # Runs as the services user, so the entrypoint doesn't chown the data dir away from it.
       user: "{{ services_uid }}:{{ services_gid }}"
       command: ["--wiredTigerCacheSizeGB", "0.25"]
