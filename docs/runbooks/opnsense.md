@@ -66,7 +66,7 @@ At the console menu:
 
    Without the tunnel, a laptop on opnsense:1 works too, since LAN's anti-lockout rule lets it in at `https://10.11.10.1`.
 
-   > TODO: check how these hand-made rules and the alias interact with the playbook's rules and aliases.
+   The playbook adopts the alias by its name and the rule by its description, so keep both spelled as here.
 
 ## 3. Admin user
 
@@ -129,9 +129,9 @@ Keep `root` for the console. Every other way in uses a named user.
    | Source                 | any                     |
    | Destination            | `This Firewall`         |
    | Destination port range | `backdoor_ports`        |
-   | Description            | `tailnet: UI and SSH`   |
+   | Description            | `Tailnet: UI and SSH`   |
 
-   Source is any because the tailnet policy already decides which nodes get this far. This rule only opens OPNsense itself. Tailnet traffic to the Networks behind it, and through the exit node, stays blocked until the playbook's rules land. The mgmt NAT from step 5.6 needs no rule here, because replies match its state. The WAN gets no pass rules, so the UI and API stay closed there.
+   Source is any because the tailnet policy already decides which nodes get this far. This rule only opens OPNsense itself. Tailnet traffic to the Networks behind it, and through the exit node, stays blocked until the playbook's rules land. The playbook adopts this rule by its description. It deletes a `tailnet: UI and SSH` rule, since a floating one by that name once opened the UI on every interface. The mgmt NAT from step 5.6 needs no rule here, because replies match its state. The WAN gets no pass rules, so the UI and API stay closed there.
 8. System → Settings → Administration → Web GUI: add `opnsense.sbbh.cloud` to Alternate Hostnames, then Save. The UI rejects any hostname it doesn't know as a possible DNS rebind attack. That name is the Cloudflare record for the tailnet address, in `terraform/cloudflare/records.auto.tfvars`. Keep the DNS rebind check itself on.
 
 ## 6. Check
@@ -161,6 +161,12 @@ os-git-backup commits `config.xml` to a private GitHub repo after every config c
 3. Click Generate new key pair, and copy the public key it shows.
 4. In the repo's Settings → Deploy keys, add it with Allow write access.
 5. Click Test, then check that the repo gets a commit. Each later config change adds one.
+
+## Rules and aliases
+
+The playbook makes an alias for each Network, Pool and address name in `network.yaml`, plus `home` (all of them), and the pass rules in `host_vars/opnsense.yaml`. Everything else is blocked by default. It matches aliases by name and rules by description, and it never deletes what's dropped from those lists, because the collection's purge modules are unstable. To remove a rule, delete it under Firewall → Rules, or add its description to the playbook's removal task. Renaming a rule leaves the old one behind as well.
+
+There's no rollback: OPNsense dropped the filter savepoint API. If a rule change cuts the tailnet, a laptop on opnsense:1 still reaches `https://10.11.10.1` through LAN's anti-lockout rule.
 
 ## Restore
 

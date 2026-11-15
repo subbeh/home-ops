@@ -116,6 +116,29 @@ class OpnsenseFilters(unittest.TestCase):
         self.assertNotIn(("router", "home"), got)  # two routed addresses
         self.assertNotIn(("server", "storage.home"), got)
 
+    def test_firewall_aliases(self):
+        got = {a["name"]: (a["type"], a["content"]) for a in network.firewall_aliases(self.NETS, {"k8s-lb": {"cidr": "10.8.0.0/24"}})}
+        self.assertEqual(got["k8s_lb"], ("network", ["10.8.0.0/24"]))
+        self.assertEqual(got["server"], ("host", ["10.0.0.150", "10.9.0.10"]))
+        self.assertEqual(got["home"][1][-1], "10.8.0.0/24")
+        with self.assertRaises(ValueError):
+            network.firewall_aliases(self.NETS, {"server": {"cidr": "10.8.0.0/24"}})
+
+    def test_firewall_rules(self):
+        interfaces = [{"network": "lan", "device": "igc0", "ip": "10.0.0.1"},
+                      {"network": "iot", "device": "vlan0.4", "ip": "10.0.4.1"},
+                      {"network": "tailnet", "device": "tailscale0"}]
+        rules = [{"network": "lan", "destination": "internet", "description": "lan: internet"},
+                 {"network": "tailnet", "source": "any", "description": "tailnet: any"},
+                 {"network": "lan", "destination": "pve-nuc", "port": "22", "description": "lan: ssh"}]
+        got = {r["description"]: r for r in network.firewall_rules(rules, interfaces, {"igc0": "lan", "tailscale0": "opt2"})}
+        self.assertNotIn("iot: DNS", got)  # not assigned yet
+        self.assertEqual(got["lan: DNS"]["destination_net"], "lanip")
+        self.assertEqual((got["lan: internet"]["destination_net"], got["lan: internet"]["destination_invert"]), ("home", True))
+        self.assertEqual((got["tailnet: any"]["interface"], got["tailnet: any"]["source_net"]), (["opt2"], "any"))
+        self.assertEqual(got["lan: ssh"]["destination_net"], "pve_nuc")
+        self.assertNotIn("tailnet: DNS", got)
+
 
 if __name__ == "__main__":
     unittest.main()

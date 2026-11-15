@@ -15,3 +15,32 @@ port_devices:
   "1": igc1
   "2": igc2
   "3": igc3
+
+# Port aliases. backdoor_ports was made by hand in the runbook and is adopted by name.
+port_aliases:
+  backdoor_ports: ["22", "443"]
+  unifi_ports: ["8080", "3478"]  # the inform port and STUN on the vps, see services/unifi.yaml
+
+# Pass rules on top of default deny, by Network, Device and alias names (aliases from
+# network.yaml). Each is matched by description, so renaming one adds a new rule, and a rule
+# removed here stays on OPNsense: delete it by hand, or set it absent in the playbook (the purge
+# modules are unstable). Every routed Network also gets DNS to OPNsense's own address, and DHCP
+# has OPNsense's automatic rules. Fields: network (the interface it's on), source (default the
+# Network), destination (default any; internet means outside every Network and Pool), port,
+# protocol (default any).
+rules:
+  - {network: clients, description: "clients: every Network and the internet"}
+  # Source any: the tailnet policy decides which nodes get this far. Any also covers the exit node.
+  - {network: tailnet, source: any, description: "tailnet: every Network and the internet"}
+  # Adopted from the runbook. The rule above covers it too, but this one keeps the playbook's own
+  # way in if that one is ever narrowed.
+  - {network: tailnet, source: any, destination: (self), port: backdoor_ports, protocol: TCP, description: "Tailnet: UI and SSH"}
+  - {network: servers, destination: internet, description: "servers: the internet"}
+  - {network: mgmt, destination: internet, description: "mgmt: the internet"}
+  # UniFi adoption: OPNsense masquerades this out of its tailscale interface (runbook).
+  - {network: mgmt, destination: vps, port: unifi_ports, protocol: TCP/UDP, description: "mgmt: the UniFi controller"}
+  - {network: iot, destination: internet, description: "iot: the internet"}
+  - {network: backdoor, destination: (self), port: backdoor_ports, protocol: TCP, description: "backdoor: UI and SSH",}
+
+# Extra pass rules from iot, in the same shape as rules, with network: iot.
+iot_allowances: []

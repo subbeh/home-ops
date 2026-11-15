@@ -173,8 +173,57 @@ def dns_hosts(networks, home_domain):
     return out
 
 
+def _alias(name):
+    """OPNsense alias names allow letters, digits and underscores only."""
+    return name.replace("-", "_")
+
+
+def firewall_aliases(networks, pools):
+    """A network alias per Network and Pool, a host alias per name in their addresses, and
+    `home` with every Network and Pool, which a rule inverts to mean the internet. `home` lists
+    CIDRs rather than nesting the aliases: the module rejects members that don't exist yet."""
+    cidrs = {**{n: s["cidr"] for n, s in networks.items()}, **{p: s["cidr"] for p, s in pools.items()}}
+    hosts = {}
+    for spec in networks.values():
+        for name, value in (spec.get("addresses") or {}).items():
+            hosts.setdefault(name, []).append(_addr(value))
+    out = [{"name": _alias(n), "type": "network", "content": [c], "description": f"{n} in network.yaml"}
+           for n, c in cidrs.items()]
+    out += [{"name": _alias(n), "type": "host", "content": a, "description": f"{n} in network.yaml"}
+            for n, a in hosts.items()]
+    out.append({"name": "home", "type": "network", "content": list(cidrs.values()),
+                "description": "Every Network and Pool in network.yaml"})
+    names = [a["name"] for a in out]
+    if len(names) != len(set(names)):
+        raise ValueError(f"duplicate alias names: {sorted({n for n in names if names.count(n) > 1})}")
+    return out
+
+
+def firewall_rules(rules, interfaces, ids):
+    """`rules` from host_vars as oxlorg.opnsense.rule args, plus DNS to OPNsense's own address
+    from each routed Network. `interfaces` lists {network, device} and `ids` maps a device to its
+    interface identifier; a Network not assigned yet (a first --check run) is skipped. In a rule,
+    `source` defaults to the Network and `destination: internet` means anything outside `home`."""
+    net_ids = {i["network"]: ids[i["device"]] for i in interfaces if i["device"] in ids}
+    dns = [{"network": i["network"], "destination": f"{net_ids[i['network']]}ip", "port": "53",
+            "protocol": "TCP/UDP", "description": f"{i['network']}: DNS"}
+           for i in interfaces if "ip" in i and i["network"] in net_ids]
+    out = []
+    for rule in dns + rules:
+        if rule["network"] not in net_ids:
+            continue
+        dest = rule.get("destination", "any")
+        out.append({"description": rule["description"], "interface": [net_ids[rule["network"]]],
+                    "source_net": _alias(rule.get("source", rule["network"])),
+                    "destination_net": "home" if dest == "internet" else _alias(dest),
+                    "destination_invert": dest == "internet",
+                    "destination_port": rule.get("port", ""), "protocol": rule.get("protocol", "any")})
+    return out
+
+
 class FilterModule:
     def filters(self):
         return {"network_errors": network_errors, "cable_peers": cable_peers,
                 "router_interfaces": router_interfaces, "dhcp_reservations": dhcp_reservations,
-                "dns_hosts": dns_hosts}
+                "dns_hosts": dns_hosts, "firewall_aliases": firewall_aliases,
+                "firewall_rules": firewall_rules}
