@@ -11,8 +11,6 @@
       firewall: "{{ ansible_host }}"
       api_key: "{{ bws_secrets.OPNSENSE_API_KEY }}"
       api_secret: "{{ bws_secrets.OPNSENSE_API_SECRET }}"
-      # shortcut: the UI still serves its self-signed cert, verify once the ACME cert replaces it.
-      ssl_verify: false
   tasks:
     # A command rather than a pipe lookup so it can retry: the Bitwarden API fails now and then.
     - name: Read secrets from Bitwarden Secrets Manager
