@@ -151,15 +151,14 @@
 #      and the weekly pass flags stale ones. shortcut: the nightly pass browses only the 10 newest
 #      sessions, upgrade to a pre-check script listing the day's sessions once a day passes 10.
 #  20. openGym over MCP, default Profile (docs/services/hermes/README.md#workouts-over-mcp): in
-#      openGym, Settings > Integrations > API tokens > New token named hermes, 365 days, with
-#      Plans & routines at Change directly (Hermes writes routines), Workouts and Body weight at
-#      See and the rest Off, so openGym refuses log_workout and any other write. Store it in BWS as
-#      HERMES_OPENGYM_MCP_TOKEN, Deploy opengym and hermes, then in /opt/data/config.yaml add
+#      openGym, Settings > Integrations > API tokens > New token named hermes, with no expiry,
+#      Workouts and Plans & routines at Change directly (Hermes logs workouts and writes routines),
+#      and Body weight, Body measurements and Notes at See, so openGym refuses any other write.
+#      Store it in BWS as HERMES_OPENGYM_MCP_TOKEN, Deploy opengym and hermes, then in /opt/data/config.yaml add
 #      under `mcp_servers:` `opengym: {url: "http://opengym-mcp:3100/mcp", headers:
 #      {Authorization: "Bearer ${OPENGYM_MCP_TOKEN}"}, tools: {exclude: [delete_routine]}}` and
 #      `docker restart hermes`: Hermes's approvals cover terminal commands, not MCP calls, so
-#      deletes stay in the app. shortcut: the token expires after a year and nothing alerts,
-#      upgrade to a Gatus check with the token if a renewal is ever missed.
+#      deletes stay in the app.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -209,7 +208,7 @@ hermes:
       # The aven-mcp container's bearer token (aven.yaml), read by config.yaml's mcp_servers.aven header.
       aven:
         AVEN_MCP_TOKEN: "{{ bws_secrets.AVEN_MCP_TOKEN }}"
-      # A scoped openGym token that writes only Plans & routines (setup step 20), read by config.yaml's mcp_servers.opengym header.
+      # A scoped openGym token that writes only Workouts and Plans & routines (setup step 20), read by config.yaml's mcp_servers.opengym header.
       opengym:
         OPENGYM_MCP_TOKEN: "{{ bws_secrets.HERMES_OPENGYM_MCP_TOKEN }}"
       # The hermes-ops Semaphore user's token (Task Runner role), read by the homelab plugin.
