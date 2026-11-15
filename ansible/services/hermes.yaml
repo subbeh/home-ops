@@ -35,11 +35,15 @@
 #      subscriptions stay on plain notices; the hermes-kanban-notices post-task keeps it that way.
 #      A notice posts only the summary's first line, so the researcher, writer and reviewer SOUL.md
 #      each write their full output to a markdown file listed in kanban_complete's `artifacts`,
-#      which Discord gets as an upload. Those files go to the vault (docs/services/hermes/vault.md):
-#      the orchestrator's SOUL.md names each goal's folder, research/YYYY-MM-DD-<slug>/, on every
-#      child card; researcher and writer SOUL.md write their notes and deliverable there with
-#      sources in frontmatter, the writer adds an index.md line under `## Research`, and both write
-#      only in that folder. The reviewer's report stays in the scratch workspace, out of the vault.
+#      which Discord gets as an upload. Those files go to the vault (docs/services/hermes/vault.md),
+#      in one folder per goal, research/YYYY-MM-DD-<slug>/: researcher and writer SOUL.md write
+#      their notes and deliverable there with sources in frontmatter, the writer adds an index.md
+#      line under `## Research`, and both write only in that folder. The auto-decomposer's cards
+#      name no folder (its prompt is fixed), so they take the one named on the card (the
+#      orchestrator's SOUL.md names it on the cards it adds), else a parent's or their own recent
+#      card's for the goal, else a new one. shortcut: parallel research cards can still pick two
+#      folders, upgrade when Hermes lets config extend the decomposer prompt. The reviewer's report
+#      stays in the scratch workspace, out of the vault.
 #   6. Langfuse prices (docs/services/hermes/profiles.md): Hermes sends no cost for opencode-go, so
 #      each model gets a Langfuse model definition (Settings > Models, match
 #      `(?i)^(opencode-go/)?<model>$`) at the off-peak rates on https://opencode.ai/docs/go/, with

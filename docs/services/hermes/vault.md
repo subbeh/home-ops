@@ -28,7 +28,8 @@ The `vault` Key set ([keys.md](keys.md)) puts `WIKI_PATH=/vault` in the `.env` o
 
 A Kanban goal's output goes to `research/`, so it outlives the board ([kanban.md](kanban.md)). The rules are in each Profile's `SOUL.md`:
 
-- **orchestrator**: gives the goal one folder, `research/YYYY-MM-DD-<slug>/` (the goal's creation date and a short slug), and names it on every child card, fix cards included. Its closing summary gives the deliverable's path.
+- **The folder**: each goal gets one, `research/YYYY-MM-DD-<slug>/` (the date it starts and a short slug). The first cards come from Hermes's auto-decomposer, whose prompt is fixed, so they name no folder. A worker uses the folder named on its card, else the one a parent card's or its own recent card's artifacts are in for the same goal, else creates one.
+- **orchestrator**: names the folder on every card it adds, fix cards included. Its closing summary gives the deliverable's path.
 - **researcher**: writes its notes there as `notes-<topic>.md`.
 - **writer**: writes the deliverable there as `<slug>.md`, and adds one line for it under `## Research` in `index.md`. A fix card overwrites the same file, and the hourly history keeps the earlier draft.
 - **reviewer**: never writes to the vault. Its report goes to Discord only.
@@ -36,6 +37,8 @@ A Kanban goal's output goes to `research/`, so it outlives the board ([kanban.md
 Notes and deliverables start with YAML frontmatter: `title`, `date`, `card` (the card id) and `sources` (every URL cited). The worker lists the file's vault path in `kanban_complete`'s `artifacts`, and Discord uploads it from there.
 
 Researcher and writer write only inside their goal's folder, plus the writer's `index.md` line: never in `raw/`, `entities/` or another folder the `llm-wiki` skill uses, and never in another goal's folder. That is by instruction only: the shared filesystem doesn't enforce it.
+
+Confusing part: whether a recent card belongs to the same goal is the model's call, so two research cards on one goal can end up in two folders. In the first test goal, the second researcher found the first one's folder from its recent work.
 
 ## History and rollback
 
