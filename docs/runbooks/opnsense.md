@@ -152,11 +152,21 @@ The playbook issues the `opnsense.sbbh.cloud` cert through the ACME client, but 
 2. System → Settings → Administration → Web GUI → SSL Certificate: pick `opnsense.sbbh.cloud`, then Save. Renewals keep the same entry, and the playbook's restart action reloads the UI.
 3. `curl https://opnsense.sbbh.cloud/api/core/firmware/status` (with the API key) works without `-k`.
 
+## 8. Config backup
+
+os-git-backup commits `config.xml` to a private GitHub repo after every config change. The file holds password hashes, API keys and the Cloudflare token, so the repo stays private. The playbook installs the plugin, but `oxlorg.opnsense` has no module for its settings, so the rest is by hand.
+
+1. Create the private repo `opnsense-config`, empty.
+2. System → Configuration → Backups → Git: tick Enable, set the URL to `git@github.com:<owner>/opnsense-config.git` and the Branch to `main`, and leave Password empty. Save.
+3. Click Generate new key pair, and copy the public key it shows.
+4. In the repo's Settings → Deploy keys, add it with Allow write access.
+5. Click Test, then check that the repo gets a commit. Each later config change adds one.
+
 ## Restore
 
 1. Reinstall as in steps 1 and 2.
 2. From backdoor, System → Configuration → Backups: restore `config.xml` from the backup repo. It brings back the users, the API key and every rule, but not the plugin packages.
-   > TODO(you): the backup repo, once os-git-backup is set up.
+   The repo is the private `opnsense-config` on GitHub (step 8). Pull `config.xml` from it with the deploy key's clone URL, or copy it from a laptop checkout, then upload it in that page.
 3. Install `os-tailscale` by hand (step 5.1). The playbook reaches OPNsense over the tailnet, and it installs the other plugins.
 4. Run the playbook from main on the laptop, with `just ansible::playbook opnsense --check --diff` first.
 
