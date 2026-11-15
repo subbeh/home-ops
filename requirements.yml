@@ -2,3 +2,9 @@
 collections:
   - name: community.docker
     version: 5.4.0
+  # Bump with the OPNsense firmware upgrade (docs/runbooks/opnsense.md).
+  # shortcut: a commit on the default branch, since the firmware is 26.7 and the newest Galaxy
+  # release is 26.1; switch to `name: oxlorg.opnsense` at the 26.7 release once it ships.
+  - name: https://github.com/O-X-L/ansible-opnsense.git
+    type: git
+    version: 171c9910325d84cb0cc78ac16f6a40cbf476956c

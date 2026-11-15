@@ -1,0 +1,10 @@
+---
+# Read by ansible/playbooks/opnsense.yaml. Names only, never IPs: addresses come from
+# group_vars/all/network.yaml.
+
+# os-tailscale is installed by hand first (docs/runbooks/opnsense.md), since the playbook
+# reaches OPNsense over the tailnet; it's listed so a restore puts it back too.
+plugins:
+  - os-tailscale
+  - os-acme-client
+  - os-git-backup

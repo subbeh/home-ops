@@ -14,7 +14,14 @@ remote:
       services: [traefik, syncthing, karakeep, aven, opengym, restic, backrest, gatus, semaphore, atuin, docker-socket-proxy, hermes, searxng]
 
 local:
-  hosts: {}
+  hosts:
+    opnsense:
+      # Its tailnet IP is networks.tailnet.addresses.opnsense in group_vars/all/network.yaml. The
+      # Cloudflare name, not the ts.net one: the UI rejects hostnames missing from its Alternate
+      # Hostnames.
+      ansible_host: opnsense.sbbh.cloud
+      # Configured through its API from the controller, never over SSH.
+      ansible_connection: local
 
 # OS groups
 debian:

@@ -1,0 +1,67 @@
+---
+# Configures OPNsense through its API, from the laptop only: always `--check --diff` first, and
+# never Auto-deployed. The steps the API can't do are in docs/runbooks/opnsense.md. Needs the mise
+# env (BWS_ACCESS_TOKEN) and the tailnet up.
+- name: Configure OPNsense
+  hosts: opnsense
+  gather_facts: false
+  become: false
+  module_defaults:
+    group/oxlorg.opnsense.all:
+      firewall: "{{ ansible_host }}"
+      api_key: "{{ bws_secrets.OPNSENSE_API_KEY }}"
+      api_secret: "{{ bws_secrets.OPNSENSE_API_SECRET }}"
+      # shortcut: the UI still serves its self-signed cert, verify once the ACME cert replaces it.
+      ssl_verify: false
+  tasks:
+    # A command rather than a pipe lookup so it can retry: the Bitwarden API fails now and then.
+    - name: Read secrets from Bitwarden Secrets Manager
+      ansible.builtin.command: bws secret list --output json
+      register: _bws
+      retries: 3
+      delay: 5
+      until: _bws.rc == 0
+      changed_when: false
+      check_mode: false
+      no_log: true
+
+    - name: Load secrets from Bitwarden Secrets Manager
+      ansible.builtin.set_fact:
+        bws_secrets: "{{ _bws.stdout | from_json | items2dict(key_name='key', value_name='value') }}"
+      no_log: true
+
+    # The status endpoint only reports the last check, so run one first. It only refreshes the
+    # package catalogue, so it also runs in check mode.
+    - name: Check for firmware updates
+      oxlorg.opnsense.raw:
+        url: core/firmware/check
+        action: post
+      changed_when: false
+      check_mode: false
+
+    - name: Wait for the firmware check
+      oxlorg.opnsense.raw:
+        url: core/firmware/upgradestatus
+      register: _check
+      until: _check.response.status == 'done'
+      retries: 30
+      delay: 2
+
+    - name: Read the firmware status
+      oxlorg.opnsense.raw:
+        url: core/firmware/status
+      register: _firmware
+
+    # Minor updates only: a major upgrade ('upgrade' status) goes through the UI, together with
+    # the collection bump (docs/runbooks/opnsense.md).
+    - name: Update the firmware
+      oxlorg.opnsense.system:
+        action: update
+        # The default 90s is too short for a package update; plugins can't install until it's done.
+        wait_timeout: 600
+      when: _firmware.response.status == 'update'
+
+    - name: Install plugins
+      oxlorg.opnsense.package:
+        name: "{{ plugins }}"
+        action: install

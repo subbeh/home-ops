@@ -150,12 +150,12 @@ curl -sk -u "$OPNSENSE_API_KEY:$OPNSENSE_API_SECRET" https://<opnsense tailnet n
 2. From backdoor, System → Configuration → Backups: restore `config.xml` from the backup repo. It brings back the users, the API key and every rule, but not the plugin packages.
    > TODO(you): the backup repo, once os-git-backup is set up.
 3. Install `os-tailscale` by hand (step 5.1). The playbook reaches OPNsense over the tailnet, and it installs the other plugins.
-4. Run the playbook, `--check --diff` first.
+4. Run the playbook from main on the laptop, with `just ansible::playbook opnsense --check --diff` first.
 
 ## Upgrade
 
-`oxlorg.opnsense` must match the firmware, so they move together, and Renovate never automerges the collection.
+The playbook installs minor firmware updates itself. A major upgrade goes through the UI, because `oxlorg.opnsense` must match the firmware, so they move together, and Renovate never automerges the collection.
 
-1. System → Firmware → Updates: update, and reboot if it asks.
-2. Bump `oxlorg.opnsense` in `requirements.yml` to the release that matches the new firmware.
+1. System → Firmware → Updates: upgrade, and reboot if it asks.
+2. Bump `oxlorg.opnsense` in `requirements.yml` to the release that matches the new firmware, then `ansible-galaxy collection install -r requirements.yml`.
 3. Run the playbook with `--check --diff`. It should report no changes.

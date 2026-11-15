@@ -11,7 +11,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 
 | Device | Kind | Model | Rack | Host | Specs |
 |---|---|---|---|---|---|
-| [opnsense](#opnsense) | router | Topton N5105 | 1 |  | N5105 4c/4t, 16 GB, 256 GB NVMe |
+| [opnsense](#opnsense) | router | Topton N5105 | 1 | yes | N5105 4c/4t, 16 GB, 256 GB NVMe |
 | [jetkvm](#jetkvm) | kvm | JetKVM | 2 |  |  |
 | [kvm-switch](#kvm-switch) | kvm-switch | Steetek 8 Port HDMI KVM Switch | 3 |  |  |
 | [pve-nuc](#pve-nuc) | server | Intel NUC 8 | 4 |  | i5-8259U 4c/8t, 16 GB, 1 TB NVMe |
