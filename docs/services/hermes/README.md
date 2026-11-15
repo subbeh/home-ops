@@ -35,6 +35,7 @@ covers:
 - **Plugins**: installed into the data dir, so they survive a container recreate. hermes-memory-wiki adds long-term notes, langfuse sends traces to Langfuse Cloud, and advanced-delegation picks the model for subagents ([profiles.md](profiles.md#models-and-costs)). The ops Profile also gets the homelab plugin, which lives in this repo ([profiles.md](profiles.md#the-homelab-plugin)).
 - **Socket proxy**: the separate `docker-socket-proxy` Service lets Hermes list containers and read their logs, and nothing else. See [safety.md](safety.md).
 - **Tasks**: the default Profile reads and changes your aven tasks over MCP. See [Tasks over MCP](#tasks-over-mcp).
+- **Workouts**: the default Profile reads your openGym workouts, routines and weigh-ins, and writes routines, over MCP. See [Workouts over MCP](#workouts-over-mcp).
 - **Vault**: a folder of markdown notes, synced with the laptop and mounted at `/vault`, where default and the Kanban Profiles keep their notes, with an hourly git history. See [vault.md](vault.md).
 - **Web**: web search goes to the `searxng` Service, and page reads go to Tavily. See [Web search and page reads](#web-search-and-page-reads).
 
@@ -61,6 +62,17 @@ The default Profile manages aven tasks through the `aven-mcp` container, which r
 - **Scope**: Hermes should use only the `default` aven workspace, but aven can't enforce that: the token gives full access to every workspace, with no read-only mode, and the vps device stores all of them, work included. So the limit is soft: the server defaults to `default`, Hermes isn't given the `list_workspaces` tool, and its memory holds the rule. Only the default Profile gets the token.
 
 The join and config steps are in `aven.yaml`'s header.
+
+## Workouts over MCP
+
+The default Profile answers questions about your training, such as "what's my bench 1RM?", and creates and changes routines in openGym, through the `opengym-mcp` container in the `opengym` Service ([`opengym.yaml`](../../../ansible/services/opengym.yaml)):
+
+- **Tools**: creating and changing routines; reading routines and the week plan, workouts and set-by-set sessions, estimated 1RMs, muscle balance, programmes, the exercise library and body weight. Its numbers come from the same code as openGym's Stats screen. Upstream: [MCP over HTTPS](https://github.com/DuarteSantos8/openGym/blob/main/docs/MCP_REMOTE.md).
+- **Connection**: Hermes reaches `http://opengym-mcp:3100/mcp` over the services network, with `Authorization: Bearer ${OPENGYM_MCP_TOKEN}` from the Profile's `.env` (the `opengym` Key set in [keys.md](keys.md)). No port is published, and openGym's public `/mcp` route stays off.
+- **Plans only**: the token is a scoped openGym API token that may change Plans & routines and only see Workouts and Body weight, so openGym itself refuses `log_workout` and every other write. Hermes's approvals cover terminal commands, not MCP calls, so `config.yaml` hides `delete_routine`: delete routines in the app. It isn't a sign-in: it can't reach the account, and you revoke it alone under Settings > Integrations > API tokens. `opengym-mcp` holds no data; it reads through `opengym-api` with the token.
+- **Expiry**: the token lasts at most a year. Once it expires the tools fail; make a new one and update BWS.
+
+Only the default Profile gets the token. The setup steps are in `hermes.yaml`'s header (step 20).
 
 ## Web search and page reads
 

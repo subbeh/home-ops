@@ -25,12 +25,13 @@ A **Key set** is a named group of secrets a Profile may get. [`hermes.yaml`](../
 | `model` | `HERMES_OPENCODE_GO_API_KEY`, `HERMES_LANGFUSE_PUBLIC_KEY`, `HERMES_LANGFUSE_SECRET_KEY` | `OPENCODE_GO_API_KEY`, `HERMES_LANGFUSE_PUBLIC_KEY`, `HERMES_LANGFUSE_SECRET_KEY` (plus `HERMES_LANGFUSE_CAPTURE`, not a secret) |
 | `web` | `HERMES_TAVILY_API_KEY`, `HERMES_FIRECRAWL_API_KEY` | `TAVILY_API_KEY` for page reads, `FIRECRAWL_API_KEY` as an unused fallback (plus `SEARXNG_URL`, not a secret: [README.md](README.md#web-search-and-page-reads)) |
 | `aven` | `AVEN_MCP_TOKEN` | `AVEN_MCP_TOKEN`, the bearer token for the aven MCP server ([README.md](README.md#tasks-over-mcp)) |
+| `opengym` | `HERMES_OPENGYM_MCP_TOKEN` | `OPENGYM_MCP_TOKEN`, a scoped openGym token that writes only Plans & routines for the openGym MCP server ([README.md](README.md#workouts-over-mcp)) |
 | `semaphore` | `HERMES_OPS_SEMAPHORE_TOKEN` | `HERMES_OPS_SEMAPHORE_TOKEN`, the `hermes-ops` Semaphore user's token, read by the homelab plugin ([profiles.md](profiles.md#the-homelab-plugin)) |
 | `github` | `HERMES_GITHUB_ACTIONS_TOKEN` | `GITHUB_ACTIONS_TOKEN`, a fine-grained token for the home-ops repo with Actions: read, for the actions-failures cron job ([profiles.md](profiles.md#cron-jobs)) |
 | `vault` | none | `WIKI_PATH=/vault`, where the `llm-wiki` skill finds the vault, and `HERMES_WRITE_SAFE_ROOT=/opt/data:/vault`, so the file tools may write there; neither is a secret ([vault.md](vault.md#which-profiles-use-it)) |
 | `discord` | `HERMES_DISCORD_BOT_TOKEN` | `DISCORD_BOT_TOKEN`, the bot token from the container env again, for the quota-alerts cron job's `hermes send`: cron strips bot tokens from a script's env, and `hermes send` falls back to the `.env` ([kanban.md](kanban.md#quota-alerts)) |
 
-`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model`, `semaphore` and `github`. Only default gets `aven` and `discord`. Default and the Kanban Profiles get `vault`; ops doesn't.
+`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model`, `semaphore` and `github`. Only default gets `aven`, `opengym` and `discord`. Default and the Kanban Profiles get `vault`; ops doesn't.
 
 On each Deploy, the [`hermes-profile-keys`](../../../ansible/services/tasks/hermes-profile-keys.yaml) post-task:
 

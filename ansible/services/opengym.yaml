@@ -1,6 +1,12 @@
 ---
 # Served over HTTPS by traefik, so passkey login works; password sign-in stays on
 # for accounts created before that. See https://opengym.ch/docs.html#selfhost
+#
+# opengym-mcp serves openGym's MCP tools over HTTP for hermes. It holds no data: each request's
+# scoped `ogt_` token reads through opengym-api, and only containers on the services network reach
+# http://opengym-mcp:3100/mcp. opengym-web proxies /mcp to a container named `mcp`, which doesn't
+# exist, so the tools stay off the public route. The token's setup is in hermes.yaml's header.
+# See https://github.com/DuarteSantos8/openGym/blob/main/docs/MCP_REMOTE.md
 opengym:
   description: Workout tracker
 
@@ -35,11 +41,25 @@ opengym:
         BACKEND: opengym-api
         PORT: "3000"
 
+    - name: opengym-mcp
+      image: ghcr.io/duartesantos8/opengym-mcp:1.4.5@sha256:f1f1a48ac79f8c7ea762ca30770764ec961e7c6901b28dd97dff47170f8af5c9
+      memory: 128m
+      env:
+        OPENGYM_API_URL: http://opengym-api:3000
+        # Turns away browser pages from other origins; hermes sends no Origin.
+        ORIGIN: "https://gym.{{ services_domain }}"
+
   gatus:
     endpoints:
       # Through opengym-web to opengym-api, so it covers both.
       - name: opengym
         group: services
         url: "https://gym.{{ services_domain }}/api/health"
+        conditions:
+          - "[STATUS] == 200"
+      # Needs no token; whether hermes's token still works isn't checked.
+      - name: opengym-mcp
+        group: services
+        url: "http://opengym-mcp:3100/mcp/health"
         conditions:
           - "[STATUS] == 200"
