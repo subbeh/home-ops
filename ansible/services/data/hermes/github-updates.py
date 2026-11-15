@@ -43,15 +43,22 @@ def fetch(token, since):
     req = urllib.request.Request(API, data=json.dumps({"query": query(since)}).encode(), headers={"Authorization": f"Bearer {token}", "User-Agent": "hermes-github-updates"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         body = json.load(resp)
-    if body.get("errors"):  # GraphQL errors come with a 200
+    # GraphQL errors come with a 200; a node the token can't read comes back null beside them.
+    if not body.get("data"):
         raise RuntimeError(body["errors"][0].get("message"))
-    return body["data"]
+    return body["data"], [e.get("message", "") for e in body.get("errors", [])]
+
+
+def error_lines(errors):
+    # One line per distinct reason, e.g. an org that refuses tokens living over 366 days.
+    reasons = dict.fromkeys(m.split(". ")[0] for m in errors)
+    return [f"GitHub: {len(errors)} PRs or issues couldn't be read: {r}." for r in reasons]
 
 
 def merged(data, prefix, roles):
     items = {}
     for i, role in enumerate(roles):
-        for item in data[f"{prefix}{i}"]["nodes"]:
+        for item in filter(None, data[f"{prefix}{i}"]["nodes"]):
             items.setdefault(item["url"], (item, []))[1].append(role)
     return items.values()
 
@@ -93,8 +100,8 @@ def main():
     try:
         env = dict(l.strip().split("=", 1) for l in (DATA / ".env").read_text().splitlines() if "=" in l and l[0] != "#")
         since = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        data = fetch(env["GITHUB_ACTIONS_TOKEN"].strip('"'), since)
-        print("\n".join(pr_lines(data) + issue_lines(data, since)))
+        data, errors = fetch(env["GITHUB_ACTIONS_TOKEN"].strip('"'), since)
+        print("\n".join(pr_lines(data) + issue_lines(data, since) + error_lines(errors)))
     except Exception as e:  # any failure, a bad token included: the brief posts without GitHub
         print(f"GitHub unavailable: PRs and issues couldn't be read ({type(e).__name__}).")
 

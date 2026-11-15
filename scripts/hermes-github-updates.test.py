@@ -74,6 +74,16 @@ class Issues(unittest.TestCase):
         self.assertIn("1 new comment from ghost", out[1])
 
 
+class Errors(unittest.TestCase):
+    def test_skips_unreadable_and_says_why(self):
+        d = data(author=[None, pr(8)], issues_author=[None])
+        self.assertIn("Open GitHub PRs (1):", gu.pr_lines(d))
+        self.assertEqual(gu.issue_lines(d, SINCE), ["GitHub issues with updates since yesterday: none."])
+        msg = "The 'x' organization forbids access via a fine-grained personal access tokens if the token's lifetime is greater than 366 days. Please adjust"
+        self.assertEqual(gu.error_lines([msg, msg]), ["GitHub: 2 PRs or issues couldn't be read: The 'x' organization forbids access via a fine-grained personal access tokens if the token's lifetime is greater than 366 days."])
+        self.assertEqual(gu.error_lines([]), [])
+
+
 class Query(unittest.TestCase):
     def test_searches(self):
         q = gu.query(SINCE)
