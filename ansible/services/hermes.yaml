@@ -150,7 +150,8 @@
 #      MEMORY.md and USER.md entries start `[YYYY-MM-DD] [CATEGORY] -` or `[PERMANENT] [CATEGORY] -`,
 #      and the weekly pass flags stale ones. shortcut: the nightly pass browses only the 10 newest
 #      sessions, upgrade to a pre-check script listing the day's sessions once a day passes 10.
-#  20. openGym over MCP, default Profile (docs/services/hermes/README.md#workouts-over-mcp): in
+#  20. openGym over MCP, default and health Profiles
+#      (docs/services/hermes/README.md#workouts-over-mcp): in
 #      openGym, Settings > Integrations > API tokens > New token named hermes, with no expiry,
 #      Workouts and Plans & routines at Change directly (Hermes logs workouts and writes routines),
 #      and Body weight, Body measurements and Notes at See, so openGym refuses any other write.
@@ -158,7 +159,25 @@
 #      under `mcp_servers:` `opengym: {url: "http://opengym-mcp:3100/mcp", headers:
 #      {Authorization: "Bearer ${OPENGYM_MCP_TOKEN}"}, tools: {exclude: [delete_routine]}}` and
 #      `docker restart hermes`: Hermes's approvals cover terminal commands, not MCP calls, so
-#      deletes stay in the app.
+#      deletes stay in the app. health shares the token; its clone copies the entry (step 21).
+#  21. health Profile, the coach in #health (docs/services/hermes/profiles.md#the-health-profile):
+#      `hermes profile create health --clone` before the Deploy that first copies its plugin, model
+#      deepseek-v4.1-flash, the user-approved SOUL.md (a coach, not a doctor, says when to see one,
+#      names the source of each fact, never edits the records), no Kanban description. Its
+#      config.yaml keeps mcp_servers.opengym and drops mcp_servers.aven (no token), and
+#      `hermes -p health config set terminal.cwd /vault/health`, so default's now.md doesn't load as
+#      its context. Route #health (`chat_id: "1571462295673118761"`) in default's
+#      `gateway.profile_routes`. Google Health API: a Google Cloud project with the API enabled, an
+#      External consent screen published to "In production" (unverified is fine for one user;
+#      Testing refresh tokens die after 7 days), and a Web application OAuth client with redirect
+#      https://developers.google.com/oauthplayground. In the OAuth Playground, with those
+#      credentials, authorize https://www.googleapis.com/auth/googlehealth.sleep.readonly,
+#      .activity_and_fitness.readonly and .health_metrics_and_measurements.readonly, and exchange
+#      the code for a refresh token. Store the three as HERMES_GOOGLE_HEALTH_CLIENT_ID,
+#      _CLIENT_SECRET and _REFRESH_TOKEN in BWS, Deploy, then `hermes -p health plugins enable
+#      googlehealth` and `docker restart hermes`. default's and each Kanban Profile's SOUL.md carry
+#      a user-approved line keeping them out of /vault/health: one container and the shared mount
+#      mean it's instruction, not enforcement.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -173,7 +192,7 @@
 # Vault (docs/services/hermes/vault.md): the laptop's /data/workspace/vault, synced by syncthing to
 # /opt/workspace/vault, is mounted read-write at /vault. The `vault` Key set gives default and the
 # Kanban Profiles WIKI_PATH=/vault (the llm-wiki skill reads it) and adds /vault to the file tools'
-# write roots; ops gets neither. The
+# write roots; ops and health get neither. The
 # hermes-vault-history post-task commits it hourly to the vault's own .git, which syncs too; that
 # cron is its only committer, so never commit from the laptop.
 #
@@ -211,6 +230,12 @@ hermes:
       # A scoped openGym token that writes only Workouts and Plans & routines (setup step 20), read by config.yaml's mcp_servers.opengym header.
       opengym:
         OPENGYM_MCP_TOKEN: "{{ bws_secrets.HERMES_OPENGYM_MCP_TOKEN }}"
+      # The health Profile's own Google Cloud OAuth client and refresh token (setup step 21), read by
+      # the googlehealth plugin: read-only sleep, activity and heart scopes on the user's Fitbit data.
+      googlehealth:
+        GOOGLE_HEALTH_CLIENT_ID: "{{ bws_secrets.HERMES_GOOGLE_HEALTH_CLIENT_ID }}"
+        GOOGLE_HEALTH_CLIENT_SECRET: "{{ bws_secrets.HERMES_GOOGLE_HEALTH_CLIENT_SECRET }}"
+        GOOGLE_HEALTH_REFRESH_TOKEN: "{{ bws_secrets.HERMES_GOOGLE_HEALTH_REFRESH_TOKEN }}"
       # The hermes-ops Semaphore user's token (Task Runner role), read by the homelab plugin.
       semaphore:
         HERMES_OPS_SEMAPHORE_TOKEN: "{{ bws_secrets.HERMES_OPS_SEMAPHORE_TOKEN }}"
@@ -236,6 +261,8 @@ hermes:
       writer: [model, web, vault]
       reviewer: [model, web, vault]
       ops: [model, semaphore, github]
+      # No vault set: the file tools can't write to the vault, so the records in /vault/health stay as filed.
+      health: [model, web, opengym, googlehealth]
 
   tasks:
     post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml, hermes-config-history.yaml, hermes-vault-history.yaml]
@@ -253,6 +280,9 @@ hermes:
     # running task) and hermes (ops' own container).
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/plugins/homelab/deployable.json"
       content: "{{ services | difference(['semaphore', 'hermes']) | to_json }}"
+    # In health's own plugins dir, so no other Profile can load the Google Health tools.
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/health/plugins/googlehealth"
+      src: hermes/googlehealth
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/actions-failures.py"
       src: hermes/actions-failures.py
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/homelab-incidents.py"
@@ -294,7 +324,7 @@ hermes:
         DISCORD_BOT_TOKEN: "{{ bws_secrets.HERMES_DISCORD_BOT_TOKEN }}"
         DISCORD_ALLOWED_USERS: "{{ bws_secrets.HERMES_DISCORD_ALLOWED_USERS }}"
         DISCORD_HOME_CHANNEL: "1566222287483576340"
-        DISCORD_FREE_RESPONSE_CHANNELS: "1566222287483576340,1567034921732808805"
+        DISCORD_FREE_RESPONSE_CHANNELS: "1566222287483576340,1567034921732808805,1571462295673118761"
         DISCORD_FREE_RESPONSE_AUTO_THREAD: "true"
 
   gatus:

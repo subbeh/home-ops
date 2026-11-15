@@ -15,6 +15,7 @@ covers:
  │  gateway ── routes each message to a Profile          │
  │    ├─ default        the assistant you chat with      │
  │    ├─ ops            the homelab specialist, in #ops  │
+ │    ├─ health         the health coach, in #health     │
  │    ├─ orchestrator ┐                                  │
  │    ├─ researcher   │ the Kanban team: they work on    │
  │    ├─ writer       │ cards, never chat in Discord     │
@@ -32,11 +33,11 @@ covers:
 - **Gateway**: the long-running Hermes process (`gateway run`). It holds the Discord connection, runs each conversation and dispatches Kanban cards.
 - **Profile**: one persona of Hermes, with its own model, persona (`SOUL.md`), memory, skills and keys. All Profiles live in the one container and share its filesystem and its Discord bot. See [profiles.md](profiles.md).
 - **Dashboard**: Hermes's web UI for sessions, config and logs, at <https://hermes.vps.sbbh.cloud> behind basic auth.
-- **Plugins**: installed into the data dir, so they survive a container recreate. hermes-memory-wiki adds long-term notes, langfuse sends traces to Langfuse Cloud, and advanced-delegation picks the model for subagents ([profiles.md](profiles.md#models-and-costs)). The ops Profile also gets the homelab plugin, which lives in this repo ([profiles.md](profiles.md#the-homelab-plugin)).
+- **Plugins**: installed into the data dir, so they survive a container recreate. hermes-memory-wiki adds long-term notes, langfuse sends traces to Langfuse Cloud, and advanced-delegation picks the model for subagents ([profiles.md](profiles.md#models-and-costs)). The ops Profile also gets the homelab plugin, and the health Profile the googlehealth plugin, both in this repo ([profiles.md](profiles.md#the-homelab-plugin), [profiles.md](profiles.md#the-health-profile)).
 - **Socket proxy**: the separate `docker-socket-proxy` Service lets Hermes list containers and read their logs, and nothing else. See [safety.md](safety.md).
 - **Tasks**: the default Profile reads and changes your aven tasks over MCP. See [Tasks over MCP](#tasks-over-mcp).
-- **Workouts**: the default Profile reads your openGym workouts, routines and weigh-ins, logs workouts and writes routines, over MCP. See [Workouts over MCP](#workouts-over-mcp).
-- **Vault**: a folder of markdown notes, synced with the laptop and mounted at `/vault`, where default and the Kanban Profiles keep their notes, with an hourly git history. See [vault.md](vault.md).
+- **Workouts**: the default and health Profiles read your openGym workouts, routines and weigh-ins, log workouts and write routines, over MCP. See [Workouts over MCP](#workouts-over-mcp).
+- **Vault**: a folder of markdown notes, synced with the laptop and mounted at `/vault`, where default and the Kanban Profiles keep their notes and the health Profile reads your records in `health/`, with an hourly git history. See [vault.md](vault.md).
 - **Web**: web search goes to the `searxng` Service, and page reads go to Tavily. See [Web search and page reads](#web-search-and-page-reads).
 
 Why one container and not one per bot: the vps has little memory free, and each extra gateway costs about 400 MiB. So every new bot is a new Profile, never a new container. The price is weaker isolation between Profiles, covered in [safety.md](safety.md).
@@ -46,7 +47,7 @@ Why one container and not one per bot: the vps has little memory free, and each 
 1. You post in Discord. Only the users in `DISCORD_ALLOWED_USERS` get an answer.
 2. In the home channel (`DISCORD_HOME_CHANNEL`), Hermes answers without being mentioned and opens a thread for each conversation. Scheduled messages are delivered there too. Elsewhere, mention the bot.
 3. The gateway runs in multiplexed mode: one bot serves several Profiles. It checks `gateway.profile_routes` in the default Profile's `config.yaml` for a route matching the channel, thread or user. The most specific match wins, and a channel route also covers that channel's threads.
-4. One route exists: #ops and its threads go to the **ops** Profile. Every other message falls to the **default** Profile: routing isn't a deny list, so the Discord allowlist is what keeps strangers out.
+4. Two routes exist: #ops and its threads go to the **ops** Profile, and #health and its threads to the **health** Profile. Every other message falls to the **default** Profile: routing isn't a deny list, so the Discord allowlist is what keeps strangers out.
 5. A route whose target Profile doesn't exist makes the gateway reject the message. It doesn't fall back to default.
 6. That Profile answers. It may spawn subagents on cheaper or stronger models ([profiles.md](profiles.md)), and it asks you in Discord before any dangerous command ([safety.md](safety.md)).
 7. `/thread name:<goal> message:/kanban create --triage "<goal>"` hands a goal to the Kanban team instead. It opens a thread for the goal, and results come back there as notices ([kanban.md](kanban.md)).
@@ -65,14 +66,14 @@ The join and config steps are in `aven.yaml`'s header.
 
 ## Workouts over MCP
 
-The default Profile answers questions about your training, such as "what's my bench 1RM?", and logs workouts and creates and changes routines in openGym, through the `opengym-mcp` container in the `opengym` Service ([`opengym.yaml`](../../../ansible/services/opengym.yaml)):
+The default and health Profiles answer questions about your training, such as "what's my bench 1RM?", and logs workouts and creates and changes routines in openGym, through the `opengym-mcp` container in the `opengym` Service ([`opengym.yaml`](../../../ansible/services/opengym.yaml)):
 
 - **Tools**: logging workouts and creating and changing routines; reading routines and the week plan, workouts and set-by-set sessions, estimated 1RMs, muscle balance, programmes, the exercise library and body weight. Its numbers come from the same code as openGym's Stats screen. Upstream: [MCP over HTTPS](https://github.com/DuarteSantos8/openGym/blob/main/docs/MCP_REMOTE.md).
 - **Connection**: Hermes reaches `http://opengym-mcp:3100/mcp` over the services network, with `Authorization: Bearer ${OPENGYM_MCP_TOKEN}` from the Profile's `.env` (the `opengym` Key set in [keys.md](keys.md)). No port is published, and openGym's public `/mcp` route stays off.
 - **Scoped writes**: the token is a scoped openGym API token that may change Workouts and Plans & routines and only see Body weight, Body measurements and Notes, so openGym itself refuses any other write. Hermes's approvals cover terminal commands, not MCP calls, so `config.yaml` hides `delete_routine`: delete routines in the app. It isn't a sign-in: it can't reach the account, and you revoke it alone under Settings > Integrations > API tokens. `opengym-mcp` holds no data; it reads through `opengym-api` with the token.
 - **No expiry**: the token never expires, so revoke it in openGym if it leaks, then make a new one and update BWS.
 
-Only the default Profile gets the token. The setup steps are in `hermes.yaml`'s header (step 20).
+Only default and health get the token. The setup steps are in `hermes.yaml`'s header (steps 20 and 21).
 
 ## Web search and page reads
 
@@ -83,7 +84,7 @@ Hermes has two web tools, and each goes to its own backend:
 | `web_search` | The `searxng` Service ([`searxng.yaml`](../../../ansible/services/searxng.yaml)) at `http://searxng:8080` | Free. Searches were about three quarters of the Firecrawl credits, at about 2 credits each |
 | `web_extract` (page reads) | Tavily's hosted API | SearXNG only searches and can't fetch pages. Tavily's free tier gives about 1,000 credits a month, at about 1 credit per 5 pages. Firecrawl's free credits ran out mid-goal, and a self-hosted Firecrawl needs 8 GB+ and five containers, more than the vps has. A reader on the vps itself would fetch from a datacenter IP, which Cloudflare-fronted sites block |
 
-- **Where it's set**: each searching Profile (default, researcher, writer, reviewer) pins `web.search_backend: searxng` and `web.extract_backend: tavily` in its `config.yaml` (setup step 15 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). `SEARXNG_URL` reaches each Profile's `.env` through the `web` Key set ([keys.md](keys.md)).
+- **Where it's set**: each searching Profile (default, researcher, writer, reviewer, and health through its clone of default) pins `web.search_backend: searxng` and `web.extract_backend: tavily` in its `config.yaml` (setup step 15 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). `SEARXNG_URL` reaches each Profile's `.env` through the `web` Key set ([keys.md](keys.md)).
 - **The pins matter**: without them Hermes autodetects one backend for both tools, and a paid key wins over `SEARXNG_URL`. The Firecrawl key still reaches each Profile, unused, as a fallback if Tavily's free tier goes.
 - **Internal only**: `searxng` has no Traefik route. Only containers on the services network reach it.
 - **Engines**: `ansible/services/data/searxng/settings.yml` keeps a short engine list. Some engines block datacenter IPs like the vps's; drop one that keeps showing in a response's `unresponsive_engines`.

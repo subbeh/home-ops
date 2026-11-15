@@ -24,6 +24,8 @@ The vault is a folder of plain markdown notes that you and Hermes both read and 
 
 The `vault` Key set ([keys.md](keys.md)) puts `WIKI_PATH=/vault` in the `.env` of default and the Kanban Profiles (orchestrator, researcher, writer, reviewer). `llm-wiki` reads it to find the vault. The set also adds `/vault` to `HERMES_WRITE_SAFE_ROOT`: the image sets it to `/opt/data`, and `write_file` and `patch` refuse any path outside it. ops gets neither. The container's filesystem is shared, though, so ops could still reach `/vault`: keeping it off is a matter of instruction, not enforcement ([safety.md](safety.md#what-one-profile-can-see-of-another)).
 
+The `health/` folder holds your medical records, such as blood-test results, for the health Profile ([profiles.md](profiles.md#the-health-profile)). health gets no `vault` set, so its file tools read the records but can't change them, and its terminal starts in `/vault/health`. The folder is private by instruction only: the `SOUL.md` of default and of each Kanban Profile tells it to stay out, but one container and one shared mount mean any Profile could read it. Like every note, the records sync to the laptop, land in the vault's git history and go to the model provider whenever health reads them.
+
 ## Hermes's own notes
 
 `SCHEMA.md` at the vault's root is the contract for every note: the folder layout, frontmatter, tags, links and who writes where. You approved it, and you change it in Obsidian like any note. On top of `llm-wiki`'s folders, default keeps a layer for continuity:

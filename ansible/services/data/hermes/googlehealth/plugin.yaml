@@ -1,0 +1,7 @@
+---
+name: googlehealth
+version: 1.0.0
+description: Read-only Google Health API tools for the health Profile - Fitbit activity, sleep and heart data
+provides_tools:
+  - googlehealth_daily
+  - googlehealth_records

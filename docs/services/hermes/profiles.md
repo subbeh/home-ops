@@ -19,10 +19,35 @@ A **Profile** is one persona of Hermes: its own model, persona, memory, skills, 
 | `writer` | Turns research notes into the deliverable | deepseek-v4-pro | Default toolsets |
 | `reviewer` | Checks the writer's work against the card: PASS or FAIL with a punch-list, never edits | mimo-v2.6-pro | Default toolsets |
 | `ops` | The homelab specialist, in #ops: checks status and logs, proposes changes as repo edits and Deploys, never makes them live by hand | deepseek-v4.1-flash | Default toolsets without web and browser on Discord and in cron jobs, plus the [homelab plugin](#the-homelab-plugin) |
+| `health` | The health coach, in #health: answers from your training, Fitbit data and medical records, naming the source; a coach, not a doctor | deepseek-v4.1-flash | Default toolsets, web search included, plus openGym over MCP ([README.md](README.md#workouts-over-mcp)) and the [googlehealth plugin](#the-health-profile) |
 
 The four Kanban Profiles have no Discord bot of their own: they only work on cards ([kanban.md](kanban.md)). Each has a description, which the orchestrator reads to route work, and a `SOUL.md` persona. Hermes drafted both from a prompt and the user approved them. The default Profile keeps the stock `SOUL.md`, and its `memories/USER.md` holds the user's profile (timezone, location, reply style, brief topics, workday, personal day and quiet hours), which Hermes wrote from a Discord chat. To change it, tell Hermes in Discord: it rewrites the file itself, within `memory.user_char_limit`. The file goes to the model provider every turn.
 
 `ops` is reached through the #ops route ([README.md](README.md#how-a-message-flows)), not the board. It has no web or browser tools, in chats or cron jobs, because it will hold Deploy power, so no web page should reach its context; it names what to look up instead. Its `SOUL.md` was drafted for it and approved by the user.
+
+### The health Profile
+
+`health` is the health coach, reached through the #health route ([README.md](README.md#how-a-message-flows)), not the board, and no delegation route reaches it. It was cloned from default (setup step 21 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header), and its `SOUL.md`, drafted by Hermes and approved by the user, makes it a coach, not a doctor: it says when to see one, names the source of each fact, and never edits the records. It reads three sources:
+
+| Source | How |
+|---|---|
+| Training | openGym over MCP, with default's token ([README.md](README.md#workouts-over-mcp)) |
+| Fitbit activity, sleep and heart data | The googlehealth plugin, below |
+| Medical records, such as blood tests | Files you put in the vault's `health/` folder ([vault.md](vault.md#which-profiles-use-it)) |
+
+The googlehealth plugin is in the repo at [`ansible/services/data/hermes/googlehealth/`](../../../ansible/services/data/hermes/googlehealth/), and each Deploy copies it into health's own `plugins/` dir, like the homelab plugin. It reads the [Google Health API](https://developers.google.com/health), which replaced the Fitbit Web API when Google turned that off in November 2026, with read-only scopes for sleep, activity and fitness, and health metrics.
+
+| Tool | Reads |
+|---|---|
+| `googlehealth_daily` | Totals per day: steps, distance, active and active-zone minutes, heart rate, total calories, weight. 14 days per call for active minutes, heart rate and calories, 90 for the rest |
+| `googlehealth_records` | Sleep sessions with minutes per stage, exercise sessions, and daily resting heart rate, HRV, oxygen saturation and respiratory rate, up to 90 days per call |
+
+- **Keys**: the plugin reads the OAuth client and refresh token from health's `.env` (the `googlehealth` Key set, [keys.md](keys.md)) on each call and caches the hour-long access token in memory, so neither reaches the terminal or the model. No other Profile gets the Key set.
+- **Refresh token**: it comes from a one-time consent in Google's OAuth Playground. The Google Cloud consent screen is published to "In production", unverified: in Testing, Google expires refresh tokens after 7 days. It lapses after about six months unused, or when revoked in your Google Account; then repeat the consent and update BWS.
+- **No data is not zero**: a day missing from `googlehealth_daily` means the tracker wasn't worn.
+- **Privacy**: everything health reads goes to OpenCode Go's model provider for that turn, Fitbit data and records included. The user accepted that for deepseek-v4.1-flash. The records folder is private by instruction only ([vault.md](vault.md#which-profiles-use-it)).
+
+`scripts/hermes-googlehealth.test.py` (`just docs-test`) checks the date handling, paging and response parsing.
 
 ### The homelab plugin
 
@@ -103,7 +128,7 @@ To read traces through the API, use `/api/public/v2/observations` with a time ra
 
 **Fallback.** When a Profile's model fails a turn (its cap, a rate limit, a 5xx, an unknown model), Hermes retries that turn on another Go model from a different family, and says so in the reply. Fallback is per turn: the next message tries the Profile's own model first again. It doesn't help once the shared weekly cap is hit, since the fallback model is refused too.
 
-- **glm-5.3-flash**: default, ops, orchestrator, writer and reviewer. Reviewer's fallback still differs from writer's family.
+- **glm-5.3-flash**: default, ops, health, orchestrator, writer and reviewer. Reviewer's fallback still differs from writer's family.
 - **deepseek-v4.1-flash**: researcher, which runs GLM itself.
 - **Subagents**: the `fast` and `deep` routes (both DeepSeek) fall back to glm-5.3-flash through `delegation.fallback_providers` in default's `config.yaml`. A route with no `fallback_providers` of its own inherits it.
 
