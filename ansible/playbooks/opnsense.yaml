@@ -65,6 +65,17 @@
       oxlorg.opnsense.package:
         name: "{{ plugins }}"
         action: install
+      register: _plugins
+
+    # The install only starts a firmware job; the plugins' APIs 404 until it's done.
+    - name: Wait for the plugin install
+      oxlorg.opnsense.raw:
+        url: core/firmware/upgradestatus
+      register: _install
+      until: _install.response.status == 'done'
+      retries: 60
+      delay: 5
+      when: _plugins is changed and not ansible_check_mode
 
     # ACME cert for the UI, issued by Let's Encrypt with a Cloudflare DNS-01 challenge. Traefik's
     # token is reused: acme.sh finds the zone with it, so no zone or account ID is needed.
