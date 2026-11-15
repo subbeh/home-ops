@@ -29,6 +29,14 @@ Secrets reach Secrets Manager through `.bws.yaml`: each key points at a vault it
 - [x] Seed `terraform/tailscale/policy.hujson` from the admin console's policy (only when the tailnet existed before this repo managed it).
 - [x] OAuth client for Terraform: Settings → OAuth clients → Generate, scopes **Policy File: Write**, **OAuth Keys: Write** and **Auth Keys: Write** with tag `tag:ci`. The `tailscale` stack creates the CI client, and an OAuth client can only grant scopes and tags it holds itself (otherwise: `actor cannot set scopes (403)`). `tag:ci` only exists once the policy is applied, so on a fresh tailnet apply the policy first, then add Auth Keys.
 
+## gl-router-home
+
+Lets a device on main reach the tailnet without running Tailscale itself: the router masquerades its traffic onto the router's own tailnet address, which the policy's `autogroup:member` rule already covers. Home only: away from main, that device has no tailnet.
+
+- [x] LuCI (admin UI → System → Advanced Settings → LuCI) → Network → Firewall: on the Tailscale zone tick **Masquerading** and set Forward to accept; on the `lan` zone add the Tailscale zone to "Allow forward to destination zones". Turning Tailscale off and on in the GL.iNet UI can reset this, so check it first when a device on main loses the tailnet.
+- [x] Admin console → Machines → gl-router-home → ⋯ → Disable key expiry, or the router and every device behind it drop off the tailnet when the node key expires.
+- [x] Syncthing on such a device: the VPS device's Addresses are `tcp://100.77.96.125:22000, dynamic`. The VPS can't dial back through the router, so the device always connects out. MagicDNS names don't resolve there; use the `sbbh.cloud` names or tailnet IPs.
+
 ## Semaphore
 
 After `just ansible::playbook services --tags semaphore`, at `https://semaphore.vps.sbbh.cloud` (login `admin`, `SEMAPHORE_ADMIN_PASSWORD`). The same steps are at the top of `ansible/services/semaphore.yaml`.
