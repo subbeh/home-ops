@@ -28,8 +28,8 @@ def issue(n, comments=(), events=()):
             "timelineItems": {"nodes": [{"__typename": t, "actor": {"login": who}, "createdAt": at} for t, who, at in events]}}
 
 
-def data(review=(), author=(), assignee=(), issues_author=(), issues_assignee=()):
-    out = {f"p{i}": {"nodes": list(n)} for i, n in enumerate([review, author, assignee])}
+def data(author=(), assignee=(), issues_author=(), issues_assignee=()):
+    out = {f"p{i}": {"nodes": list(n)} for i, n in enumerate([author, assignee])}
     out.update({f"i{i}": {"nodes": list(n)} for i, n in enumerate([issues_author, issues_assignee])})
     out["viewer"] = {"login": "me"}
     return out
@@ -46,8 +46,8 @@ class PRs(unittest.TestCase):
         self.assertIn("- o/r#2 PR 2 (yours) https://github.com/o/r/pull/2: review: approved; checks: none", out)
 
     def test_waiting_and_pending(self):
-        out = "\n".join(gu.pr_lines(data(review=[pr(3, review="REVIEW_REQUIRED", checks="PENDING", mergeable="UNKNOWN")])))
-        self.assertIn("(review requested) https://github.com/o/r/pull/3: review: waiting; checks: pending", out)
+        out = "\n".join(gu.pr_lines(data(assignee=[pr(3, review="REVIEW_REQUIRED", checks="PENDING", mergeable="UNKNOWN")])))
+        self.assertIn("(assigned) https://github.com/o/r/pull/3: review: waiting; checks: pending", out)
 
     def test_merges_roles(self):
         out = "\n".join(gu.pr_lines(data(author=[pr(4)], assignee=[pr(4)])))
@@ -87,8 +87,9 @@ class Errors(unittest.TestCase):
 class Query(unittest.TestCase):
     def test_searches(self):
         q = gu.query(SINCE)
-        self.assertEqual(q.count("search("), 5)
+        self.assertEqual(q.count("search("), 4)
         self.assertIn(f"is:issue updated:>={SINCE} author:@me", q)
+        self.assertNotIn("review-requested", q)
 
 
 if __name__ == "__main__":

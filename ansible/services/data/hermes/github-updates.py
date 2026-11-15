@@ -1,6 +1,6 @@
 """The morning-brief skill's GitHub lines (docs/services/hermes/profiles.md#cron-jobs).
 
-Prints the user's open GitHub PRs: authored, assigned or waiting on their review, each with its
+Prints the user's open GitHub PRs, authored or assigned, each with its
 draft, review, checks and conflict state. Then the issues they created or are assigned to that
 someone else commented on, closed or reopened in the last 24 hours. The brief copies both. It
 reads GitHub's GraphQL search with default's read-only GITHUB_ACTIONS_TOKEN. It always exits 0
@@ -14,8 +14,7 @@ from pathlib import Path
 
 API = "https://api.github.com/graphql"
 DATA = Path(__file__).resolve().parent.parent
-# Review requests first: those wait on the user.
-PR_ROLES = {"review requested": "review-requested:@me", "yours": "author:@me", "assigned": "assignee:@me"}
+PR_ROLES = {"yours": "author:@me", "assigned": "assignee:@me"}
 ISSUE_ROLES = {"yours": "author:@me", "assigned": "assignee:@me"}
 PR_FIELDS = "... on PullRequest { url number title isDraft reviewDecision mergeable repository { nameWithOwner } commits(last: 1) { nodes { commit { statusCheckRollup { state } } } } }"
 # Who acted and when; the last 20 cover a day's activity on one issue.
