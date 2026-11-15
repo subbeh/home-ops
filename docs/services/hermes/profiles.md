@@ -43,7 +43,7 @@ The googlehealth plugin is in the repo at [`ansible/services/data/hermes/googleh
 | `googlehealth_records` | Sleep sessions with minutes per stage, exercise sessions, and daily resting heart rate, HRV, oxygen saturation and respiratory rate, up to 90 days per call |
 
 - **Keys**: the plugin reads the OAuth client and refresh token from health's `.env` (the `googlehealth` Key set, [keys.md](keys.md)) on each call and caches the hour-long access token in memory, so neither reaches the terminal or the model. No other Profile gets the Key set.
-- **Refresh token**: it comes from a one-time consent in Google's OAuth Playground. The Google Cloud consent screen is published to "In production", unverified: in Testing, Google expires refresh tokens after 7 days. It lapses after about six months unused, or when revoked in your Google Account; then repeat the consent and update BWS.
+- **Refresh token**: it comes from a one-time consent in Google's OAuth Playground. The Google Cloud consent screen is published to "In production", unverified: in Testing, Google expires refresh tokens after 7 days. It lapses after about six months unused, or when revoked in your Google Account: [keys.md](keys.md#renewing-the-google-health-refresh-token) has the steps to renew it.
 - **No data is not zero**: a day missing from `googlehealth_daily` means the tracker wasn't worn.
 - **Privacy**: everything health reads goes to OpenCode Go's model provider for that turn, Fitbit data and records included. The user accepted that for deepseek-v4.1-flash. The records folder is private by instruction only ([vault.md](vault.md#which-profiles-use-it)).
 

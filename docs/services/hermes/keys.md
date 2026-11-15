@@ -63,6 +63,19 @@ So never save keys in the dashboard. If one is there, delete its line from the `
 1. Change the value in BWS.
 2. Deploy hermes ([running.md](running.md)). The block changes, and hermes restarts with the new key.
 
+### Renewing the Google Health refresh token
+
+The health Profile's refresh token lapses after about six months unused, or when you revoke it in your Google Account. The googlehealth tools then fail with `invalid_grant`. The OAuth client stays valid, so only the token changes:
+
+1. Open the [OAuth Playground](https://developers.google.com/oauthplayground). Under the gear icon, tick **Use your own OAuth credentials** and paste the client ID and secret, `HERMES_GOOGLE_HEALTH_CLIENT_ID` and `HERMES_GOOGLE_HEALTH_CLIENT_SECRET` in BWS.
+2. In Step 1, paste the three scopes, separated by spaces, and **Authorize APIs**:
+   `https://www.googleapis.com/auth/googlehealth.sleep.readonly https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly`
+3. Sign in with the Google account your Fitbit is linked to. Past the unverified-app warning (**Advanced**, then **Go to ...**), tick **every** scope's checkbox: Google lets you grant some and not others.
+4. In Step 2, **Exchange authorization code for tokens**, and copy the refresh token into `HERMES_GOOGLE_HEALTH_REFRESH_TOKEN` in BWS.
+5. Deploy hermes, then check: `docker exec hermes hermes -p health chat --oneshot -Q -q "My steps and sleep for the last 3 days, with sources."`. `403 MISSING_OAUTH_SCOPE` on one data type means its checkbox was left unticked: repeat from step 2.
+
+If the Google Cloud consent screen ever drops back to Testing, Google expires every refresh token after 7 days: publish it to **In production** again (Google Auth Platform, Audience).
+
 ## Adding a key
 
 1. Add it to BWS (through the dotfiles bws sync, as for any new secret; see [deploy.md](../../runbooks/deploy.md)).
