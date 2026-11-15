@@ -45,11 +45,6 @@ traefik:
                 # The host resolver goes through MagicDNS; ask Cloudflare directly.
                 resolvers: ["1.1.1.1:53", "1.0.0.1:53"]
 
-        # HTTPS backends (unifi) serve self-signed certs on the private services network, and
-        # docker labels can't define a per-service serversTransport.
-        serversTransport:
-          insecureSkipVerify: true
-
         api: {}
 
         providers:
@@ -58,6 +53,17 @@ traefik:
             network: "{{ services_network }}"
             # Go template, evaluated by traefik per container.
             defaultRule: "Host(`{% raw %}{{ normalize .ContainerName }}{% endraw %}.{{ services_domain }}`)"
+          # Docker labels can only reference a serversTransport, so it's defined here.
+          file:
+            filename: /etc/traefik/dynamic.yaml
+    # For HTTPS backends with self-signed certs (unifi): label
+    # traefik.http.services.<name>.loadbalancer.serversTransport: skip-verify@file
+    - dest: "{{ services_data_dir }}/traefik/dynamic.yaml"
+      content: |
+        http:
+          serversTransports:
+            skip-verify:
+              insecureSkipVerify: true
 
   containers:
     - image: traefik:v3.7.18@sha256:9c437ac4f09ce6f4980a8544902d3475fdf70a1a7c578729581d2535dfa7d635
@@ -73,6 +79,7 @@ traefik:
         host.docker.internal: host-gateway
       volumes:
         - "{{ services_data_dir }}/traefik/config.yaml:/etc/traefik/traefik.yaml:ro"
+        - "{{ services_data_dir }}/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml:ro"
         - "{{ services_data_dir }}/traefik/data:/data"
         # ponytail: read-only mount still grants the full Docker API (root-equivalent);
         # put a docker-socket-proxy in front if traefik is ever exposed beyond the tailnet.

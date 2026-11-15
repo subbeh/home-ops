@@ -60,6 +60,6 @@ The schema is the services role (`ansible/roles/services/tasks/`). Existing Serv
 - **Image runs as a fixed UID**: give its data dir that `owner`/`group` in `files:` (aven: 65532). Find it on the Host, since the laptop's Docker is usually off: `ssh <host> docker run --rm --entrypoint id <image>`.
 - **Synced workspace**: mount `{{ services_workspace_dir }}` (the laptop's workspace, synced by syncthing), read-only unless the Service must write to it. Never mount it from inside syncthing's data dir.
 - **Hostname override**: set a `traefik.http.routers.<name>.rule` label, as opengym does.
-- **HTTPS-only backend**: add a `traefik.http.services.<name>.loadbalancer.server.scheme: https` label, as unifi does. Traefik already skips verifying backend certs.
+- **HTTPS-only backend**: add a `traefik.http.services.<name>.loadbalancer.server.scheme: https` label, as unifi does. For a self-signed cert, also `traefik.http.services.<name>.loadbalancer.serversTransport: skip-verify@file`.
 - **`gatus:`**: Gatus `endpoints` and `external-endpoints` in Gatus's own schema, written to Gatus's config dir by the Service's Deploy. Endpoints without `alerts` get Pushover with send-on-resolved. The `group` and `name` make the endpoint key (`<group>_<name>`), which must be unique across Services and is the push URL for an external endpoint.
 - **Leave out** Service names that clash with a Step tag (`pre-tasks`, `files`, `containers`, `post-tasks`) or with `all`/`always`.
