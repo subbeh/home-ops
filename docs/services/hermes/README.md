@@ -87,7 +87,9 @@ Four skills in the default Profile help start the day and start and finish tasks
 - **morning-brief**: the weather at the USER.md location, the last day's 1-2 top stories per USER.md news topic, with links, up to 7 aven tasks from the default workspace: due today or earlier, active, or high or urgent priority, and OpenCode Go usage: the shared week and month meters and this month's spend per model, with anything over 75% flagged ([cron jobs](profiles.md#cron-jobs)). It only reads tasks; plan-day picks the day's work. Tell Hermes a new location or topic and the next brief follows it.
 - **wrap-up**: marks today's finished picks done, moves carry-overs to tomorrow and clears the due date of dropped ones. On Fridays it adds a recap of the week's done tasks.
 
-morning-brief, plan-day and wrap-up also start on their own each day, at 06:30, 06:45 and 21:00 ([cron jobs](profiles.md#cron-jobs)). Run one by typing `/plan-day`, `/start-task <task>`, `/wrap-up` or `/morning-brief` as a message, or through Discord's `/skill` command: Hermes registers one `/skill` command with autocomplete instead of one command per skill, so these don't show in the command picker on their own. The skills live only on the vps, in `/opt/data/skills/productivity/` (setup steps 11 to 13 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). After editing one, run `/reload-skills` in Discord.
+plan-day and wrap-up also read the vault's `now.md` and `watching.md` and bring up an open loop when it becomes relevant, once: a ledger in the vault records what plan-day, wrap-up and the morning brief raised, so nothing comes back unless it changed ([vault.md](vault.md#hermess-own-notes)).
+
+morning-brief, plan-day and wrap-up also start on their own each day, at 06:30, 06:45 and 21:00 ([cron jobs](profiles.md#cron-jobs)). Run one by typing `/plan-day`, `/start-task <task>`, `/wrap-up` or `/morning-brief` as a message, or through Discord's `/skill` command: Hermes registers one `/skill` command with autocomplete instead of one command per skill, so these don't show in the command picker on their own. The skills live only on the vps, in `/opt/data/skills/productivity/` (setup steps 11 to 13 and 19 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). After editing one, run `/reload-skills` in Discord.
 
 ## Read next
 
@@ -97,7 +99,7 @@ morning-brief, plan-day and wrap-up also start on their own each day, at 06:30, 
 | [keys.md](keys.md) | How keys get from Bitwarden into each Profile, and why not through the dashboard |
 | [kanban.md](kanban.md) | How a goal becomes cards, the review loop, Discord notices, quota alerts, what a Deploy does to running cards |
 | [safety.md](safety.md) | Approvals, the socket proxy, resource limits, what one Profile can see of another |
-| [vault.md](vault.md) | Where the notes vault lives, which Profiles write it, its hourly history and how to roll a note back |
+| [vault.md](vault.md) | Where the notes vault lives, which Profiles write it, the notes Hermes keeps there, its hourly history and how to roll a note back |
 | [running.md](running.md) | Deploying hermes, rotating a key, rolling back config, reading logs, common failures |
 
 The one-time setup steps (picking the model, installing plugins, ...) are the checklist in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header. Hermes owns its `config.yaml` and edits it itself, so Ansible never writes it: those settings are made by hand and recorded in that header.

@@ -56,6 +56,8 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 | `morning-brief` | `default` | daily 06:30 | Posts the weather, the last day's headlines on the USER.md topics, today's aven tasks and OpenCode Go usage to the home channel, through the `morning-brief` skill ([README.md](README.md#planning-and-focus-skills)), as a plain message: the job's `attach_to_session: false` keeps it out of a thread |
 | `plan-day` | `default` | daily 06:45 | Starts the [plan-day skill](README.md#planning-and-focus-skills) in the home channel |
 | `wrap-up` | `default` | daily 21:00 | Starts the wrap-up skill in the home channel |
+| `vault-nightly` | `default` | daily 00:15 | Writes yesterday's daily note, `watching.md` and `now.md` in the vault, through the `vault-notes` skill ([vault.md](vault.md#hermess-own-notes)). Posts nothing |
+| `vault-weekly` | `default` | Mondays 00:45 | Writes the past ISO week's weekly note and memory check in the vault. Posts nothing |
 
 `actions-failures` runs [`actions-failures.py`](../../../ansible/services/data/hermes/actions-failures.py), which Ansible ships into ops' `scripts/` dir. It lists the repo's latest 50 finished runs, keeps the failed ones it hasn't seen (a re-run that fails again counts as new), and prints each with the last 60 log lines up to its error, so ops diagnoses it in one model call. Its first run only records what already failed. Runs from fork PRs are left out, since their logs are a stranger's text. When GitHub is down it stays silent; a rejected token fails the job, and Hermes posts the error.
 
@@ -68,6 +70,8 @@ A cron job runs a prompt on a schedule, each run in a fresh session, and posts t
 Cron scripts get a scrubbed env, so `GITHUB_ACTIONS_TOKEN` (the `github` Key set, [keys.md](keys.md)) reaches the script through ops' `terminal.env_passthrough`. That also hands it to ops' terminal in chats: a read-only token for a public repo's Actions.
 
 `plan-day` and `wrap-up` follow the personal day in USER.md (06:30-21:00, every day: the tasks are for life outside work), with `plan-day` 15 minutes after the morning brief. Each opens with the skill's first question, and `cron.mirror_delivery` in the default Profile's `config.yaml` makes a reply to it continue with that message in context. To move them, tell Hermes the new day: a MEMORY.md entry tells it to edit both jobs' schedules to match, outside quiet hours.
+
+`vault-nightly` and `vault-weekly` run after wrap-up and outside DeepSeek's peak hours, which bill double. Each job's `enabled_toolsets` is only `file` and `session_search`: nobody is there to answer an approval at 00:15. Both have `--workdir /vault` and `--deliver local`, so their answer stays in `hermes cron runs` and only a failure posts, to the home channel. The nightly pass browses the 10 newest sessions, more than any day so far has had.
 
 ## What Profiles share, and what they don't
 

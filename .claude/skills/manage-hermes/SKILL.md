@@ -38,6 +38,7 @@ The `cron create` commands in the `hermes.yaml` header are working examples; the
 - **Deliver**: `--deliver discord` posts to the home channel, `--deliver discord:<chat id>` to another channel.
 - **Threads**: with `cron.mirror_delivery` on, a home-channel run opens a thread, which can end up private. A job that should post a plain message gets `attach_to_session: false` (header step 13 has the command).
 - **Pre-check scripts** get a scrubbed env: pass a key through with `hermes -p <profile> config set terminal.env_passthrough '[<KEY>]'`. Ship the script from the repo through `hermes.yaml`, as `actions-failures.py` is.
+- **Unattended jobs**: a job nobody answers, such as vault-nightly, gets a per-job `enabled_toolsets` list of tools that never wait for an approval, and `--deliver local --failure-deliver discord` when it should post nothing (header step 19).
 - **No-model jobs**: `--no-agent` runs only the script and delivers its stdout. To post somewhere else, such as a goal's thread, the script calls `hermes send -t discord:<chat id>` itself, as `quota-alerts.py` does.
 - **Test** with `hermes [-p <profile>] cron run <id>` and check Discord. Test a delivery change with a throwaway job, and remove it afterwards.
 
@@ -63,3 +64,4 @@ A Deploy is needed only when the repo side changed (`hermes.yaml`, key sets, shi
 - **Keys in the dashboard**: Providers > API keys writes outside the managed block and goes stale. Delete such lines from the `.env`.
 - **Approvals**: never set `approvals.mode: off` or use `/yolo`. It also skips the gate on ops' Deploy tool ([safety.md](../../../docs/services/hermes/safety.md)).
 - **One container**: a new bot or team member is a new Profile, never a new container.
+- **Write roots**: `write_file` and `patch` refuse paths outside `HERMES_WRITE_SAFE_ROOT` (the image's `/opt/data`). A Profile that writes elsewhere gets the path added through a Key set, as `vault` adds `/vault`. The terminal isn't bound by it.

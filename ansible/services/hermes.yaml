@@ -135,6 +135,21 @@
 #      no container has exited or keeps restarting, and no Deploy in the last 24 hours failed, reply
 #      with exactly [SILENT]. Otherwise list only what needs attention, one line each: what, since
 #      when, and the likely cause. Change nothing."
+#  19. Vault notes, default Profile (docs/services/hermes/vault.md#hermess-own-notes): the vault's
+#      SCHEMA.md (user-approved) is the contract, and the vault-notes skill, written beside the
+#      focus skills, keeps daily/, weekly/, now.md and watching.md. `hermes cron create "15 0 * * *"
+#      "Run the vault-notes skill's nightly pass for yesterday." --name vault-nightly --skill
+#      vault-notes --workdir /vault --deliver local --failure-deliver discord`, and `"45 0 * * 1"`
+#      "Run the vault-notes skill's weekly pass for the ISO week that ended yesterday." as
+#      vault-weekly, the same way: after wrap-up, outside DeepSeek peak, posting nothing. Then
+#      `update_job("<id>", {"enabled_toolsets": ["file", "session_search"]})` for each (step 13's
+#      command), so an unattended run has no tool that waits for an approval. now.md loads into
+#      every default session as a context file: `hermes config set terminal.cwd /vault`, a
+#      `.hermes.md -> now.md` symlink in the vault, then a restart. plan-day, wrap-up and
+#      morning-brief read now.md, watching.md and the notified/ ledger and log what they raise.
+#      MEMORY.md and USER.md entries start `[YYYY-MM-DD] [CATEGORY] -` or `[PERMANENT] [CATEGORY] -`,
+#      and the weekly pass flags stale ones. shortcut: the nightly pass browses only the 10 newest
+#      sessions, upgrade to a pre-check script listing the day's sessions once a day passes 10.
 #
 # A Deploy kills running Kanban workers; the fixed hostname below lets their cards requeue
 # (docs/services/hermes/kanban.md). Deploy from main only, after `hermes kanban list`.
@@ -148,7 +163,8 @@
 #
 # Vault (docs/services/hermes/vault.md): the laptop's /data/workspace/vault, synced by syncthing to
 # /opt/workspace/vault, is mounted read-write at /vault. The `vault` Key set gives default and the
-# Kanban Profiles WIKI_PATH=/vault (the llm-wiki skill reads it); ops gets none. The
+# Kanban Profiles WIKI_PATH=/vault (the llm-wiki skill reads it) and adds /vault to the file tools'
+# write roots; ops gets neither. The
 # hermes-vault-history post-task commits it hourly to the vault's own .git, which syncs too; that
 # cron is its only committer, so never commit from the laptop.
 #
@@ -190,9 +206,12 @@ hermes:
       # job logs need a token even on a public repo.
       github:
         GITHUB_ACTIONS_TOKEN: "{{ bws_secrets.HERMES_GITHUB_ACTIONS_TOKEN }}"
-      # Not a secret: the vault mount below, read by the llm-wiki skill.
+      # Not secrets: the vault mount below, read by the llm-wiki skill. The image sets
+      # HERMES_WRITE_SAFE_ROOT=/opt/data, outside which write_file and patch refuse; a Profile's .env
+      # overrides the container env.
       vault:
         WIKI_PATH: /vault
+        HERMES_WRITE_SAFE_ROOT: /opt/data:/vault
       # The bot token again, for quota-alerts' `hermes send`: cron strips bot tokens from a script's
       # env, and `hermes send` falls back to the Profile's .env.
       discord:

@@ -22,7 +22,28 @@ The vault is a folder of plain markdown notes that you and Hermes both read and 
 
 ## Which Profiles use it
 
-The `vault` Key set ([keys.md](keys.md)) puts `WIKI_PATH=/vault` in the `.env` of default and the Kanban Profiles (orchestrator, researcher, writer, reviewer). `llm-wiki` reads it to find the vault. ops gets no `WIKI_PATH`. The container's filesystem is shared, though, so ops could still reach `/vault`: keeping it off is a matter of instruction, not enforcement ([safety.md](safety.md#what-one-profile-can-see-of-another)).
+The `vault` Key set ([keys.md](keys.md)) puts `WIKI_PATH=/vault` in the `.env` of default and the Kanban Profiles (orchestrator, researcher, writer, reviewer). `llm-wiki` reads it to find the vault. The set also adds `/vault` to `HERMES_WRITE_SAFE_ROOT`: the image sets it to `/opt/data`, and `write_file` and `patch` refuse any path outside it. ops gets neither. The container's filesystem is shared, though, so ops could still reach `/vault`: keeping it off is a matter of instruction, not enforcement ([safety.md](safety.md#what-one-profile-can-see-of-another)).
+
+## Hermes's own notes
+
+`SCHEMA.md` at the vault's root is the contract for every note: the folder layout, frontmatter, tags, links and who writes where. You approved it, and you change it in Obsidian like any note. On top of `llm-wiki`'s folders, default keeps a layer for continuity:
+
+| Note | Written by | What it holds |
+|---|---|---|
+| `daily/YYYY-MM-DD.md` | the nightly pass | One day's sessions: topics, decisions, open threads |
+| `weekly/YYYY-Www.md` | the weekly pass | The ISO week's themes and standing decisions, each linking its daily notes, plus a memory check |
+| `now.md` | the nightly pass | Current focus, open threads, the last three days and what's due soon: at most 40 short lines |
+| `watching.md` | the nightly pass, plan-day, wrap-up | Open loops ("waiting on X", "I'll look at Y"), one line each, deleted once closed |
+| `notified/YYYY-MM.md` | plan-day, wrap-up, morning-brief | One line per item raised: what, why now, from where |
+| `entities/`, `concepts/` | both passes | A note per subject once it shows up in two daily notes |
+
+**The passes**: the `vault-notes` skill, run by two default cron jobs ([profiles.md](profiles.md#cron-jobs)). The nightly one reads yesterday's sessions through `session_search`; the weekly one, early Monday, reads the week's daily notes. Both may use only the file tools and `session_search`, and deliver nowhere, so a run messages nobody unless it fails.
+
+**Session start**: default's `terminal.cwd` is `/vault`, and the vault holds `.hermes.md`, a symlink to `now.md`. Hermes loads the `.hermes.md` it finds from its working directory into every session's system prompt, with the frontmatter stripped, so a fresh Discord chat knows yesterday's open threads without a tool call. Cron runs load no context files unless the job sets a `workdir`, so plan-day and wrap-up read `now.md` themselves. Side effect: default's terminal commands start in the vault.
+
+**Open loops and the ledger**: plan-day and wrap-up bring up `watching.md` items whose recheck date has come, or that the day's talk touched, and skip any the ledger shows they already raised unless it changed since. The Friday wrap-up reads the week's ledger lines and proposes cuts; a cut gets a `cut:` line, so it doesn't come back. The morning brief skips stories already in the ledger. None of them messages you outside its own run.
+
+**Memory entries**: MEMORY.md and USER.md entries start `[YYYY-MM-DD] [CATEGORY] -` (the date last verified) or `[PERMANENT] [CATEGORY] -`, and procedures go into skills. The weekly pass lists stale, conflicting or duplicate entries in its note and adds one `watching.md` line, so plan-day raises the review once. It never edits memory itself.
 
 ## What the Kanban team writes
 
@@ -68,5 +89,6 @@ A restore writes into the live vault, and syncthing carries it to the laptop. Th
 - **Hermes can rewrite the history**: `.git` sits inside the read-write mount, so Hermes can change or delete it. The restic backups are the copy it can't reach. Accepted, so the history reads on the laptop.
 - **A synced `.git` can corrupt**: syncthing doesn't know git's files belong together, so git writing on both sides at once can leave a broken repo. Commit only through the vps cron job, never from the laptop.
 - **Injected text**: the Kanban Profiles read the web, and what they write into the vault can carry injected instructions that default reads later. The history is the rollback.
+- **`now.md` in every prompt**: Hermes loads it as project context, a tier it is told to follow. The nightly pass writes it from sessions that may quote web text, so `SCHEMA.md`, the skill and `now.md`'s first line all say notes are data, not instructions. That is by instruction only.
 - **Conflicts**: when you and Hermes edit the same note at once, syncthing keeps both, as a `.sync-conflict` copy.
 - **Model providers**: whatever Hermes reads from the vault is sent to OpenCode Go's model providers.
