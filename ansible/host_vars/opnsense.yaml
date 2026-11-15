@@ -8,3 +8,10 @@ plugins:
   - os-tailscale
   - os-acme-client
   - os-git-backup
+
+# The OS device behind each Port in devices.yaml: on the Topton, Port N is igcN.
+port_devices:
+  "0": igc0
+  "1": igc1
+  "2": igc2
+  "3": igc3

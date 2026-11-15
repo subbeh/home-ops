@@ -90,5 +90,32 @@ class CablePeers(unittest.TestCase):
         self.assertEqual(peers["router:0"], {"peer": "panel:1/back", "via": []})
 
 
+class OpnsenseFilters(unittest.TestCase):
+    NETS = {**NETWORKS, "iot": {"cidr": "10.0.4.0/24", "vlan": 4, "gateway": "router",
+                                "addresses": {"router": "10.0.4.1", "tv": {"addr": "10.0.4.5", "mac": "TODO(you)"}}}}
+
+    def test_router_interfaces(self):
+        ports = {"0": {"native": "lan", "tagged": ["iot"]}}
+        got = network.router_interfaces(self.NETS, ports, {"0": "igc0"}, "router")
+        self.assertEqual(got[0], {"network": "lan", "cidr": "10.0.0.0/24", "ip": "10.0.0.1", "addr": "10.0.0.1/24",
+                                  "device": "igc0", "pool": "10.0.0.100 - 10.0.0.199"})
+        self.assertEqual(got[1]["device"], "vlan0.4")
+        self.assertEqual(got[1]["parent"], "igc0")
+        self.assertNotIn("pool", got[1])
+
+    def test_dhcp_reservations_skip_placeholders(self):
+        nets = copy.deepcopy(self.NETS)
+        nets["lan"]["addresses"]["server"]["mac"] = "AA:BB:CC:00:11:22"
+        self.assertEqual(network.dhcp_reservations(nets), [{"network": "lan", "subnet": "10.0.0.0/24",
+                         "hostname": "server", "ip": "10.0.0.150", "mac": "aa:bb:cc:00:11:22"}])
+
+    def test_dns_hosts(self):
+        got = {(h["hostname"], h["domain"]): h["value"] for h in network.dns_hosts(self.NETS, "home")}
+        self.assertEqual(got[("server", "lan.home")], "10.0.0.150")
+        self.assertEqual(got[("server", "home")], "10.0.0.150")  # storage is unrouted
+        self.assertNotIn(("router", "home"), got)  # two routed addresses
+        self.assertNotIn(("server", "storage.home"), got)
+
+
 if __name__ == "__main__":
     unittest.main()

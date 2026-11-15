@@ -11,6 +11,14 @@
       firewall: "{{ ansible_host }}"
       api_key: "{{ bws_secrets.OPNSENSE_API_KEY }}"
       api_secret: "{{ bws_secrets.OPNSENSE_API_SECRET }}"
+  vars:
+    # Every Network OPNsense is the gateway of, with its device, address and Kea pool.
+    _interfaces: "{{ networks | router_interfaces(devices[inventory_hostname].ports, port_devices, inventory_hostname) }}"
+    # Exceptions to network.yaml's DNS rule: UniFi gear adopts through the controller on the VPS, and
+    # opnsense has an address on every Network, so its short name picks mgmt's.
+    _dns_extra:
+      - {hostname: unifi, domain: "{{ home_domain }}", value: "{{ networks.tailnet.addresses.vps }}"}
+      - {hostname: opnsense, domain: "{{ home_domain }}", value: "{{ networks.mgmt.addresses.opnsense }}"}
   tasks:
     # A command rather than a pipe lookup so it can retry: the Bitwarden API fails now and then.
     - name: Read secrets from Bitwarden Secrets Manager
@@ -126,3 +134,145 @@
       loop: "{{ _acme_certs.response.rows | selectattr('description', '==', 'opnsense.sbbh.cloud') | rejectattr('certRefId', 'truthy') }}"
       loop_control:
         label: "{{ item.description }}"
+
+    # The collection's modules only apply a change with reload: the VLANs and assignments reload
+    # inline, since the next tasks need them; the rest notify a handler.
+    - name: Create the VLANs on the trunk
+      oxlorg.opnsense.interface_vlan:
+        description: "{{ item.network }}"
+        interface: "{{ item.parent }}"
+        vlan: "{{ item.vlan }}"
+        device: "{{ item.device }}"
+        reload: true
+      loop: "{{ _interfaces | selectattr('vlan', 'defined') }}"
+      loop_control:
+        label: "{{ item.network }}"
+
+    - name: Assign the VLANs
+      oxlorg.opnsense.interface_assignment:
+        device: "{{ item.device }}"
+        description: "{{ item.network | upper }}"
+        reload: true
+      loop: "{{ _interfaces | selectattr('vlan', 'defined') }}"
+      loop_control:
+        label: "{{ item.network }}"
+
+    - name: Read the interface assignments
+      oxlorg.opnsense.raw:
+        url: interfaces/assignment/search_item
+      register: _assignments
+
+    # Device -> identifier (lan, opt1, ...). A VLAN that a first --check run hasn't created yet
+    # has none, so the tasks below skip it.
+    - name: Map devices to interface identifiers
+      ansible.builtin.set_fact:
+        _ids: "{{ _assignments.response.rows | items2dict(key_name='if', value_name='identifier') }}"
+
+    - name: Read the internal interfaces
+      oxlorg.opnsense.raw:
+        url: "interfaces/assignment/get_item/{{ _ids[item.device] }}"
+      loop: "{{ _interfaces | selectattr('device', 'in', _ids) }}"
+      loop_control:
+        label: "{{ item.network }}"
+      register: _current
+
+    # interface_assignment can't set addresses, so this goes through the assignment API.
+    # IPv4 only: IPv6 off on every internal interface.
+    - name: Set the internal interfaces to static IPv4, IPv6 off
+      oxlorg.opnsense.raw:
+        url: "interfaces/assignment/set_item/{{ _ids[item.item.device] }}"
+        action: post
+        data:
+          interface: {enable: "1", type4: staticv4, ipaddr: "{{ item.item.addr }}", type6: ""}
+      loop: "{{ _current.results }}"
+      loop_control:
+        label: "{{ item.item.network }}"
+      vars:
+        _i: "{{ item.response.interface }}"
+        _type4: "{{ _i.type4 | dict2items | selectattr('value.selected', 'eq', 1) | map(attribute='key') | first }}"
+        _type6: "{{ _i.type6 | dict2items | selectattr('value.selected', 'eq', 1) | map(attribute='key') | first }}"
+      when: "[_i.enable, _type4, _i.ipaddr, _type6] != ['1', 'staticv4', item.item.addr, '']"
+      register: _set
+      # The API answers 200 with result 'failed' on a validation error; check mode posts nothing.
+      changed_when: true
+      failed_when: (_set.response.result | default('saved')) != 'saved'
+      notify: Apply the interfaces
+
+    # The bootstrap DHCP server from the runbook. It's off before Kea starts, since it holds
+    # the DHCP port, and it also sends the IPv6 router advertisements.
+    - name: Turn off dnsmasq
+      oxlorg.opnsense.dnsmasq_general:
+        enabled: false
+        # The module resets unset fields, and the default 53 would collide with Unbound if it's
+        # ever turned back on.
+        port: 53053
+      notify: Apply dnsmasq
+
+    - name: Add a Kea subnet per Network with dhcp
+      oxlorg.opnsense.dhcp_subnet:
+        subnet: "{{ item.cidr }}"
+        description: "{{ item.network }}"
+        pools: ["{{ item.pool }}"]
+        auto_options: false
+        gateway: ["{{ item.ip }}"]
+        dns: ["{{ item.ip }}"]
+      loop: "{{ _interfaces | selectattr('pool', 'defined') }}"
+      loop_control:
+        label: "{{ item.network }}"
+      notify: Apply Kea
+
+    - name: Reserve every address with a mac
+      oxlorg.opnsense.dhcp_reservation:
+        ip: "{{ item.ip }}"
+        mac: "{{ item.mac }}"
+        subnet: "{{ item.subnet }}"
+        hostname: "{{ item.hostname }}"
+        description: "{{ item.hostname }}"
+      loop: "{{ networks | dhcp_reservations }}"
+      loop_control:
+        label: "{{ item.hostname }}"
+      notify: Apply Kea
+
+    - name: Turn on Kea on the Networks with dhcp
+      oxlorg.opnsense.dhcp_general:
+        enabled: true
+        interfaces: "{{ _interfaces | selectattr('pool', 'defined') | map(attribute='device') | select('in', _ids) | map('extract', _ids) }}"
+      notify: Apply Kea
+
+    - name: Add the host overrides
+      oxlorg.opnsense.unbound_host:
+        hostname: "{{ item.hostname }}"
+        domain: "{{ item.domain }}"
+        value: "{{ item.value }}"
+        # Match on the name only, so a changed address updates the override instead of adding one.
+        match_fields: [hostname, domain]
+      loop: "{{ networks | dns_hosts(home_domain) + _dns_extra }}"
+      loop_control:
+        label: "{{ item.hostname }}.{{ item.domain }}"
+      notify: Apply Unbound
+
+    - name: Forward DNS over TLS to Quad9
+      oxlorg.opnsense.unbound_dot:
+        target: "{{ item }}"
+        port: 853
+        verify: dns.quad9.net
+      loop: [9.9.9.9, 149.112.112.112]
+      notify: Apply Unbound
+
+  # In this order: the interfaces get their addresses, and dnsmasq stops, before Kea starts.
+  handlers:
+    - name: Apply the interfaces
+      oxlorg.opnsense.reload:
+        target: interface_assignment
+
+    - name: Apply dnsmasq
+      oxlorg.opnsense.reload:
+        target: dnsmasq
+
+    - name: Apply Kea
+      oxlorg.opnsense.reload:
+        target: kea
+
+    - name: Apply Unbound
+      oxlorg.opnsense.reload:
+        target: unbound

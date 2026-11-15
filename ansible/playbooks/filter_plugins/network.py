@@ -119,6 +119,62 @@ def cable_peers(cables, devices):
     return peers
 
 
+def _routed(networks):
+    return {net: spec for net, spec in networks.items() if "gateway" in spec}
+
+
+def router_interfaces(networks, ports, port_devices, router):
+    """Each Network `router` is the gateway of -> its OS device (a VLAN on the parent's device
+    when tagged), the router's address as CIDR, and the Kea pool when it has dhcp."""
+    out = []
+    for port, spec in ports.items():
+        nets = [(spec["native"], None)] if "native" in spec else []
+        nets += [(net, networks[net]["vlan"]) for net in spec.get("tagged", [])]
+        for net, vlan in nets:
+            n = networks[net]
+            if n.get("gateway") != router:
+                continue
+            cidr = ipaddress.ip_network(n["cidr"])
+            iface = {"network": net, "cidr": n["cidr"], "ip": _addr(n["addresses"][router]),
+                     "addr": f"{_addr(n['addresses'][router])}/{cidr.prefixlen}",
+                     "device": f"vlan0.{vlan}" if vlan else port_devices[port]}
+            if vlan:
+                iface.update(vlan=vlan, parent=port_devices[port])
+            if n.get("dhcp"):
+                base = cidr.network_address
+                iface["pool"] = f"{base + n['dhcp']['from']} - {base + n['dhcp']['to']}"
+            out.append(iface)
+    return out
+
+
+def dhcp_reservations(networks):
+    """Every address with a real mac, as a Kea reservation; TODO placeholders are skipped."""
+    return [{"network": net, "subnet": spec["cidr"], "hostname": name, "ip": value["addr"],
+             "mac": value["mac"].lower()}
+            for net, spec in _routed(networks).items() if spec.get("dhcp")
+            for name, value in (spec.get("addresses") or {}).items()
+            if isinstance(value, dict) and re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", str(value.get("mac", "")).lower())]
+
+
+def dns_hosts(networks, home_domain):
+    """The DNS rule in network.yaml as Unbound overrides: <name>.<network>.<home_domain> for every
+    address on a routed Network, plus <name>.<home_domain> for a name with exactly one."""
+    routed = _routed(networks)
+    count = {}
+    for spec in routed.values():
+        for name in spec.get("addresses") or {}:
+            count[name] = count.get(name, 0) + 1
+    out = []
+    for net, spec in routed.items():
+        for name, value in (spec.get("addresses") or {}).items():
+            out.append({"hostname": name, "domain": f"{net}.{home_domain}", "value": _addr(value)})
+            if count[name] == 1:
+                out.append({"hostname": name, "domain": home_domain, "value": _addr(value)})
+    return out
+
+
 class FilterModule:
     def filters(self):
-        return {"network_errors": network_errors, "cable_peers": cable_peers}
+        return {"network_errors": network_errors, "cable_peers": cable_peers,
+                "router_interfaces": router_interfaces, "dhcp_reservations": dhcp_reservations,
+                "dns_hosts": dns_hosts}

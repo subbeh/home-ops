@@ -24,7 +24,7 @@ Until os-tailscale is up, the only way in is jetkvm, on kvm-switch input 1. jetk
 
 At the console menu:
 
-1. **Assign interfaces** (option 1). No VLANs here: the playbook creates them on the trunk.
+1. **Assign interfaces** (option 1). No VLANs here: the playbook creates and assigns them on the trunk, and sets their addresses.
 
    | OPNsense | Port       | Network                                       |
    | -------- | ---------- | --------------------------------------------- |
@@ -37,7 +37,7 @@ At the console menu:
    - LAN: `10.11.10.1/24`, with the DHCP server on for `.100`-`.199`.
    - OPT1: `10.11.254.1/24`, with the DHCP server on for `.100`-`.199`.
 
-   This DHCP server is only for the bootstrap. Kea takes over once the playbook runs.
+   This DHCP server (dnsmasq) is only for the bootstrap. The playbook turns dnsmasq off and hands DHCP to Kea, and it also turns IPv6 off on LAN and OPT1 if the console left it on.
 
 3. OPT interfaces block everything by default, so backdoor can't reach the UI yet. Reach it through a reverse tunnel instead: at the console, open the shell (option 8) and forward your laptop's port 4443 to the UI. The WAN allows outbound traffic, so the laptop only has to be reachable from main.
 
