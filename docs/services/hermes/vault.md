@@ -24,6 +24,19 @@ The vault is a folder of plain markdown notes that you and Hermes both read and 
 
 The `vault` Key set ([keys.md](keys.md)) puts `WIKI_PATH=/vault` in the `.env` of default and the Kanban Profiles (orchestrator, researcher, writer, reviewer). `llm-wiki` reads it to find the vault. ops gets no `WIKI_PATH`. The container's filesystem is shared, though, so ops could still reach `/vault`: keeping it off is a matter of instruction, not enforcement ([safety.md](safety.md#what-one-profile-can-see-of-another)).
 
+## What the Kanban team writes
+
+A Kanban goal's output goes to `research/`, so it outlives the board ([kanban.md](kanban.md)). The rules are in each Profile's `SOUL.md`:
+
+- **orchestrator**: gives the goal one folder, `research/YYYY-MM-DD-<slug>/` (the goal's creation date and a short slug), and names it on every child card, fix cards included. Its closing summary gives the deliverable's path.
+- **researcher**: writes its notes there as `notes-<topic>.md`.
+- **writer**: writes the deliverable there as `<slug>.md`, and adds one line for it under `## Research` in `index.md`. A fix card overwrites the same file, and the hourly history keeps the earlier draft.
+- **reviewer**: never writes to the vault. Its report goes to Discord only.
+
+Notes and deliverables start with YAML frontmatter: `title`, `date`, `card` (the card id) and `sources` (every URL cited). The worker lists the file's vault path in `kanban_complete`'s `artifacts`, and Discord uploads it from there.
+
+Researcher and writer write only inside their goal's folder, plus the writer's `index.md` line: never in `raw/`, `entities/` or another folder the `llm-wiki` skill uses, and never in another goal's folder. That is by instruction only: the shared filesystem doesn't enforce it.
+
 ## History and rollback
 
 The [`hermes-vault-history`](../../../ansible/services/tasks/hermes-vault-history.yaml) post-task makes the vault an ordinary git repo, with `.git` inside it. Syncthing syncs `.git` with the notes, so the history reads the same on the laptop as on the vps.
