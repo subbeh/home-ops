@@ -9,6 +9,19 @@
     "vps": "${vps}",
   },
 
+  // Routes from tailnet_routes in network.yaml. Approval only happens on a route's first
+  // advertisement: re-advertise (or approve in the console) routes already pending.
+  "autoApprovers": {
+    "routes": {
+%{ for name, r in routes ~}
+%{ for cidr in r.routes ~}
+      "${cidr}": ["autogroup:admin"], // ${name}
+%{ endfor ~}
+%{ endfor ~}
+    },
+    "exitNode": ["autogroup:admin"],
+  },
+
   // Access Control Lists
   "acls": [
     // Allow all connections between your own devices. Not "*": that would include tag:ci.
@@ -30,6 +43,12 @@
   // Checked by Tailscale on every plan.
   "tests": [
     {"src": "tag:ci", "accept": ["vps:443"], "deny": ["vps:22", "vps:80"]},
+    // The VPS (Gatus) pings each routed Network; tests take IPs, not CIDRs.
+%{ for name, r in routes ~}
+%{ for cidr in r.routes ~}
+    {"src": "vps", "proto": "icmp", "accept": ["${cidrhost(cidr, 1)}:0"]},
+%{ endfor ~}
+%{ endfor ~}
   ],
 
   // https://tailscale.com/kb/1097/install-opnsense#static-nat-port-mapping
