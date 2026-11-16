@@ -24,7 +24,7 @@ networks:
       jetkvm: 192.168.11.11  # TODO(you): seed; any static address outside gl-router-home's DHCP range
 
   mgmt:
-    description: Network gear only, the UniFi switch, Flex Minis and AP; untagged on the trunk so factory-default gear gets DHCP
+    description: Network gear only, the UniFi switch, Flex Mini and AP; untagged on the trunk so factory-default gear gets DHCP
     cidr: 10.11.10.0/24
     gateway: opnsense
     dhcp: {from: 100, to: 199}
@@ -32,7 +32,6 @@ networks:
       opnsense: 10.11.10.1
       unifi-switch: {addr: 10.11.10.2, mac: "TODO(you)"}
       flex-mini-1: {addr: 10.11.10.3, mac: "TODO(you)"}
-      flex-mini-2: {addr: 10.11.10.4, mac: "TODO(you)"}
       ap: {addr: 10.11.10.5, mac: "TODO(you)"}
 
   servers:
@@ -66,6 +65,7 @@ networks:
     dhcp: {from: 100, to: 199}
     addresses:
       opnsense: 10.11.40.1
+      shield: {addr: 10.11.40.10, mac: "TODO(you)"}  # a DHCP reservation, for the Plex allowance later
 
   backdoor:
     description: "opnsense:3 only, for a laptop when the trunk is broken: OPNsense UI and SSH only"
@@ -147,9 +147,9 @@ cables:
   - {a: 'keystone:eth4/back', b: 'switch-2g5:3', speed: 2.5G}
   - {a: 'pve-nas:1', b: 'switch-2g5:4', speed: 2.5G}
 
-  # Off-rack, from the old notes: TODO(you), see flex-mini-1 in devices.yaml
-  - {a: 'flex-mini-1:2', b: 'flex-mini-2:1', speed: 1G}
-  - {a: 'flex-mini-2:2', b: 'ap:eth', speed: 1G}
+  # Off-rack, behind patch-panel:4. The ap is fed by a PoE injector, which doesn't change the Cable.
+  - {a: 'flex-mini-1:2', b: 'ap:eth', speed: 1G}
+  - {a: 'flex-mini-1:3', b: 'shield:eth', speed: 1G}
 
   # KVM: each Host's HDMI and USB on one input, the output to jetkvm
   - {a: 'opnsense:hdmi', b: 'kvm-switch:1-hdmi'}

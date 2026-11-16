@@ -26,8 +26,8 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | [pve-nas](#pve-nas) | server | Topton N5105 NAS | 10 |  | N5105 4c/4t, 16 GB, 256 GB SSD, 2x 1 TB NVMe, 2x 14 TB HDD, 2x 6 TB HDD |
 | [gl-router-home](#gl-router-home) | router | GL.iNet (TODO(you): model) |  |  |  |
 | [flex-mini-1](#flex-mini-1) | switch | Ubiquiti USW Flex Mini |  |  |  |
-| [flex-mini-2](#flex-mini-2) | switch | Ubiquiti USW Flex Mini |  |  |  |
 | [ap](#ap) | ap | Ubiquiti U6 Lite |  |  |  |
+| [shield](#shield) | media | Nvidia Shield |  |  |  |
 
 ## opnsense
 
@@ -214,18 +214,8 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
 | 1 | ethernet | 1G |  | unifi-switch:3 via patch-panel:4 |
-| 2 | ethernet | 1G |  | flex-mini-2:1 |
-| 3 | ethernet | 1G |  |  |
-| 4 | ethernet | 1G |  |  |
-| 5 | ethernet | 1G |  |  |
-
-## flex-mini-2
-
-| Port | Kind | Speed | MAC | Peer |
-|---|---|---|---|---|
-| 1 | ethernet | 1G |  | flex-mini-1:2 |
 | 2 | ethernet | 1G |  | ap:eth |
-| 3 | ethernet | 1G |  |  |
+| 3 | ethernet | 1G |  | shield:eth |
 | 4 | ethernet | 1G |  |  |
 | 5 | ethernet | 1G |  |  |
 
@@ -233,4 +223,10 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
-| eth | ethernet | 1G |  | flex-mini-2:2 |
+| eth | ethernet | 1G |  | flex-mini-1:2 |
+
+## shield
+
+| Port | Kind | Speed | MAC | Peer |
+|---|---|---|---|---|
+| eth | ethernet | 1G |  | flex-mini-1:3 |

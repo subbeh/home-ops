@@ -3,7 +3,7 @@
 # source for docs/network.md, docs/devices.md and docs/diagrams/. Plain data, no Jinja:
 # Terraform reads these files with yamldecode.
 #
-# - kind: router | switch | server | kvm | kvm-switch | patch-panel | ap
+# - kind: router | switch | server | kvm | kvm-switch | patch-panel | ap | media
 # - rack: the shelf, counted from the top. Devices sharing a number sit side by side; omit it
 #   for off-rack Devices. Whether a Device is a Host comes from the inventory.
 # - ports: keyed by the label printed on the Device, else descriptive. Switch and router Ports
@@ -137,7 +137,7 @@ devices:
     rack: 7
     ports:
       "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [servers, clients, iot]}
-      "2": {kind: ethernet, speed: 1G}
+      "2": {kind: ethernet, speed: 1G, native: clients}  # the laptop, when a wired clients connection is needed
       "3": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
       "4": {kind: ethernet, speed: 1G}
       "5": {kind: ethernet, speed: 1G, native: servers}
@@ -199,30 +199,26 @@ devices:
       wan: {kind: ethernet, speed: 1G, mac: ""}
       lan: {kind: ethernet, speed: 1G, native: main, mac: ""}
 
-  # TODO(you): seeded from the old notes (two Flex Minis daisy-chained to a U6 Lite). Confirm
-  # their count, names, room runs and the Networks each room Port carries.
+  # Powered by PoE from unifi-switch:3 through patch-panel:4. Port 2 feeds the ap through an 802.3af
+  # injector, as the Flex Mini has no PoE output. TODO(you): mac. A second one would be flex-mini-2.
   flex-mini-1:
     kind: switch
     model: Ubiquiti USW Flex Mini
     ports:
       "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
       "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
-      "3": {kind: ethernet, speed: 1G}
-      "4": {kind: ethernet, speed: 1G}
-      "5": {kind: ethernet, speed: 1G}
-
-  flex-mini-2:
-    kind: switch
-    model: Ubiquiti USW Flex Mini
-    ports:
-      "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
-      "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
-      "3": {kind: ethernet, speed: 1G}
-      "4": {kind: ethernet, speed: 1G}
-      "5": {kind: ethernet, speed: 1G}
+      "3": {kind: ethernet, speed: 1G, native: iot}
+      "4": {kind: ethernet, speed: 1G, native: clients}
+      "5": {kind: ethernet, speed: 1G, native: clients}
 
   ap:
     kind: ap
     model: Ubiquiti U6 Lite
+    ports:
+      eth: {kind: ethernet, speed: 1G, mac: ""}
+
+  shield:
+    kind: media
+    model: Nvidia Shield
     ports:
       eth: {kind: ethernet, speed: 1G, mac: ""}
