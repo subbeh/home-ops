@@ -23,7 +23,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | [unifi-switch](#unifi-switch) | switch | Ubiquiti USW Lite 16 PoE | 7 |  |  |
 | [k8s-opti-01](#k8s-opti-01) | server | Dell OptiPlex 7080 (TODO(you): or the 7060) | 8 |  | i5-10500T 6c/12t, 32 GB, 512 GB SSD, 512 GB NVMe |
 | [k8s-opti-02](#k8s-opti-02) | server | Dell OptiPlex 7060 (TODO(you): or the 7080) | 9 |  | i5-8500T 6c/6t, 32 GB, 512 GB SSD, 500 GB NVMe |
-| [pve-nas](#pve-nas) | server | Topton N5105 NAS | 10 |  | N5105 4c/4t, 16 GB, 256 GB SSD, 2x 1 TB NVMe, 2x 14 TB HDD, 2x 6 TB HDD |
+| [pve-nas](#pve-nas) | server | Topton N5105 NAS | 10 | yes | N5105 4c/4t, 16 GB, 256 GB SSD, 2x 1 TB NVMe, 2x 14 TB HDD, 2x 6 TB HDD |
 | [gl-router-home](#gl-router-home) | router | GL.iNet (TODO(you): model) |  |  |  |
 | [flex-mini-1](#flex-mini-1) | switch | Ubiquiti USW Flex Mini |  |  |  |
 | [ap](#ap) | ap | Ubiquiti U6 Lite |  |  |  |

@@ -1,0 +1,8 @@
+---
+- name: Reload SSH
+  ansible.builtin.service:
+    name: ssh
+    state: reloaded
+
+- name: Reload network
+  ansible.builtin.command: ifreload -a

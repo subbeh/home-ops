@@ -1,0 +1,36 @@
+---
+# Proxmox VE Hosts, configured by playbooks/pve.yaml.
+
+# Proxmox runs as root and ships without sudo. Your key and Semaphore's go in root's
+# authorized_keys by hand after the install (docs/runbooks/pve-nas.md).
+ansible_user: root
+ansible_become: false
+
+# The API user for creating guests. Its password is bws_secrets.PVE_API_PASSWORD, set only when
+# the user is created.
+pve_api_user: iac-prov@pve
+pve_api_role: IaCProv
+# VM.Monitor is gone since Proxmox VE 9, and pveum rejects unknown privileges.
+pve_api_role_privs:
+  - Datastore.AllocateSpace
+  - Datastore.AllocateTemplate
+  - Datastore.Audit
+  - Pool.Allocate
+  - SDN.Use
+  - Sys.Audit
+  - Sys.Console
+  - Sys.Modify
+  - VM.Allocate
+  - VM.Audit
+  - VM.Clone
+  - VM.Config.CDROM
+  - VM.Config.CPU
+  - VM.Config.Cloudinit
+  - VM.Config.Disk
+  - VM.Config.HWType
+  - VM.Config.Memory
+  - VM.Config.Network
+  - VM.Config.Options
+  - VM.Migrate
+  - VM.PowerMgmt
+  - VM.Snapshot

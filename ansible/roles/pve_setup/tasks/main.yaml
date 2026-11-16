@@ -1,0 +1,135 @@
+---
+- name: Require the storage Port's device name
+  ansible.builtin.assert:
+    that: port_devices['1'] | default('') | length > 0
+    fail_msg: Set port_devices["1"] in host_vars/{{ inventory_hostname }}.yaml from `ip -br link` on the Host.
+    quiet: true
+
+# Proxmox VE 9 writes deb822 .sources files. The installer's debian.sources is replaced, since
+# intel-microcode needs non-free-firmware.
+- name: Remove the enterprise repositories, which need a subscription
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/{{ item }}.sources
+    state: absent
+  loop: [pve-enterprise, ceph]
+
+- name: Add the Debian and Proxmox VE no-subscription repositories
+  ansible.builtin.deb822_repository:
+    name: "{{ item.name }}"
+    uris: "{{ item.uris }}"
+    suites: "{{ item.suites }}"
+    components: "{{ item.components }}"
+    signed_by: "{{ item.signed_by }}"
+  loop:
+    - name: debian
+      uris: http://deb.debian.org/debian
+      suites: ["{{ _release }}", "{{ _release }}-updates"]
+      components: [main, contrib, non-free-firmware]
+      signed_by: /usr/share/keyrings/debian-archive-keyring.gpg
+    - name: debian-security
+      uris: http://security.debian.org/debian-security
+      suites: ["{{ _release }}-security"]
+      components: [main, contrib, non-free-firmware]
+      signed_by: /usr/share/keyrings/debian-archive-keyring.gpg
+    - name: proxmox
+      uris: http://download.proxmox.com/debian/pve
+      suites: ["{{ _release }}"]
+      components: [pve-no-subscription]
+      signed_by: /usr/share/keyrings/proxmox-archive-keyring.gpg
+  loop_control:
+    label: "{{ item.name }}"
+  vars:
+    _release: "{{ ansible_facts.distribution_release }}"
+
+# Re-applied after every dpkg run, since a proxmox-widget-toolkit upgrade restores the nag.
+- name: Keep the subscription nag out of the UI
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/no-nag-script
+    mode: "0644"
+    content: |
+      DPkg::Post-Invoke { "{{ _pve_nag_fix }}"; };
+
+- name: Remove the subscription nag now
+  ansible.builtin.shell: "{{ _pve_nag_fix }}"
+  register: _nag
+  changed_when: "'Removing' in _nag.stdout"
+
+# smartmontools for disk health, proxmoxer for the community.proxmox modules.
+- name: Install packages
+  ansible.builtin.apt:
+    name:
+      - "{{ 'intel-microcode' if 'GenuineIntel' in ansible_facts.processor else 'amd64-microcode' }}"
+      - smartmontools
+      - python3-proxmoxer
+    update_cache: true
+
+# shortcut: powersave assumes the intel_pstate driver, where it scales with load; under
+# acpi-cpufreq it pins the lowest clock. Check /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
+# on a new Host. Applies from the next boot.
+- name: Set the powersave CPU governor at boot
+  ansible.builtin.cron:
+    name: powersave governor
+    special_time: reboot
+    job: echo powersave | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+    user: root
+    cron_file: powersave
+
+# Keys only: playbook runs prove a key works. Root stays, since cluster joins SSH as root.
+- name: Turn off SSH password logins
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/ansible.conf
+    mode: "0644"
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin prohibit-password
+    validate: sshd -t -f %s
+  notify: Reload SSH
+
+# In the main file, not interfaces.d, so the Proxmox UI lists vmbr1 for guests. Leave it out of
+# the UI's network editor: a rewrite there can drop the markers and duplicate the block.
+- name: Put the storage address on vmbr1 over Port 1
+  ansible.builtin.blockinfile:
+    path: /etc/network/interfaces
+    marker: "# {mark} ANSIBLE MANAGED: storage"
+    # Jumbo frames on both: every storage hop must take them (test with `ping -M do -s 8972` to a
+    # storage peer), else the whole storage Network goes back to 1500.
+    block: |
+      iface {{ port_devices['1'] }} inet manual
+          mtu 9000
+
+      auto vmbr1
+      iface vmbr1 inet static
+          address {{ networks.storage.addresses[inventory_hostname] }}/{{ networks.storage.cidr | split('/') | last }}
+          bridge-ports {{ port_devices['1'] }}
+          bridge-stp off
+          bridge-fd 0
+          mtu 9000
+      # storage is unrouted, so no gateway.
+  notify: Reload network
+
+- name: Read the Proxmox users, roles and ACLs
+  ansible.builtin.command: pveum {{ item }} list --output-format json
+  loop: [user, role, acl]
+  register: _pveum
+  changed_when: false
+  check_mode: false
+
+- name: Add the API user
+  ansible.builtin.command: pveum user add {{ pve_api_user }} --password {{ bws_secrets.PVE_API_PASSWORD | quote }}
+  when: pve_api_user not in _users | map(attribute='userid')
+  no_log: true
+
+- name: Add the API role
+  ansible.builtin.command: pveum role add {{ pve_api_role }} --privs {{ pve_api_role_privs | join(',') }}
+  when: pve_api_role not in _roles | map(attribute='roleid')
+
+- name: Update the API role's privileges
+  ansible.builtin.command: pveum role modify {{ pve_api_role }} --privs {{ pve_api_role_privs | join(',') }}
+  when:
+    - pve_api_role in _roles | map(attribute='roleid')
+    - _roles | selectattr('roleid', 'eq', pve_api_role) | map(attribute='privs') | first | split(',') | sort != pve_api_role_privs | sort
+
+- name: Grant the API role to the API user on /
+  ansible.builtin.command: pveum acl modify / --users {{ pve_api_user }} --roles {{ pve_api_role }}
+  when: _acls | selectattr('path', 'eq', '/') | selectattr('ugid', 'eq', pve_api_user) | selectattr('roleid', 'eq', pve_api_role) | list | length == 0

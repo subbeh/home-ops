@@ -1,0 +1,10 @@
+---
+_users: "{{ _pveum.results[0].stdout | from_json }}"
+_roles: "{{ _pveum.results[1].stdout | from_json }}"
+_acls: "{{ _pveum.results[2].stdout | from_json }}"
+
+# Run by the task and the apt hook in tasks/main.yaml.
+_pve_nag_fix: >-
+  f=/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js;
+  if [ -f $f ] && ! grep -qF NoMoreNagging $f; then
+  echo 'Removing the subscription nag'; sed -i '/data\.status/{s/\!//;s/active/NoMoreNagging/}' $f; fi

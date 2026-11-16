@@ -1,0 +1,8 @@
+---
+# Read by ansible/playbooks/pve.yaml. Names only, never IPs: addresses come from
+# group_vars/all/network.yaml.
+
+# The OS device behind each Port in devices.yaml. Port 0 (servers) is vmbr0's, set by the
+# installer; port 1 (storage) gets vmbr1 from the playbook, which refuses to run while it's empty.
+port_devices:
+  "1": ""  # TODO(you): Port 1's name from `ip -br link` after the install
