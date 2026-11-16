@@ -6,6 +6,7 @@ provider "registry.terraform.io/bitwarden/bitwarden-secrets" {
   constraints = "~> 1.0"
   hashes = [
     "h1:NrXBSc6wuNbppg3PkCHfhYM5MczPH+OBuLbBpGlMCI4=",
+    "h1:mu4rMvYhGddYD/uDfx6jlhaMs++o0D1g0A8KwwYLkJM=",
     "zh:0f442ba013c11d7a6de958b8a950353c795d4c0963c397959a239b6fd2a8c876",
     "zh:22bacf5df4c758d4a9bef2533152d3de7179efb7088a7152a850c2d18b03af11",
     "zh:3eaa72e5e0f74a8e6eb8fbf5aa4225ea656e15f918d2009682c6e972796fe8f7",
@@ -51,6 +52,7 @@ provider "registry.terraform.io/integrations/github" {
   version     = "6.13.0"
   constraints = "~> 6.13"
   hashes = [
+    "h1:2kD+4leuV8tBBXv+EPeehmfW6cDhIzVki61OXsGCtRI=",
     "h1:y0Sujto8gttV86innNp/LTMzq7CqsFpBs7XKH8AlMl4=",
     "zh:0ab29fc21699f34345cf0bbbe44745fd1b143b7c73b410c1dc4abe05ffad0a84",
     "zh:1aed10d06755d420bb3a893bf548ab2932297a9d094c04c5a8501e949ca186ed",
