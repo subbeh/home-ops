@@ -26,6 +26,7 @@ Draft. Facts that aren't in this repo are marked TODO.
 
 - Install Tailscale and join the tailnet as `vps`.
   > TODO(you): auth key or interactive login, tags, key expiry.
+- `sudo tailscale set --accept-routes`: Gatus pings the home Networks over the `tailnet_routes`, and Linux ignores subnet routes without it.
 - The tailnet IP is written once, in `ansible/group_vars/all/network.yaml` (`networks.tailnet.addresses.vps`); the `cloudflare` and `tailscale` stacks read it from there. Either restore the old IP on the new node in the Tailscale admin console, or set the new one in `network.yaml`.
 - Check access from the laptop: `just ansible::playbook test-connection --limit vps`.
 
