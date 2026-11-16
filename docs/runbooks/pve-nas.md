@@ -1,9 +1,3 @@
----
-covers:
-  - ansible/group_vars/all/network.yaml
-  - ansible/group_vars/all/devices.yaml
----
-
 # pve-nas
 
 The steps done by hand on pve-nas: installing Proxmox VE on the SSD and bringing the existing data disks back without touching their contents. Everything after that comes from an Ansible playbook (see [Hand-over](#hand-over)). Addresses and Ports are in `ansible/group_vars/all/{network,devices}.yaml`, and [network.md](../network.md) lists them.
@@ -20,7 +14,7 @@ The only way in until Proxmox is up is the console: kvm-switch input 3 (pve-nas 
 
 ## 1. Save a read-only listing
 
-Before anything writes, boot a live USB (the Proxmox installer's debug shell, or any Linux live image) and save what the disks look like now:
+Before anything writes, boot the Proxmox installer USB, open its debug shell (it has the ZFS tools; most live images don't) and save what the disks look like now:
 
 ```sh
 zpool import        # lists importable pools; does not import them
