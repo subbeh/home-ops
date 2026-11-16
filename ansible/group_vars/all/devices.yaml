@@ -59,6 +59,7 @@ devices:
       out-usb: {kind: usb}
 
   pve-nuc:
+    monitor: false  # until the Host is set up, then drop this
     kind: server
     model: Intel NUC 8
     rack: 4
@@ -81,6 +82,7 @@ devices:
       "5": {kind: ethernet, speed: 2.5G}
 
   k8s-nuc:
+    monitor: false  # until the Host is set up, then drop this
     kind: server
     model: Intel NUC 12 Pro
     rack: 5
@@ -154,6 +156,7 @@ devices:
       "16": {kind: ethernet, speed: 1G}
 
   k8s-opti-01:
+    monitor: false  # until the Host is set up, then drop this
     kind: server
     model: "Dell OptiPlex 7080 (TODO(you): or the 7060)"
     rack: 8
@@ -165,6 +168,7 @@ devices:
       usb: {kind: usb}
 
   k8s-opti-02:
+    monitor: false  # until the Host is set up, then drop this
     kind: server
     model: "Dell OptiPlex 7060 (TODO(you): or the 7080)"
     rack: 9
@@ -176,6 +180,7 @@ devices:
       usb: {kind: usb}
 
   pve-nas:
+    monitor: false  # until the Host is set up, then drop this
     kind: server
     model: Topton N5105 NAS
     rack: 10
