@@ -22,10 +22,15 @@ terraform {
 provider "tailscale" {}
 
 # Owns the whole tailnet policy file; edit policy.hujson, never the admin console.
-# hosts.vps comes from network.yaml, the only place the VPS tailnet IP is written.
+# hosts.vps and the routes come from network.yaml, the only place they are written.
+locals {
+  network = yamldecode(file("${path.module}/../../ansible/group_vars/all/network.yaml"))
+}
+
 resource "tailscale_acl" "policy" {
   acl = templatefile("${path.module}/policy.hujson", {
-    vps = yamldecode(file("${path.module}/../../ansible/group_vars/all/network.yaml")).networks.tailnet.addresses.vps
+    vps    = local.network.networks.tailnet.addresses.vps
+    routes = local.network.tailnet_routes
   })
   # Seeded from the live policy, so no import is needed.
   overwrite_existing_content = true

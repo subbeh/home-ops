@@ -25,9 +25,9 @@ Everything is reachable only over the tailnet.
 - **DNS**: every record lives in the `records` map in `terraform/cloudflare/records.auto.tfvars`, except the DNS-only wildcard `*.vps.sbbh.cloud` → the VPS's tailnet IP, which `terraform/cloudflare/main.tf` adds. The names resolve publicly, but the IP only connects from the tailnet.
 - **TLS**: a wildcard Let's Encrypt cert through a Cloudflare DNS-01 challenge, so nothing has to be reachable from the internet.
 - `network_mode: host` containers (syncthing) are reached at `host.docker.internal`. aven also publishes its port on the tailnet address for sync clients.
-- **Tailnet policy** (`terraform/tailscale/policy.hujson`, owned in full by Terraform): members reach everything; `tag:ci` (the ephemeral Auto-deploy node) reaches only `vps:443`. The policy `tests` enforce this on every plan.
+- **Tailnet policy** (`terraform/tailscale/policy.hujson`, owned in full by Terraform): members reach everything; `tag:ci` (the ephemeral Auto-deploy node) reaches only `vps:443`. `autoApprovers` approve the subnet routes in `tailnet_routes` and the exit node, for admins. The policy `tests` enforce the `tag:ci` limit and that the VPS can ping each routed Network, on every plan.
 
-The VPS's tailnet IP is written once, in `ansible/group_vars/all/network.yaml` (`networks.tailnet.addresses.vps`). The `cloudflare` stack reads it for the wildcard and the `tailscale` stack templates it into `policy.hujson`, and both workspaces run on a change to that file.
+The VPS's tailnet IP is written once, in `ansible/group_vars/all/network.yaml` (`networks.tailnet.addresses.vps`). The `cloudflare` stack reads it for the wildcard and the `tailscale` stack templates it, and `tailnet_routes`, into `policy.hujson`, and both workspaces run on a change to that file.
 
 ## Secrets
 
