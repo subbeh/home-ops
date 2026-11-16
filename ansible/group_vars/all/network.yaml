@@ -30,8 +30,8 @@ networks:
     dhcp: {from: 100, to: 199}
     addresses:
       opnsense: 10.11.10.1
-      unifi-switch: {addr: 10.11.10.2, mac: "TODO(you)"}
-      flex-mini-1: {addr: 10.11.10.3, mac: "TODO(you)"}
+      unifi-switch: {addr: 10.11.10.2, mac: "60:22:32:9c:12:55"}
+      flex-mini-1: {addr: 10.11.10.3, mac: "6c:63:f8:34:2a:cb"}
       ap: {addr: 10.11.10.5, mac: "TODO(you)"}
 
   servers:

@@ -200,7 +200,7 @@ devices:
       lan: {kind: ethernet, speed: 1G, native: main, mac: ""}
 
   # Powered by PoE from unifi-switch:3 through patch-panel:4. Port 2 feeds the ap through an 802.3af
-  # injector, as the Flex Mini has no PoE output. TODO(you): mac. A second one would be flex-mini-2.
+  # injector, as the Flex Mini has no PoE output. A second one would be flex-mini-2.
   flex-mini-1:
     kind: switch
     model: Ubiquiti USW Flex Mini

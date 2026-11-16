@@ -37,8 +37,8 @@ A MAC makes the address a DHCP reservation on OPNsense; the rest are static on t
 | Name | Address | DNS | MAC |
 |---|---|---|---|
 | opnsense | 10.11.10.1 | opnsense.mgmt.home.sbbh.cloud |  |
-| unifi-switch | 10.11.10.2 | unifi-switch.mgmt.home.sbbh.cloud, unifi-switch.home.sbbh.cloud | TODO(you) |
-| flex-mini-1 | 10.11.10.3 | flex-mini-1.mgmt.home.sbbh.cloud, flex-mini-1.home.sbbh.cloud | TODO(you) |
+| unifi-switch | 10.11.10.2 | unifi-switch.mgmt.home.sbbh.cloud, unifi-switch.home.sbbh.cloud | 60:22:32:9c:12:55 |
+| flex-mini-1 | 10.11.10.3 | flex-mini-1.mgmt.home.sbbh.cloud, flex-mini-1.home.sbbh.cloud | 6c:63:f8:34:2a:cb |
 | ap | 10.11.10.5 | ap.mgmt.home.sbbh.cloud, ap.home.sbbh.cloud | TODO(you) |
 
 ### servers

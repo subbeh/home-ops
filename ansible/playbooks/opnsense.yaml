@@ -230,6 +230,9 @@
         auto_options: false
         gateway: ["{{ item.ip }}"]
         dns: ["{{ item.ip }}"]
+        # Factory-default UniFi gear informs to the bare name `unifi`; left empty, Kea offers the
+        # firewall's own domain (internal) and that never resolves. The Flex Mini has no SSH for set-inform.
+        domain: "{{ home_domain }}"
       loop: "{{ _interfaces | selectattr('pool', 'defined') }}"
       loop_control:
         label: "{{ item.network }}"
