@@ -168,7 +168,9 @@
 #      names the source of each fact, never edits the records), no Kanban description. Its
 #      config.yaml keeps mcp_servers.opengym and drops mcp_servers.aven (no token), and
 #      `hermes -p health config set terminal.cwd /vault/health`, so default's now.md doesn't load as
-#      its context. Route #health (`chat_id: "1571462295673118761"`) in default's
+#      its context. `hermes -p health tools disable --platform discord code_execution`: health's
+#      file tools cover the vault, and each execute_code script would need an approval in #health.
+#      Route #health (`chat_id: "1571462295673118761"`) in default's
 #      `gateway.profile_routes`. Google Health API: a Google Cloud project with the API enabled, an
 #      External consent screen published to "In production" (unverified is fine for one user;
 #      Testing refresh tokens die after 7 days), and a Web application OAuth client with redirect
