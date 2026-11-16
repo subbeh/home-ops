@@ -95,6 +95,15 @@
         description: Let's Encrypt
         ca: letsencrypt
 
+    # The module reports changed on every dns01 run (it can't compare the token), so it runs only
+    # when the validation differs from what the API returns, token included.
+    - name: Read the ACME validations
+      oxlorg.opnsense.raw:
+        url: acmeclient/validations/search
+      register: _acme_validations
+      check_mode: false
+      no_log: true
+
     - name: Add the Cloudflare DNS-01 validation
       oxlorg.opnsense.acme_validation:
         name: cloudflare
@@ -102,6 +111,11 @@
         method: dns01
         dns_service: dns_cf
         dns_cf_token: "{{ bws_secrets.CLOUDFLARE_API_TOKEN }}"
+      when: >-
+        _acme_validations.response.rows | selectattr('name', '==', 'cloudflare')
+        | selectattr('description', '==', 'Cloudflare DNS-01') | selectattr('method', '==', 'dns01')
+        | selectattr('dns_service', '==', 'dns_cf')
+        | selectattr('dns_cf_token', '==', bws_secrets.CLOUDFLARE_API_TOKEN) | length == 0
       no_log: true
 
     - name: Add the GUI restart action
