@@ -1,4 +1,6 @@
 ---
+# Unassigned: the vps lacks the memory. Its data stays in /opt/data/karakeep (and in restic), so
+# add it back to a Host's services in inventory.yml once one has room.
 karakeep:
   description: Bookmark manager with full-text search and page archiving
 

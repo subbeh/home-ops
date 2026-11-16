@@ -11,7 +11,7 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 | [docker-socket-proxy](../../ansible/services/docker-socket-proxy.yaml) | Docker socket proxy that lets hermes list containers and read their logs | vps |  |  |
 | [gatus](../../ansible/services/gatus.yaml) | Status dashboard, plus the dead-man's switch for restic backups | vps | [status.vps.sbbh.cloud](https://status.vps.sbbh.cloud) |  |
 | [hermes](../../ansible/services/hermes.yaml) | Hermes Agent, a personal assistant on OpenCode Go reached over Discord | vps | [hermes.vps.sbbh.cloud](https://hermes.vps.sbbh.cloud) | [hermes/](hermes/README.md) |
-| [karakeep](../../ansible/services/karakeep.yaml) | Bookmark manager with full-text search and page archiving | vps | [karakeep.vps.sbbh.cloud](https://karakeep.vps.sbbh.cloud) |  |
+| [karakeep](../../ansible/services/karakeep.yaml) | Bookmark manager with full-text search and page archiving |  |  |  |
 | [opengym](../../ansible/services/opengym.yaml) | Workout tracker | vps | [gym.vps.sbbh.cloud](https://gym.vps.sbbh.cloud) |  |
 | [restic](../../ansible/services/restic.yaml) | Hourly encrypted backups of /opt/data and the workspace to a Hetzner Storage Box | vps |  |  |
 | [searxng](../../ansible/services/searxng.yaml) | SearXNG metasearch, the web search backend for Hermes | vps |  |  |
