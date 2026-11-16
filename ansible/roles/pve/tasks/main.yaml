@@ -1,0 +1,98 @@
+---
+# Creates pve_lxc (host_vars) through the API as the iac-prov user. The module runs on the Host
+# itself, against its own API, with the python3-proxmoxer that pve_setup installs.
+- name: Check whether {{ pve_lxc.hostname }} exists
+  ansible.builtin.stat:
+    path: /etc/pve/lxc/{{ pve_lxc.vmid }}.conf
+  register: _ct
+
+- name: Download the newest Debian template
+  when: not _ct.stat.exists
+  block:
+    - name: Find the newest Debian template
+      ansible.builtin.shell: |
+        set -eo pipefail
+        pveam update >/dev/null
+        pveam available --section system | awk '$2 ~ /^debian-{{ ansible_facts.distribution_major_version }}-standard_/ { t = $2 } END { print t }'
+      args:
+        executable: /bin/bash
+      register: _template
+      failed_when: _template.stdout == ''
+      changed_when: false
+      check_mode: false
+
+    - name: Download the template
+      ansible.builtin.command: pveam download local {{ _template.stdout }}
+      args:
+        creates: /var/lib/vz/template/cache/{{ _template.stdout }}
+
+# The keys that reach this Host (docs/runbooks/pve-nas.md) reach the container too.
+- name: Read root's authorized keys
+  ansible.builtin.slurp:
+    src: /root/.ssh/authorized_keys
+  register: _keys
+
+- name: Create {{ pve_lxc.hostname }} and start it
+  module_defaults:
+    group/community.proxmox.proxmox:
+      api_host: localhost
+      api_user: "{{ pve_api_user }}"
+      api_password: "{{ bws_secrets.PVE_API_PASSWORD }}"
+      validate_certs: false
+  block:
+    # The module has no check mode, so --check skips it. update: false leaves an existing
+    # container's config alone (its update rewrites rootfs too); change one with pct.
+    - name: Create {{ pve_lxc.hostname }}
+      community.proxmox.proxmox:
+        update: false
+        node: "{{ ansible_facts.hostname }}"
+        vmid: "{{ pve_lxc.vmid }}"
+        hostname: "{{ pve_lxc.hostname }}"
+        ostemplate: "{{ omit if _ct.stat.exists else 'local:vztmpl/' ~ _template.stdout }}"
+        ostype: debian
+        unprivileged: true
+        cores: "{{ pve_lxc.cores }}"
+        memory: "{{ pve_lxc.memory }}"
+        disk: "{{ pve_lxc.disk }}"
+        netif:
+          net0: >-
+            name=eth0,bridge=vmbr0,ip={{ hostvars[pve_lxc.hostname].ansible_host }}/{{ networks.servers.cidr | split('/') | last }},gw={{ networks.servers.addresses[networks.servers.gateway] }}
+        pubkey: "{{ _keys.content | b64decode }}"
+        timezone: host
+        onboot: true
+      no_log: true
+
+    - name: Create the bind-mounted data directory
+      ansible.builtin.file:
+        path: "{{ pve_lxc.root_options.mp0 | split(',') | first }}"
+        state: directory
+        owner: "100000"
+        group: "100000"
+        mode: "0755"
+
+    - name: Read {{ pve_lxc.hostname }}'s config
+      ansible.builtin.command: pct config {{ pve_lxc.vmid }}
+      register: _ct_config
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    # A change to a running container stays pending until it restarts.
+    - name: Set the options only root may set
+      ansible.builtin.command: pct set {{ pve_lxc.vmid }} --{{ item.key }} {{ item.value | quote }}
+      loop: "{{ pve_lxc.root_options | dict2items }}"
+      when: "(item.key ~ ': ' ~ item.value) not in _ct_config.stdout_lines"
+
+    - name: Start {{ pve_lxc.hostname }}
+      community.proxmox.proxmox:
+        vmid: "{{ pve_lxc.vmid }}"
+        state: started
+      register: _started
+      no_log: true
+
+- name: Wait for SSH in {{ pve_lxc.hostname }}
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[pve_lxc.hostname].ansible_host }}"
+    port: 22
+    timeout: 120
+  when: _started is changed

@@ -19,3 +19,18 @@ nfs_exports:
   - path: /data/nvme/k8s
     networks: [storage]
     options: rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000
+
+# The Docker LXC Host, created by roles/pve. vmid is <vlan><host number> of its servers address.
+pve_lxc:
+  hostname: nas-svc
+  vmid: 2012
+  cores: 4
+  memory: 8192
+  # local-lvm is the installer's default thin pool on the SSD (ext4 install).
+  disk: local-lvm:20
+  # Set with pct as root: the API refuses bind mounts and most feature flags to iac-prov.
+  # mp0's Host directory is created owned by the container's root (uid 100000 on the Host).
+  root_options:
+    features: nesting=1
+    mp0: /data/nvme/app_data/nas-svc,mp={{ services_data_dir }}
+    mp1: /data/hdd1/media,mp=/data/media

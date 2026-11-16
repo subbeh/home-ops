@@ -1,8 +1,8 @@
 ---
 # Configures the Proxmox VE Hosts after the manual install (docs/runbooks/pve-nas.md): apt
-# sources, microcode, SSH, the storage bridge, the API user and the NFS exports. From the laptop
-# only: always `--check --diff` first, and never Auto-deployed. Needs the mise env
-# (BWS_ACCESS_TOKEN).
+# sources, microcode, SSH, the storage bridge, the API user and the NFS exports. Then creates the
+# Host's LXC (pve_lxc in host_vars) and installs Docker in it. From the laptop only: always
+# `--check --diff` first, and never Auto-deployed. Needs the mise env (BWS_ACCESS_TOKEN).
 - name: Configure Proxmox VE
   hosts: pve
   pre_tasks:
@@ -27,3 +27,33 @@
       no_log: true
   roles:
     - pve_setup
+    - role: pve
+      when: pve_lxc is defined
+
+# Docker from Docker's apt repo, plus the Python SDK the services role checks for.
+- name: Install Docker in nas-svc
+  hosts: nas-svc
+  gather_facts: false
+  tasks:
+    # The Debian template may lack Python, which every other module needs.
+    - name: Install Python
+      ansible.builtin.raw: command -v python3 || (apt-get update -qq && apt-get install -y -qq python3 && echo installed)
+      register: _python
+      changed_when: "'installed' in _python.stdout"
+
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Add Docker's apt repository
+      ansible.builtin.deb822_repository:
+        name: docker
+        uris: https://download.docker.com/linux/debian
+        suites: ["{{ ansible_facts.distribution_release }}"]
+        components: [stable]
+        signed_by: https://download.docker.com/linux/debian/gpg
+        install_python_debian: true
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name: [docker-ce, docker-ce-cli, containerd.io, python3-docker]
+        update_cache: true

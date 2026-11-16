@@ -25,12 +25,18 @@ local:
     pve-nas:
       # Its servers address in group_vars/all/network.yaml.
       ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
+    nas-svc:
+      # The Docker LXC on pve-nas, created by playbooks/pve.yaml. Proxmox templates ship root only.
+      ansible_user: root
+      # .addr while its address carries monitor: false; then the plain lookup, as for pve-nas.
+      ansible_host: "{{ networks.servers.addresses[inventory_hostname].addr }}"
 
 # OS groups
 debian:
   hosts:
     vps:
     pve-nas:
+    nas-svc:
 
 # Functional groups
 pve:
