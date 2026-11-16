@@ -133,3 +133,22 @@
 - name: Grant the API role to the API user on /
   ansible.builtin.command: pveum acl modify / --users {{ pve_api_user }} --roles {{ pve_api_role }}
   when: _acls | selectattr('path', 'eq', '/') | selectattr('ugid', 'eq', pve_api_user) | selectattr('roleid', 'eq', pve_api_role) | list | length == 0
+
+- name: Export NFS shares
+  when: nfs_exports is defined
+  block:
+    - name: Install the NFS server
+      ansible.builtin.apt:
+        name: nfs-kernel-server
+
+    - name: Write the NFS exports
+      ansible.builtin.copy:
+        dest: /etc/exports
+        mode: "0644"
+        content: |
+          # Managed by Ansible: nfs_exports in host_vars/{{ inventory_hostname }}.yaml.
+          {% for e in nfs_exports %}
+          "{{ e.path }}" {% for n in e.networks %}{{ networks[n].cidr }}({{ e.options | default(_nfs_options) }}){% if not loop.last %} {% endif %}{% endfor %}
+
+          {% endfor %}
+      notify: Reload NFS exports

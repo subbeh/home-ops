@@ -6,3 +6,16 @@
 # installer; port 1 (storage) gets vmbr1 from the playbook, which refuses to run while it's empty.
 port_devices:
   "1": ""  # TODO(you): Port 1's name from `ip -br link` after the install
+
+# Exported by the kernel NFS server, straight from ZFS and XFS. Each Network gets the export at
+# its CIDR.
+nfs_exports:
+  - {path: /data/hdd0/pub, networks: [servers, clients]}
+  - {path: /data/hdd0/backups, networks: [servers]}
+  - {path: /data/hdd1/media, networks: [storage, servers]}
+  - {path: /data/nvme/media, networks: [storage, servers]}
+  - {path: /data/nvme/downloads, networks: [storage, servers]}
+  # Kubernetes volumes: every client's writes land as uid 1000.
+  - path: /data/nvme/k8s
+    networks: [storage]
+    options: rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000

@@ -8,3 +8,6 @@ _pve_nag_fix: >-
   f=/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js;
   if [ -f $f ] && ! grep -qF NoMoreNagging $f; then
   echo 'Removing the subscription nag'; sed -i '/data\.status/{s/\!//;s/active/NoMoreNagging/}' $f; fi
+
+# For an export in nfs_exports without its own options.
+_nfs_options: rw,sync,no_subtree_check,no_root_squash

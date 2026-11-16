@@ -6,3 +6,6 @@
 
 - name: Reload network
   ansible.builtin.command: ifreload -a
+
+- name: Reload NFS exports
+  ansible.builtin.command: exportfs -ra
