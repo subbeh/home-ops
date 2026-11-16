@@ -23,6 +23,15 @@
       versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-[0-9a-f]+$",
     },
     {
+      // UniFi Network Application supports MongoDB up to 8.0, and Mongo can't be downgraded
+      // once its data files move on. Raise this when UniFi's release notes do:
+      // https://github.com/linuxserver/docker-unifi-network-application#setup
+      description: "Keep unifi's MongoDB on the version UniFi supports",
+      matchFileNames: ["ansible/services/unifi.yaml"],
+      matchPackageNames: ["mongo"],
+      allowedVersions: "<8.1",
+    },
+    {
       description: "Reduce Terraform lock file update frequency",
       matchManagers: ["terraform"],
       matchUpdateTypes: ["lockFileMaintenance"],
