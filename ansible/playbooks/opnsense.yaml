@@ -18,6 +18,9 @@
     # opnsense has an address on every Network, so its short name picks mgmt's.
     _dns_extra:
       - {hostname: unifi, domain: "{{ home_domain }}", value: "{{ networks.tailnet.addresses.vps }}"}
+      # Factory-default gear (the Flex Mini, which has no SSH for set-inform) asks for the bare
+      # name `unifi.` and never appends the DHCP domain; an empty host makes the record the domain.
+      - {hostname: "", domain: unifi, value: "{{ networks.tailnet.addresses.vps }}"}
       - {hostname: opnsense, domain: "{{ home_domain }}", value: "{{ networks.mgmt.addresses.opnsense }}"}
   tasks:
     # A command rather than a pipe lookup so it can retry: the Bitwarden API fails now and then.
@@ -230,8 +233,7 @@
         auto_options: false
         gateway: ["{{ item.ip }}"]
         dns: ["{{ item.ip }}"]
-        # Factory-default UniFi gear informs to the bare name `unifi`; left empty, Kea offers the
-        # firewall's own domain (internal) and that never resolves. The Flex Mini has no SSH for set-inform.
+        # Left empty, Kea offers the firewall's own domain (internal), not the one home names live in.
         domain: "{{ home_domain }}"
       loop: "{{ _interfaces | selectattr('pool', 'defined') }}"
       loop_control:

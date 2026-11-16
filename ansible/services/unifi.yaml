@@ -11,10 +11,10 @@
 #   1. Deploy, open https://unifi.vps.sbbh.cloud and run the first-run wizard (or restore a backup).
 #   2. UniFi Devices > Device Updates and Settings: turn on Inform Host Override and set it to
 #      unifi.home.sbbh.cloud, or devices inform to the container's own address and drop off.
-#   3. Adopt each device. Factory-default gear informs to `unifi`, which resolves through the
-#      home_domain that Kea hands out. One that doesn't show up: `ssh -J opnsense ubnt@<device>`
-#      (password ubnt), then `set-inform http://unifi.home.sbbh.cloud:8080/inform`. The Flex
-#      Mini has no SSH, so it relies on the DNS name.
+#   3. Adopt each device. Factory-default gear informs to the bare name `unifi`, which OPNsense
+#      answers with the vps (playbooks/opnsense.yaml). One that doesn't show up: `ssh -J opnsense
+#      ubnt@<device>` (password ubnt), then `set-inform http://unifi.home.sbbh.cloud:8080/inform`.
+#      The Flex Mini has no SSH, so it relies on the DNS name.
 #
 # Memory: the vps has little to spare, so both containers have limits and MEM_LIMIT caps the
 # Java heap below the unifi one. Running out takes down management, not the network.
