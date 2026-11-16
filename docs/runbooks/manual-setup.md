@@ -35,7 +35,7 @@ Lets a device on main reach the tailnet without running Tailscale itself: the ro
 
 - [x] LuCI (admin UI → System → Advanced Settings → LuCI) → Network → Firewall: on the Tailscale zone tick **Masquerading** and set Forward to accept; on the `lan` zone add the Tailscale zone to "Allow forward to destination zones". Turning Tailscale off and on in the GL.iNet UI can reset this, so check it first when a device on main loses the tailnet.
 - [x] Admin console → Machines → gl-router-home → ⋯ → Disable key expiry, or the router and every device behind it drop off the tailnet when the node key expires.
-- [x] Syncthing on such a device: the VPS device's Addresses are `tcp://100.77.96.125:22000, dynamic`. The VPS can't dial back through the router, so the device always connects out. MagicDNS names don't resolve there; use the `sbbh.cloud` names or tailnet IPs.
+- [x] Syncthing on such a device: the VPS device's Addresses are `tcp://<vps tailnet IP>:22000, dynamic`, with the IP from `networks.tailnet.addresses.vps` in `ansible/group_vars/all/network.yaml`. The VPS can't dial back through the router, so the device always connects out. MagicDNS names don't resolve there; use the `sbbh.cloud` names or tailnet IPs.
 
 ## Semaphore
 

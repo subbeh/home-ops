@@ -1,9 +1,6 @@
-# DNS records in the sbbh.cloud zone (see the `records` variable in main.tf).
+# DNS records in the sbbh.cloud zone (see the `records` variable in main.tf), except
+# vps_wildcard, which main.tf builds from network.yaml.
 records = {
-  # DNS-only, pointing at the VPS's Tailscale IP: the names resolve publicly but only
-  # connect from the tailnet. Traefik's wildcard cert comes from a DNS-01 challenge,
-  # so nothing needs to be reachable from the internet.
-  vps_wildcard = { name = "*.vps.sbbh.cloud", type = "A", content = "100.77.96.125" }
   # OPNsense's Tailscale IP: its UI and SSH are open on the tailnet only, never the WAN.
   opnsense = { name = "opnsense.sbbh.cloud", type = "A", content = "100.66.175.26" }
   # jetkvm's address on the upstream Network (network.yaml); resolves publicly, connects only on that LAN.

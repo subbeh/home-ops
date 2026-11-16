@@ -9,7 +9,7 @@ Each directory in `terraform/` is a stack with its state in Terraform Cloud (org
 
 ## How stacks run
 
-- **VCS-driven stacks** run in TFC from `main`. PRs get speculative plans, which post their own PR checks; merging applies.
+- **VCS-driven stacks** run in TFC from `main`, on changes to their own directory or to `ansible/group_vars/all/network.yaml`, which both read. PRs get speculative plans, which post their own PR checks; merging applies.
   - `cloudflare` applies automatically.
   - `tailscale` waits for a manual confirm in the TFC UI, since a bad policy can cut off the tailnet.
 - **`tfe-admin`** creates those workspaces and their sensitive env vars, and the deploy workflow's GitHub secrets. It runs on the laptop (execution mode Local, state in TFC):
