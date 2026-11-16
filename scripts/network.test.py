@@ -116,6 +116,15 @@ class OpnsenseFilters(unittest.TestCase):
         self.assertNotIn(("router", "home"), got)  # two routed addresses
         self.assertNotIn(("server", "storage.home"), got)
 
+    def test_gatus_endpoints(self):
+        nets = copy.deepcopy(self.NETS)
+        nets["iot"]["addresses"]["router"] = {"addr": "10.0.4.1", "monitor": False}
+        got = {e["name"]: e["url"] for e in network.gatus_endpoints(nets, {"server": {}})}
+        self.assertEqual(got, {"router.lan": "icmp://10.0.0.1", "server.lan": "icmp://10.0.0.150",
+                               "tv.iot": "icmp://10.0.4.5"})  # storage is unrouted
+        got = [e["name"] for e in network.gatus_endpoints(nets, {"server": {"monitor": False}})]
+        self.assertEqual(got, ["router.lan", "tv.iot"])
+
     def test_firewall_aliases(self):
         got = {a["name"]: (a["type"], a["content"]) for a in network.firewall_aliases(self.NETS, {"k8s-lb": {"cidr": "10.8.0.0/24"}})}
         self.assertEqual(got["k8s_lb"], ("network", ["10.8.0.0/24"]))

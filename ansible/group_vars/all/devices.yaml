@@ -202,6 +202,7 @@ devices:
   # Powered by PoE from unifi-switch:3 through patch-panel:4. Port 2 feeds the ap through an 802.3af
   # injector, as the Flex Mini has no PoE output. A second one would be flex-mini-2.
   flex-mini-1:
+    monitor: false  # until it is adopted in UniFi, then drop this
     kind: switch
     model: Ubiquiti USW Flex Mini
     ports:
@@ -212,12 +213,14 @@ devices:
       "5": {kind: ethernet, speed: 1G, native: clients}
 
   ap:
+    monitor: false  # until it is adopted in UniFi, then drop this
     kind: ap
     model: Ubiquiti U6 Lite
     ports:
       eth: {kind: ethernet, speed: 1G, mac: ""}
 
   shield:
+    monitor: false
     kind: media
     model: Nvidia Shield
     ports:

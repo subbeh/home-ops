@@ -173,6 +173,18 @@ def dns_hosts(networks, home_domain):
     return out
 
 
+def gatus_endpoints(networks, devices):
+    """An ICMP Gatus endpoint per address on a routed Network, named like its DNS name, unless
+    the address or its Device says `monitor: false`. Gatus runs on the vps, so these ping over
+    the tailnet routes."""
+    return [{"name": f"{name}.{net}", "group": "home", "url": f"icmp://{_addr(value)}", "interval": "5m",
+             "conditions": ["[CONNECTED] == true"], "alerts": [{"type": "pushover", "send-on-resolved": True}]}
+            for net, spec in _routed(networks).items()
+            for name, value in (spec.get("addresses") or {}).items()
+            if not (isinstance(value, dict) and value.get("monitor") is False)
+            and devices.get(name, {}).get("monitor") is not False]
+
+
 def _alias(name):
     """OPNsense alias names allow letters, digits and underscores only."""
     return name.replace("-", "_")
@@ -225,5 +237,6 @@ class FilterModule:
     def filters(self):
         return {"network_errors": network_errors, "cable_peers": cable_peers,
                 "router_interfaces": router_interfaces, "dhcp_reservations": dhcp_reservations,
-                "dns_hosts": dns_hosts, "firewall_aliases": firewall_aliases,
+                "dns_hosts": dns_hosts, "gatus_endpoints": gatus_endpoints,
+                "firewall_aliases": firewall_aliases,
                 "firewall_rules": firewall_rules}

@@ -20,7 +20,7 @@ networks:
     gateway: gl-router-home  # which also serves its DHCP, so there's no dhcp: here
     addresses:
       gl-router-home: 192.168.11.1
-      opnsense: 192.168.11.10
+      opnsense: {addr: 192.168.11.10, monitor: false}  # the WAN, closed to pings
       jetkvm: 192.168.11.11  # TODO(you): seed; any static address outside gl-router-home's DHCP range
 
   mgmt:

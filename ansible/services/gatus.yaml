@@ -52,6 +52,9 @@ gatus:
             alerts:
               - type: pushover
                 send-on-resolved: true
+    # A ping per home address, from network.yaml: see the gatus_endpoints filter.
+    - dest: "{{ services_gatus_dir }}/home.yaml"
+      content: "{{ {'endpoints': networks | gatus_endpoints(devices)} | to_nice_yaml(indent=2) }}"
 
   containers:
     - image: ghcr.io/twin/gatus:v5.38.0@sha256:085ed63da963728965d00a3c78aa6167e3bf135218485b893201758e079e8415
