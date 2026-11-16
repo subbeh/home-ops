@@ -89,6 +89,8 @@ resource "tfe_workspace" "stack" {
   terraform_version = "~> 1.16"
   # Nothing runs until the next push touches the stack.
   queue_all_runs = false
+  # Both stacks read the VPS tailnet IP from network.yaml.
+  trigger_patterns = ["terraform/${each.key}/**/*", "ansible/group_vars/all/network.yaml"]
 
   vcs_repo {
     identifier                 = "subbeh/home-ops"

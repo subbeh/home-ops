@@ -22,12 +22,12 @@ There's one Host today, `vps`; see [hosts.md](hosts.md). The inventory groups Ho
 Everything is reachable only over the tailnet.
 
 - **Traefik** publishes `:80` and `:443` on the VPS's tailnet address only, and redirects HTTP to HTTPS. Containers opt in with the `traefik.enable` label. A Service's hostname defaults to `<container name>.<services_domain>`; a `traefik.http.routers.<name>.rule` label overrides it (opengym → `gym.`). Traefik's own dashboard is served at `traefik.<services_domain>`. Backends that serve only HTTPS with a self-signed cert (unifi) set `loadbalancer.server.scheme: https` and reference Traefik's `skip-verify@file` serversTransport, defined in its file-provider config.
-- **DNS**: every record lives in the `records` map in `terraform/cloudflare/records.auto.tfvars`. Among them is a DNS-only wildcard `*.vps.sbbh.cloud` → the VPS's tailnet IP. The names resolve publicly, but the IP only connects from the tailnet.
+- **DNS**: every record lives in the `records` map in `terraform/cloudflare/records.auto.tfvars`, except the DNS-only wildcard `*.vps.sbbh.cloud` → the VPS's tailnet IP, which `terraform/cloudflare/main.tf` adds. The names resolve publicly, but the IP only connects from the tailnet.
 - **TLS**: a wildcard Let's Encrypt cert through a Cloudflare DNS-01 challenge, so nothing has to be reachable from the internet.
 - `network_mode: host` containers (syncthing) are reached at `host.docker.internal`. aven also publishes its port on the tailnet address for sync clients.
 - **Tailnet policy** (`terraform/tailscale/policy.hujson`, owned in full by Terraform): members reach everything; `tag:ci` (the ephemeral Auto-deploy node) reaches only `vps:443`. The policy `tests` enforce this on every plan.
 
-The VPS's tailnet IP is written in three places: `ansible/group_vars/all/network.yaml` (`networks.tailnet.addresses.vps`), `terraform/cloudflare/records.auto.tfvars` (`vps_wildcard`) and `policy.hujson`.
+The VPS's tailnet IP is written once, in `ansible/group_vars/all/network.yaml` (`networks.tailnet.addresses.vps`). The `cloudflare` stack reads it for the wildcard and the `tailscale` stack templates it into `policy.hujson`, and both workspaces run on a change to that file.
 
 ## Secrets
 

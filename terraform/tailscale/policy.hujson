@@ -6,7 +6,7 @@
   },
 
   "hosts": {
-    "vps": "100.77.96.125",
+    "vps": "${vps}",
   },
 
   // Access Control Lists

@@ -30,7 +30,7 @@ sequenceDiagram
     participant S as Semaphore (VPS)
     participant V as VPS containers
     R->>GH: PR bumping an image in ansible/services/x.yaml
-    GH->>GH: check workflow (+ TFC plan if terraform/ changed)
+    GH->>GH: check workflow (+ TFC plan if terraform/ or network.yaml changed)
     R->>GH: automerge (patch/digest, after 3 days) or you merge
     GH->>A: push to main touching ansible/services/
     A->>GH: was this a renovate[bot] PR? which Service files?
