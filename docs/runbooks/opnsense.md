@@ -157,10 +157,12 @@ The playbook issues the `opnsense.sbbh.cloud` cert through the ACME client, but 
 os-git-backup commits `config.xml` to a private GitHub repo after every config change. The file holds password hashes, API keys and the Cloudflare token, so the repo stays private. The playbook installs the plugin, but `oxlorg.opnsense` has no module for its settings, so the rest is by hand.
 
 1. Create the private repo `opnsense-config`, empty.
-2. System → Configuration → Backups → Git: tick Enable, set the URL to `git@github.com:<owner>/opnsense-config.git` and the Branch to `main`, and leave Password empty. Save.
-3. Click Generate new key pair, and copy the public key it shows.
-4. In the repo's Settings → Deploy keys, add it with Allow write access.
-5. Click Test, then check that the repo gets a commit. Each later config change adds one.
+2. On the laptop, make a key pair for it: `ssh-keygen -t ed25519 -N '' -C opnsense-git-backup -f ~/opnsense-backup`.
+3. Add `~/opnsense-backup.pub` as a deploy key with write access: `gh repo deploy-key add ~/opnsense-backup.pub --repo <owner>/opnsense-config --allow-write --title opnsense`. Save in the next step tests the connection, so the key must be there first.
+4. System → Configuration → Backups → Git: tick Enable, set the URL to `ssh://github.com/<owner>/opnsense-config.git` (it refuses a user in the URL), the Username to `git`, the Branch to `main` and the SSH private key to the contents of `~/opnsense-backup`. Leave Password empty and force push off. Save, then check that the repo gets a commit. Each later config change adds one.
+5. `rm ~/opnsense-backup ~/opnsense-backup.pub`: the private key now lives in `config.xml`.
+
+After a reinstall, the firewall's git history starts empty, so its first push to `main` is refused. Point the backup at a new branch rather than turning force push on, which would overwrite the old history.
 
 ## Rules and aliases
 
