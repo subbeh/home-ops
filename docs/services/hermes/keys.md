@@ -30,9 +30,10 @@ A **Key set** is a named group of secrets a Profile may get. [`hermes.yaml`](../
 | `semaphore` | `HERMES_OPS_SEMAPHORE_TOKEN` | `HERMES_OPS_SEMAPHORE_TOKEN`, the `hermes-ops` Semaphore user's token, read by the homelab plugin ([profiles.md](profiles.md#the-homelab-plugin)) |
 | `github` | `HERMES_GITHUB_ACTIONS_TOKEN` | `GITHUB_ACTIONS_TOKEN`, a fine-grained token for all the user's repositories with Actions, Issues and Pull requests: read, for ops' actions-failures cron job and the morning brief's PRs and issues ([profiles.md](profiles.md#cron-jobs)). It expires within 366 days, since the `wainmann` org refuses longer-lived tokens: renew it in BWS and Deploy before then |
 | `vault` | none | `WIKI_PATH=/vault`, where the `llm-wiki` skill finds the vault, and `HERMES_WRITE_SAFE_ROOT=/opt/data:/vault`, so the file tools may write there; neither is a secret ([vault.md](vault.md#which-profiles-use-it)) |
+| `coachlog` | none | `HERMES_WRITE_SAFE_ROOT=/opt/data:/vault/health/coach`, so health's file tools may write its coach log and nothing else in the vault; not a secret ([vault.md](vault.md#which-profiles-use-it)) |
 | `discord` | `HERMES_DISCORD_BOT_TOKEN` | `DISCORD_BOT_TOKEN`, the bot token from the container env again, for the quota-alerts cron job's `hermes send`: cron strips bot tokens from a script's env, and `hermes send` falls back to the `.env` ([kanban.md](kanban.md#quota-alerts)) |
 
-`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model`, `semaphore` and `github`. Only default gets `aven` and `discord`, default and ops get `github`, default and health get `opengym`, and only health gets `googlehealth`. Default and the Kanban Profiles get `vault`; ops and health don't.
+`hermes_profiles` says which Key sets each Profile gets. Every Profile gets `model` and `web`, except `ops`, which has no web tools and gets `model`, `semaphore` and `github`. Only default gets `aven` and `discord`, default and ops get `github`, default and health get `opengym`, and only health gets `googlehealth`. Default and the Kanban Profiles get `vault`; ops and health don't, and only health gets `coachlog`.
 
 On each Deploy, the [`hermes-profile-keys`](../../../ansible/services/tasks/hermes-profile-keys.yaml) post-task:
 

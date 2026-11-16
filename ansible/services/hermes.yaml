@@ -194,7 +194,8 @@
 # Vault (docs/services/hermes/vault.md): the laptop's /data/workspace/vault, synced by syncthing to
 # /opt/workspace/vault, is mounted read-write at /vault. The `vault` Key set gives default and the
 # Kanban Profiles WIKI_PATH=/vault (the llm-wiki skill reads it) and adds /vault to the file tools'
-# write roots; ops and health get neither. The
+# write roots; ops gets neither. health's `coachlog` set adds only /vault/health/coach, where its
+# SOUL.md (user-approved) has it append plans and decisions to log.md. The
 # hermes-vault-history post-task commits it hourly to the vault's own .git, which syncs too; that
 # cron is its only committer, so never commit from the laptop.
 #
@@ -252,6 +253,10 @@ hermes:
       vault:
         WIKI_PATH: /vault
         HERMES_WRITE_SAFE_ROOT: /opt/data:/vault
+      # Not a secret: health's file tools may write its coach log, but no other path in the vault;
+      # each root matches its subfolders only (agent/file_safety.py's _is_under).
+      coachlog:
+        HERMES_WRITE_SAFE_ROOT: /opt/data:/vault/health/coach
       # The bot token again, for quota-alerts' `hermes send`: cron strips bot tokens from a script's
       # env, and `hermes send` falls back to the Profile's .env.
       discord:
@@ -264,8 +269,8 @@ hermes:
       writer: [model, web, vault]
       reviewer: [model, web, vault]
       ops: [model, semaphore, github]
-      # No vault set: the file tools can't write to the vault, so the records in /vault/health stay as filed.
-      health: [model, web, opengym, googlehealth]
+      # coachlog, not vault: the file tools write only /vault/health/coach, so the records in /vault/health stay as filed.
+      health: [model, web, opengym, googlehealth, coachlog]
 
   tasks:
     post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml, hermes-config-history.yaml, hermes-vault-history.yaml]

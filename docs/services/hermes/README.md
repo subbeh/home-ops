@@ -37,7 +37,7 @@ covers:
 - **Socket proxy**: the separate `docker-socket-proxy` Service lets Hermes list containers and read their logs, and nothing else. See [safety.md](safety.md).
 - **Tasks**: the default Profile reads and changes your aven tasks over MCP. See [Tasks over MCP](#tasks-over-mcp).
 - **Workouts**: the default and health Profiles read your openGym workouts, routines and weigh-ins, log workouts and write routines, over MCP. See [Workouts over MCP](#workouts-over-mcp).
-- **Vault**: a folder of markdown notes, synced with the laptop and mounted at `/vault`, where default and the Kanban Profiles keep their notes and the health Profile reads your records in `health/`, with an hourly git history. See [vault.md](vault.md).
+- **Vault**: a folder of markdown notes, synced with the laptop and mounted at `/vault`, where default and the Kanban Profiles keep their notes and the health Profile reads your records in `health/` and keeps its coach log in `health/coach/`, with an hourly git history. See [vault.md](vault.md).
 - **Web**: web search goes to the `searxng` Service, and page reads go to Tavily. See [Web search and page reads](#web-search-and-page-reads).
 
 Why one container and not one per bot: the vps has little memory free, and each extra gateway costs about 400 MiB. So every new bot is a new Profile, never a new container. The price is weaker isolation between Profiles, covered in [safety.md](safety.md).

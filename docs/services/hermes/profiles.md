@@ -28,7 +28,7 @@ The four Kanban Profiles have no Discord bot of their own: they only work on car
 
 ### The health Profile
 
-`health` is the health coach, reached through the #health route ([README.md](README.md#how-a-message-flows)), not the board, and no delegation route reaches it. It was cloned from default (setup step 21 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header), and its `SOUL.md`, drafted by Hermes and approved by the user, makes it a coach, not a doctor: it says when to see one, names the source of each fact, and never edits the records. It reads three sources:
+`health` is the health coach, reached through the #health route ([README.md](README.md#how-a-message-flows)), not the board, and no delegation route reaches it. It was cloned from default (setup step 21 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header), and its `SOUL.md`, drafted by Hermes and approved by the user, makes it a coach, not a doctor: it says when to see one, names the source of each fact, and never edits the records. Its file tools write only its coach log, `health/coach/log.md` in the vault: a dated entry for each plan, goal, decision or notable result, so what #health settles shows up on the laptop. Its terminal isn't bound by that limit, so the rest of `health/` stays as filed by instruction only ([vault.md](vault.md#which-profiles-use-it)). It reads three sources:
 
 | Source | How |
 |---|---|
