@@ -16,7 +16,7 @@ searxng:
       group: 977
 
   containers:
-    - image: searxng/searxng:2026.11.15-2d500cb6b@sha256:932f69dca010db9880bddebb2171f05d8e1a25d04a59149ff65409993d680024
+    - image: searxng/searxng:2026.11.17-d3a35cf45@sha256:0e824adf440b3c3c5020e85bc819e6580a79a5cf5b23f14bc2b0180fe64a5779
       # The vps has no swap, so a leak must not OOM other Services.
       memory: 256m
       volumes:
