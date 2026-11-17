@@ -1,10 +1,12 @@
 ---
 # Proxmox VE Hosts, configured by playbooks/pve.yaml.
 
-# Proxmox runs as root and ships without sudo. Your key and Semaphore's go in root's
-# authorized_keys by hand after the install (docs/runbooks/pve-nas.md).
+# Proxmox runs as root and ships without sudo. The home-ops key goes in root's authorized_keys
+# by hand after the install so the first run can connect (docs/runbooks/pve-nas.md); from then
+# on the playbook keeps it there.
 ansible_user: root
 ansible_become: false
+pve_root_authorized_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIASzmhN/OXLw/ptsQ+78nRTApiQoJ0cmTEAZNId0/avE home-ops
 
 # The API user for creating guests. Its password is bws_secrets.PVE_API_PASSWORD, set only when
 # the user is created.

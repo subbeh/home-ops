@@ -74,6 +74,13 @@
     user: root
     cron_file: powersave
 
+# The path links to /etc/pve/priv/authorized_keys, which the cluster shares; lineinfile writes
+# through the link rather than replacing it.
+- name: Authorize the home-ops SSH key for root
+  ansible.builtin.lineinfile:
+    path: /root/.ssh/authorized_keys
+    line: "{{ pve_root_authorized_key }}"
+
 # Keys only: playbook runs prove a key works. Root stays, since cluster joins SSH as root.
 - name: Turn off SSH password logins
   ansible.builtin.copy:
