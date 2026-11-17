@@ -7,6 +7,14 @@
     path: /etc/pve/lxc/{{ pve_lxc.vmid }}.conf
   register: _ct
 
+- name: Create the bind-mounted data directory
+  ansible.builtin.file:
+    path: "{{ pve_lxc.options.mp0 | split(',') | first }}"
+    state: directory
+    owner: "100000"
+    group: "100000"
+    mode: "0755"
+
 - name: Create {{ pve_lxc.hostname }}
   when: not _ct.stat.exists
   block:
@@ -30,7 +38,8 @@
         creates: /var/lib/vz/template/cache/{{ _template.stdout }}
 
     # Only at creation: a later change here needs pct set by hand. The keys that reach this Host
-    # reach the container too.
+    # reach the container too. The options go in now as well, since a systemd 257+ template warns
+    # when it's created without nesting.
     - name: Create the container
       ansible.builtin.command: >-
         pct create {{ pve_lxc.vmid }} local:vztmpl/{{ _template.stdout }}
@@ -44,14 +53,7 @@
         --ssh-public-keys /root/.ssh/authorized_keys
         --timezone host
         --onboot 1
-
-- name: Create the bind-mounted data directory
-  ansible.builtin.file:
-    path: "{{ pve_lxc.options.mp0 | split(',') | first }}"
-    state: directory
-    owner: "100000"
-    group: "100000"
-    mode: "0755"
+        {% for k, v in pve_lxc.options.items() %}--{{ k }} {{ v | quote }} {% endfor %}
 
 - name: Read {{ pve_lxc.hostname }}'s config
   ansible.builtin.command: pct config {{ pve_lxc.vmid }}
