@@ -23,7 +23,8 @@
   loop:
     - name: debian
       uris: http://deb.debian.org/debian
-      suites: ["{{ _release }}", "{{ _release }}-updates"]
+      # backports for cockpit-files, which stable lacks.
+      suites: ["{{ _release }}", "{{ _release }}-updates", "{{ _release }}-backports"]
       components: [main, contrib, non-free-firmware]
       signed_by: /usr/share/keyrings/debian-archive-keyring.gpg
     - name: debian-security
@@ -61,6 +62,22 @@
       - "{{ 'intel-microcode' if 'GenuineIntel' in ansible_facts.processor else 'amd64-microcode' }}"
       - smartmontools
     update_cache: true
+
+# A web UI to browse and edit the data pools. Root, through Cockpit's own Files app, because the
+# pools hold files of many owners (root, 1000, 2000, ...) that no single-uid app in nas-svc could
+# all write. Without recommends, which would bring NetworkManager onto the Proxmox bridges.
+- name: Install Cockpit with its Files app
+  ansible.builtin.apt:
+    name: [cockpit, cockpit-files]
+    default_release: "{{ ansible_facts.distribution_release }}-backports"
+    install_recommends: false
+
+# Root logs in with the same password as the Proxmox UI on :8006.
+- name: Let root log in to Cockpit
+  ansible.builtin.copy:
+    dest: /etc/cockpit/disallowed-users
+    mode: "0644"
+    content: ""
 
 # shortcut: powersave assumes the intel_pstate driver, where it scales with load; under
 # acpi-cpufreq it pins the lowest clock. Check /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver

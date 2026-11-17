@@ -86,3 +86,5 @@ Look at a few files in each mount to see the data is there. Then reboot and run 
 ## Hand-over
 
 The runbook ends here. The pve-nas Ansible playbook (a separate task) takes over: the storage NIC, packages, users, SSH settings, NFS exports and the cluster. Don't set those by hand.
+
+To browse and edit the pools from a browser, open Cockpit's Files app at `https://pve-nas.home.sbbh.cloud:9090` and log in as root with the Proxmox UI's password. The playbook installs it on the Host rather than in nas-svc: the pools hold files owned by root, 1000, 2000 and 2001, and nas-svc's unprivileged idmap would show most of them as `nobody`.
