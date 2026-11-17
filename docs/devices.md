@@ -195,8 +195,8 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
-| 0 | ethernet | 2.5G |  | unifi-switch:13 via patch-panel:9 |
-| 1 | ethernet | 2.5G |  | switch-2g5:4 |
+| 0 | ethernet | 2.5G | 00:e2:69:72:ee:cc | unifi-switch:13 via patch-panel:9 |
+| 1 | ethernet | 2.5G | 00:e2:69:72:ee:cb | switch-2g5:4 |
 | 2 | ethernet | 2.5G |  |  |
 | 3 | ethernet | 2.5G |  |  |
 | hdmi | hdmi |  |  | kvm-switch:3-hdmi |

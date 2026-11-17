@@ -189,8 +189,8 @@ devices:
       memory: 16 GB
       disks: [256 GB SSD, 2x 1 TB NVMe, 2x 14 TB HDD, 2x 6 TB HDD]
     ports:
-      "0": {kind: ethernet, speed: 2.5G, mac: ""}
-      "1": {kind: ethernet, speed: 2.5G, mac: ""}
+      "0": {kind: ethernet, speed: 2.5G, mac: "00:e2:69:72:ee:cc"}
+      "1": {kind: ethernet, speed: 2.5G, mac: "00:e2:69:72:ee:cb"}
       "2": {kind: ethernet, speed: 2.5G, mac: ""}
       "3": {kind: ethernet, speed: 2.5G, mac: ""}
       hdmi: {kind: hdmi}
