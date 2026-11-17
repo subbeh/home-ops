@@ -180,7 +180,6 @@ devices:
       usb: {kind: usb}
 
   pve-nas:
-    monitor: false  # until the Host is set up, then drop this
     kind: server
     model: Topton N5105 NAS
     rack: 10
