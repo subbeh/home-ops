@@ -240,6 +240,31 @@
         label: "{{ item.network }}"
       notify: Apply Kea
 
+    - name: Read the Kea subnets
+      oxlorg.opnsense.raw:
+        url: kea/dhcpv4/search_subnet
+      register: _subnets
+
+    # A route to the prefix the tailnet advertises, so a Tailscale --accept-routes laptop at home
+    # can prefer the LAN over the tunnel. Option 121, since dhcp_subnet's routes is the classful
+    # option 33; it carries the default route too, as a client given 121 ignores option 3 (RFC 3442).
+    - name: Hand clients a LAN route to the tailnet-advertised prefix
+      oxlorg.opnsense.raw:
+        url: "kea/dhcpv4/set_subnet/{{ _subnet.uuid }}"
+        action: post
+        data:
+          subnet4: {option_data: {classless_static_route: "{{ _routes }}"}}
+      vars:
+        _clients: "{{ _interfaces | selectattr('network', 'eq', 'clients') | first }}"
+        _subnet: "{{ _subnets.response.rows | selectattr('subnet', 'eq', _clients.cidr) | first }}"
+        _routes: "{{ (tailnet_routes.opnsense.routes + ['0.0.0.0/0']) | map('regex_replace', '$', ' - ' ~ _clients.ip) | join(',') }}"
+      when: _subnet['option_data.classless_static_route'] != _routes
+      register: _set
+      # The API answers 200 with result 'failed' on a validation error; check mode posts nothing.
+      changed_when: true
+      failed_when: (_set.response.result | default('saved')) != 'saved'
+      notify: Apply Kea
+
     - name: Reserve every address with a mac
       oxlorg.opnsense.dhcp_reservation:
         ip: "{{ item.ip }}"

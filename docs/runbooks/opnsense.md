@@ -97,7 +97,7 @@ Keep `root` for the console. Every other way in uses a named user.
 2. In the Tailscale admin console, Settings → Keys → Generate auth key: not reusable, not ephemeral, no tags. The key only registers the node, so its own expiry doesn't matter once it's used. Leaving out tags makes the node yours, so the policy's `autogroup:member` rule already covers it.
 3. VPN → Tailscale → Settings:
    - Tick Enabled, and paste the auth key into Pre-authentication Key.
-   - Tick Advertise Exit Node, and under Subnets advertise `10.11.0.0/16`, as `tailnet_routes.opnsense` in `network.yaml` says.
+   - Tick Advertise Exit Node, and under Subnets advertise `10.11.0.0/16`, as `tailnet_routes.opnsense` in `network.yaml` says. The playbook also gives clients the same prefix over DHCP (option 121) through the LAN gateway, so laptops that accept routes can use the LAN at home instead of the tunnel.
    - Leave Accept Subnet Routes and Accept DNS off. gl-router-home advertises `192.168.11.0/24`, which is OPNsense's WAN, and accepting it would route the WAN into the tailnet.
 
    Save, then check that the node shows up in the admin console.
