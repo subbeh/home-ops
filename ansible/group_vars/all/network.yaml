@@ -44,7 +44,7 @@ networks:
       opnsense: 10.11.20.1
       pve-nuc: 10.11.20.10
       pve-nas: 10.11.20.11
-      nas-svc: {addr: 10.11.20.12, monitor: false}  # until playbooks/pve.yaml has created it, then drop this
+      nas-svc: 10.11.20.12
       k8s-nuc: 10.11.20.21
       k8s-opti-01: 10.11.20.22
       k8s-opti-02: 10.11.20.23
