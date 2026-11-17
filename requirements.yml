@@ -2,8 +2,6 @@
 collections:
   - name: community.docker
     version: 5.4.0
-  - name: community.proxmox
-    version: 2.1.0
   # Bump with the OPNsense firmware upgrade (docs/runbooks/opnsense.md).
   # shortcut: a commit on the default branch, since the firmware is 26.7 and the newest Galaxy
   # release is 26.1; switch to `name: oxlorg.opnsense` at the 26.7 release once it ships.

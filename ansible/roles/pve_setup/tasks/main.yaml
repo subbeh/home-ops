@@ -54,13 +54,12 @@
   register: _nag
   changed_when: "'Removing' in _nag.stdout"
 
-# smartmontools for disk health, proxmoxer for the community.proxmox modules.
+# smartmontools for disk health.
 - name: Install packages
   ansible.builtin.apt:
     name:
       - "{{ 'intel-microcode' if 'GenuineIntel' in ansible_facts.processor else 'amd64-microcode' }}"
       - smartmontools
-      - python3-proxmoxer
     update_cache: true
 
 # shortcut: powersave assumes the intel_pstate driver, where it scales with load; under

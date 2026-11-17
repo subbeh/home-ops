@@ -28,9 +28,10 @@ pve_lxc:
   memory: 8192
   # local-lvm is the installer's default thin pool on the SSD (ext4 install).
   disk: local-lvm:20
-  # Set with pct as root: the API refuses bind mounts and most feature flags to iac-prov.
-  # mp0's Host directory is created owned by the container's root (uid 100000 on the Host).
-  root_options:
+  # Applied with pct set on every run, so a change reaches the existing container; each must
+  # read back the same in `pct config`. mp0's Host directory is created owned by the container's
+  # root (uid 100000 on the Host).
+  options:
     features: nesting=1
     mp0: /data/nvme/app_data/nas-svc,mp={{ services_data_dir }}
     mp1: /data/hdd1/media,mp=/data/media
