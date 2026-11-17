@@ -93,6 +93,13 @@
     validate: sshd -t -f %s
   notify: Reload SSH
 
+# The installer writes a bare stanza for every NIC; the block below holds Port 1's, with its MTU.
+- name: Remove the installer's stanza for Port 1
+  ansible.builtin.replace:
+    path: /etc/network/interfaces
+    regexp: '^iface {{ port_devices[''1''] }} inet manual\n(?!\s+mtu)\n?'
+  notify: Reload network
+
 # In the main file, not interfaces.d, so the Proxmox UI lists vmbr1 for guests. Leave it out of
 # the UI's network editor: a rewrite there can drop the markers and duplicate the block.
 - name: Put the storage address on vmbr1 over Port 1
