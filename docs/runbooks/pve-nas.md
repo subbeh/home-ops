@@ -14,15 +14,18 @@ The only way in until Proxmox is up is the console: kvm-switch input 3 (pve-nas 
 
 ## 1. Save a read-only listing
 
-Before anything writes, boot the Proxmox installer USB, open its debug shell (it has the ZFS tools; most live images don't) and save what the disks look like now:
+Before anything writes, boot the Proxmox installer USB in *Advanced Options → Install Proxmox VE (Graphical, Debug Mode)*. The first console it stops at runs from the initrd and has no `zpool`, so press Ctrl-D once: the second console has the ZFS tools (most live images don't). Save what the disks look like now:
 
 ```sh
 zpool import        # lists importable pools; does not import them
 lsblk -f
 blkid
+lsblk -d -o NAME,SIZE,MODEL,SERIAL   # sizes and models, to pick the SSD in step 2
 ```
 
-Copy the output to somewhere off the box (paste it into a file on your laptop through jetkvm, or `scp` it). Step 4 compares against it. Write down the NVMe filesystem's UUID from `blkid`: step 3 needs it.
+jetkvm can't copy text out, so screenshot each output; pipe a long one through `head` or `less` so nothing scrolls away.
+
+Keep the screenshots off the box: step 4 compares against them. Write down the NVMe filesystem's UUID from `blkid`: step 3 needs it.
 
 `zpool import` with no arguments only reads. Don't add a pool name here.
 
@@ -31,12 +34,13 @@ Copy the output to somewhere off the box (paste it into a file on your laptop th
 1. Write the Proxmox VE installer ISO from proxmox.com to a USB stick and plug it into pve-nas.
 2. Boot from it and run the graphical installer.
 3. **Target disk**: the 256 GB SATA SSD only. Open *Options* and check the disk is the SSD by size and model. Leave every other disk unselected.
-4. Network, on port 0 (the 1G port that runs to unifi-switch through patch-panel:9):
+4. Network, on port 0 (the 1G port that runs to unifi-switch through patch-panel:9). The installer pre-fills a DHCP lease; while unifi-switch:13 still has the default profile that lease is on mgmt, so overwrite it. For step 6 to work, set unifi-switch:13 in UniFi to native servers with nothing tagged, as in `devices.yaml`:
    - Address: `10.11.20.11/24`, the `servers` address of pve-nas in `network.yaml`.
    - Gateway: `10.11.20.1` (opnsense), the default route.
    - Hostname: `pve-nas`, with the domain the other Hosts use.
 5. Set the root password and email when it asks, then install, remove the stick and reboot.
 6. Check that it boots from the SSD and answers SSH on `10.11.20.11`. From here, work over SSH instead of the console.
+7. Append the home-ops public key (`pve_root_authorized_key` in `ansible/group_vars/pve.yaml`) to `/root/.ssh/authorized_keys`, so the playbook can connect. The playbook keeps it there and turns password logins off.
 
 Leave the storage NIC (port 1, `10.99.0.11`) unconfigured: the playbook sets it.
 
@@ -44,13 +48,15 @@ Leave the storage NIC (port 1, `10.99.0.11`) unconfigured: the playbook sets it.
 
 ```sh
 zpool import                  # both pools must be listed, as in step 1
-zpool import -f hdd0          # -f: the pools were last used by another system
-zpool import -f hdd1
-zfs set mountpoint=/data/hdd0 hdd0
+zpool import -f -N hdd0       # -f: last used by another system; -N: don't mount yet
+zpool import -f -N hdd1
+zfs get -r -s local mountpoint hdd0 hdd1   # the old install already set /data/hdd0 and /data/hdd1
+zfs set mountpoint=/data/hdd0 hdd0         # only if the line above shows another path
 zfs set mountpoint=/data/hdd1 hdd1
+zfs mount -a
 ```
 
-`zfs set` only changes where the pool mounts. It writes no data.
+Importing with `-N` keeps a pool from mounting at an old path before its mountpoint is checked. `zfs set` only changes where the pool mounts. It writes no data. Skip `zpool upgrade` even though `zpool status` suggests it: it is one-way.
 
 Mount the NVMe XFS filesystem by UUID, from step 1's `blkid` listing:
 
