@@ -11,7 +11,7 @@ remote:
       # Its tailnet IP is networks.tailnet.addresses.vps in group_vars/all/network.yaml.
       ansible_host: vps.tailnet-7233.ts.net
       services_domain: vps.sbbh.cloud
-      services: [traefik, syncthing, aven, opengym, restic, backrest, gatus, semaphore, atuin, docker-socket-proxy, hermes, searxng, unifi]
+      services: [traefik, syncthing, aven, opengym, restic, backrest, gatus, semaphore, atuin, docker-socket-proxy, hermes, searxng, unifi, dufs]
 
 local:
   hosts:
@@ -29,7 +29,7 @@ local:
       # The Docker LXC on pve-nas, created by playbooks/pve.yaml. Proxmox templates ship root only.
       ansible_user: root
       ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
-      services: [whoami, metube, sts]
+      services: [whoami, metube, sts, copyparty]
 
 # OS groups
 debian:

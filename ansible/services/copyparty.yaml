@@ -1,0 +1,46 @@
+---
+# Web file manager over nas-svc's Service data and the media share: browse, download, upload
+# and edit without SSH. Runs as root (the image's default) so it can read every Service's data
+# dir, whatever its owner. Uploads and files it creates or rewrites come out root:root (host uid
+# 100000), which a non-root Service may then not write: chown them back after.
+# Its own login stays on, admin only, because the data dirs hold secrets and every LAN and
+# tailnet client can reach the home ingress.
+# See https://github.com/9001/copyparty/tree/hovudstraum/scripts/docker
+copyparty:
+  description: Web file manager for nas-svc's Service data and the media share
+
+  no_log: true
+
+  # HAProxy on OPNsense forwards copyparty.<ingress_domain> to this published port.
+  ingress:
+    port: 3923
+
+  files:
+    - dest: "{{ services_data_dir }}/copyparty/cfg/copyparty.conf"
+      mode: "0600"
+      content: |
+        [global]
+          # Index, thumbnails and upload state, kept out of the served folders.
+          hist: /cfg/hists/
+          # Trust HAProxy's X-Forwarded-For; a wrong proxy setup bans every client.
+          xff-src: lan
+          rproxy: 1
+          no-robots
+
+        [accounts]
+          admin: {{ bws_secrets.COPYPARTY_ADMIN_PASSWORD }}
+
+        [/]
+          /w
+          accs:
+            A: admin
+
+  containers:
+    - image: copyparty/ac:1.20.26
+      ports:
+        - "3923:3923"
+      volumes:
+        - "{{ services_data_dir }}/copyparty/cfg:/cfg"
+        - "{{ services_data_dir }}:/w/nas-svc"
+        # pve-nas's /data/hdd1/media, through nas-svc's mp1.
+        - "/data/media:/w/media"

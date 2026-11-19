@@ -1,0 +1,35 @@
+---
+# Web file manager over the Host's Service data: browse, download, upload and edit without SSH.
+# Runs as root (the image's default) so it can read every Service's data dir, whatever its owner
+# (apps 2000, semaphore 1001, aven 65532, root). Uploads and files it creates or rewrites come
+# out root:root, which a non-root Service may then not write: chown them back after.
+# Its own login stays on, admin only, because /opt/data holds secrets (restic SSH key,
+# Semaphore config) and every tailnet device can reach Traefik.
+# DUFS_ADMIN_PASSWORD: letters and digits only, since @ : , | delimit DUFS_AUTH's rules.
+# See https://github.com/sigoden/dufs
+dufs:
+  description: Web file manager for the Service data on the Host
+
+  no_log: true
+
+  containers:
+    - image: sigoden/dufs:v0.47.0
+      labels:
+        traefik.enable: "true"
+        traefik.http.services.dufs.loadbalancer.server.port: "5000"
+      volumes:
+        - "{{ services_data_dir }}:/data"
+      env:
+        DUFS_SERVE_PATH: /data
+        DUFS_AUTH: "admin:{{ bws_secrets.DUFS_ADMIN_PASSWORD }}@/:rw"
+        # Upload, delete, search, edit and archive; the login above still gates them all.
+        DUFS_ALLOW_ALL: "true"
+
+  gatus:
+    endpoints:
+      # Open without a login; / answers 401.
+      - name: dufs
+        group: services
+        url: "https://dufs.{{ services_domain }}/__dufs__/health"
+        conditions:
+          - "[STATUS] == 200"
