@@ -37,11 +37,12 @@ resource "tailscale_acl" "policy" {
 }
 
 # Tailnet devices resolve the home names through OPNsense's Unbound, which holds every record,
-# at home and away; public DNS has none. svc.sbbh.cloud is ingress_domain in services.yaml.
+# at home and away (over its 10.11.0.0/16 subnet route); public DNS has none.
+# svc.sbbh.cloud is ingress_domain in services.yaml.
 resource "tailscale_dns_split_nameservers" "home" {
   for_each    = toset([local.network.home_domain, "svc.sbbh.cloud"])
   domain      = each.key
-  nameservers = [local.network.networks.tailnet.addresses.opnsense]
+  nameservers = [local.network.networks.servers.addresses.opnsense]
 }
 
 # For .github/workflows/deploy.yaml; terraform/tfe-admin copies it into GitHub secrets.
