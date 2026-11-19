@@ -10,6 +10,9 @@ services_uid: 2000
 services_gid: 2000
 services_timezone: Australia/Melbourne
 services_network: services
+# The home ingress, HAProxy on OPNsense (playbooks/opnsense.yaml), serves https://<service>.<ingress_domain>
+# for each Service with an `ingress:` port on a local Host.
+ingress_domain: svc.sbbh.cloud
 
 services_container_defaults:
   state: started

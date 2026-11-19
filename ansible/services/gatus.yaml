@@ -55,6 +55,13 @@ gatus:
     # A ping per home address, from network.yaml: see the gatus_endpoints filter.
     - dest: "{{ services_gatus_dir }}/home.yaml"
       content: "{{ {'endpoints': networks | gatus_endpoints(devices)} | to_nice_yaml(indent=2) }}"
+    # An HTTPS check per home ingress route: see the ingress_routes filter. Private Services are
+    # left out, since Semaphore's Auto-deploys can't see their files and would drop them.
+    - dest: "{{ services_gatus_dir }}/ingress.yaml"
+      content: >-
+        {{ {'endpoints': hostvars | ingress_routes(groups['local'], services_configs, networks)
+            | rejectattr('service', 'in', query('fileglob', services_root ~ '/*.private.yaml') | map('basename') | map('regex_replace', '\.private\.yaml$', ''))
+            | ingress_gatus_endpoints(ingress_domain, networks.tailnet.addresses.opnsense)} | to_nice_yaml(indent=2) }}
 
   containers:
     - image: ghcr.io/twin/gatus:v5.38.0@sha256:085ed63da963728965d00a3c78aa6167e3bf135218485b893201758e079e8415

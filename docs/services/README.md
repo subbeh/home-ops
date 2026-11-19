@@ -19,3 +19,4 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 | [syncthing](../../ansible/services/syncthing.yaml) | File sync between devices | vps | [syncthing.vps.sbbh.cloud](https://syncthing.vps.sbbh.cloud) |  |
 | [traefik](../../ansible/services/traefik.yaml) | Reverse proxy with a wildcard TLS cert for tailnet-only Services | vps | [traefik.vps.sbbh.cloud](https://traefik.vps.sbbh.cloud) |  |
 | [unifi](../../ansible/services/unifi.yaml) | UniFi Network Application that adopts and manages the home UniFi gear | vps | [unifi.vps.sbbh.cloud](https://unifi.vps.sbbh.cloud) |  |
+| [whoami](../../ansible/services/whoami.yaml) | Echoes each request back, as the home ingress's canary | nas-svc | [whoami.svc.sbbh.cloud](https://whoami.svc.sbbh.cloud) |  |

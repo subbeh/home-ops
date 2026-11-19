@@ -8,6 +8,7 @@ plugins:
   - os-tailscale
   - os-acme-client
   - os-git-backup
+  - os-haproxy  # the home ingress
 
 # The OS device behind each Port in devices.yaml: on the Topton, Port N is igcN.
 port_devices:
@@ -18,7 +19,7 @@ port_devices:
 
 # Port aliases. backdoor_ports was made by hand in the runbook and is adopted by name.
 port_aliases:
-  backdoor_ports: ["22", "443"]
+  backdoor_ports: ["22", "8443"]  # SSH and the UI
   unifi_ports: ["8080", "3478"]  # the inform port and STUN on the vps, see services/unifi.yaml
 
 # Pass rules on top of default deny, by Network, Device and alias names (aliases from

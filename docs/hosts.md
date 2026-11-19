@@ -5,7 +5,7 @@ From [`ansible/inventory.yml`](../ansible/inventory.yml). Services are assigned 
 
 | Host | Groups | Tailnet | Services domain | Services |
 |---|---|---|---|---|
-| nas-svc | debian, local |  |  |  |
+| nas-svc | debian, local |  |  | whoami |
 | opnsense | local | opnsense.sbbh.cloud (100.66.175.26) |  |  |
 | pve-nas | debian, local, pve |  |  |  |
 | vps | debian, remote | vps.tailnet-7233.ts.net (100.77.96.125) | vps.sbbh.cloud | traefik, syncthing, aven, opengym, restic, backrest, gatus, semaphore, atuin, docker-socket-proxy, hermes, searxng, unifi |

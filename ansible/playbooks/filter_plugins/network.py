@@ -185,6 +185,31 @@ def gatus_endpoints(networks, devices):
             and devices.get(name, {}).get("monitor") is not False]
 
 
+def ingress_routes(hostvars, hosts, services_configs, networks):
+    """A route per Service with an `ingress:` port assigned to one of hosts: the home ingress
+    (HAProxy on OPNsense) forwards <service>.<ingress_domain> to that port on the Host's servers
+    address. An assigned Service without a file is skipped: a private one's is only in the main
+    checkout."""
+    routes = [{"service": name, "address": networks["servers"]["addresses"][host],
+               "port": services_configs[name]["ingress"]["port"]}
+              for host in hosts
+              for name in hostvars[host].get("services") or []
+              if "ingress" in (services_configs.get(name) or {})]
+    names = [r["service"] for r in routes]
+    if len(names) != len(set(names)):
+        raise ValueError(f"routed from more than one Host: {sorted({n for n in names if names.count(n) > 1})}")
+    return routes
+
+
+def ingress_gatus_endpoints(routes, domain, resolver):
+    """An HTTPS Gatus endpoint per ingress route. The names have no public record, so Gatus asks
+    OPNsense's Unbound at resolver."""
+    return [{"name": r["service"], "group": "ingress", "url": f"https://{r['service']}.{domain}",
+             "client": {"dns-resolver": f"tcp://{resolver}:53"}, "conditions": ["[STATUS] == 200"],
+             "alerts": [{"type": "pushover", "send-on-resolved": True}]}
+            for r in routes]
+
+
 def _alias(name):
     """OPNsense alias names allow letters, digits and underscores only."""
     return name.replace("-", "_")
@@ -238,5 +263,6 @@ class FilterModule:
         return {"network_errors": network_errors, "cable_peers": cable_peers,
                 "router_interfaces": router_interfaces, "dhcp_reservations": dhcp_reservations,
                 "dns_hosts": dns_hosts, "gatus_endpoints": gatus_endpoints,
+                "ingress_routes": ingress_routes, "ingress_gatus_endpoints": ingress_gatus_endpoints,
                 "firewall_aliases": firewall_aliases,
                 "firewall_rules": firewall_rules}

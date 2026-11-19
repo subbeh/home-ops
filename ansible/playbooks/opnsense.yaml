@@ -9,6 +9,8 @@
   module_defaults:
     group/oxlorg.opnsense.all:
       firewall: "{{ ansible_host }}"
+      # The UI left :443 for the home ingress (docs/runbooks/opnsense.md).
+      api_port: 8443
       api_key: "{{ bws_secrets.OPNSENSE_API_KEY }}"
       api_secret: "{{ bws_secrets.OPNSENSE_API_SECRET }}"
   vars:
@@ -22,7 +24,33 @@
       # name `unifi.` and never appends the DHCP domain; an empty host makes the record the domain.
       - {hostname: "", domain: unifi, value: "{{ networks.tailnet.addresses.vps }}"}
       - {hostname: opnsense, domain: "{{ home_domain }}", value: "{{ networks.mgmt.addresses.opnsense }}"}
+      # The home ingress: HAProxy answers every name and knows the routes. Under its own domain,
+      # since a wildcard on home_domain would hide the names above.
+      - {hostname: "*", domain: "{{ ingress_domain }}", value: "{{ networks.servers.addresses.opnsense }}"}
+    # The home ingress's routes: every Service with an `ingress:` port on a local Host.
+    _ingress_routes: "{{ hostvars | ingress_routes(groups['local'], services_configs, networks) }}"
+    _certs: [opnsense.sbbh.cloud, "*.{{ ingress_domain }}"]
   tasks:
+    # Private Services (<name>.private.yaml, gitignored) included.
+    - name: Load service definitions
+      ansible.builtin.include_vars:
+        dir: "{{ services_root }}"
+        files_matching: '\.ya?ml$'
+        depth: 1
+        name: services_configs
+
+    - name: Require a file for every Service on a local Host
+      ansible.builtin.assert:
+        that: _missing | length == 0
+        fail_msg: >-
+          No Service file for {{ _missing | join(', ') }}. A private Service's <name>.private.yaml
+          is only in the main checkout: run from there, or this run drops its route.
+        quiet: true
+      vars:
+        _missing: >-
+          {{ groups['local'] | map('extract', hostvars, 'services') | map('default', [], true)
+             | flatten | difference(services_configs.keys() | list) }}
+
     # A command rather than a pipe lookup so it can retry: the Bitwarden API fails now and then.
     - name: Read secrets from Bitwarden Secrets Manager
       ansible.builtin.command: bws secret list --output json
@@ -127,6 +155,12 @@
         description: Restart the GUI
         type: configd_restart_gui
 
+    - name: Add the HAProxy restart action
+      oxlorg.opnsense.acme_action:
+        name: restart-haproxy
+        description: Restart HAProxy
+        type: configd_restart_haproxy
+
     # The name the UI is reached by: the Cloudflare record for the tailnet address.
     - name: Add the UI certificate
       oxlorg.opnsense.acme_certificate:
@@ -137,6 +171,18 @@
         restart_actions:
           - restart-gui
 
+    # The home ingress's wildcard, served by HAProxy below. A --check run before restart-haproxy
+    # exists fails on the link (the module's error path crashes), ignored.
+    - name: Add the ingress certificate
+      oxlorg.opnsense.acme_certificate:
+        name: "*.{{ ingress_domain }}"
+        description: "*.{{ ingress_domain }}"
+        account: letsencrypt
+        validation: cloudflare
+        restart_actions:
+          - restart-haproxy
+      ignore_errors: "{{ ansible_check_mode }}"
+
     - name: Read the ACME certificates
       oxlorg.opnsense.raw:
         url: acmeclient/certificates/search
@@ -144,13 +190,26 @@
       check_mode: false
 
     # Creating a certificate doesn't issue it; renewal then runs from the plugin's cron job.
-    - name: Issue the UI certificate
+    - name: Issue the certificates
       oxlorg.opnsense.raw:
         url: "acmeclient/certificates/sign/{{ item.uuid }}"
         action: post
-      loop: "{{ _acme_certs.response.rows | selectattr('description', '==', 'opnsense.sbbh.cloud') | rejectattr('certRefId', 'truthy') }}"
+      loop: "{{ _acme_certs.response.rows | selectattr('description', 'in', _certs) | rejectattr('certRefId', 'truthy') }}"
       loop_control:
         label: "{{ item.description }}"
+
+    # Signing runs in the background and the DNS-01 challenge takes a minute or two. HAProxy's
+    # frontend needs the issued certificate's reference.
+    - name: Wait for the certificates
+      oxlorg.opnsense.raw:
+        url: acmeclient/certificates/search
+      register: _acme_certs
+      until: >-
+        ansible_check_mode or
+        _acme_certs.response.rows | selectattr('description', 'in', _certs) | rejectattr('certRefId', 'truthy') | length == 0
+      retries: 30
+      delay: 10
+      check_mode: false
 
     # The collection's modules only apply a change with reload: the VLANs and assignments reload
     # inline, since the next tasks need them; the rest notify a handler.
@@ -356,6 +415,71 @@
         - "tailnet: UI and SSH"
       notify: Apply the rules
 
+    # The home ingress: HAProxy routes https://<service>.<ingress_domain> through one map file to
+    # the Service's port on its Host. A server or backend dropped from the routes stays until
+    # deleted by hand, but the map is rewritten, so its name stops routing at once. A --check run
+    # skips this before the plugin is installed, and its links to objects it would create fail,
+    # ignored.
+    # shortcut: the published ports also answer plain HTTP to clients and the tailnet directly,
+    # since their pass rules allow every Network. Every rule here has sequence 1, the floor, so a
+    # block ahead of them means renumbering them all: do that when a Service must be reachable
+    # only through the ingress (block clients and tailnet to the routed ports).
+    - name: Configure the home ingress
+      when: not (ansible_check_mode and _plugins is changed)
+      block:
+        - name: Add a server per route
+          oxlorg.opnsense.haproxy_server:
+            name: "{{ item.service }}"
+            address: "{{ item.address }}"
+            port: "{{ item.port }}"
+          loop: "{{ _ingress_routes }}"
+          loop_control:
+            label: "{{ item.service }}"
+          notify: Apply HAProxy
+
+        - name: Add a backend per route
+          oxlorg.opnsense.haproxy_backend:
+            name: "{{ item.service }}"
+            linked_servers: ["{{ item.service }}"]
+          loop: "{{ _ingress_routes }}"
+          loop_control:
+            label: "{{ item.service }}"
+          ignore_errors: "{{ ansible_check_mode }}"
+          notify: Apply HAProxy
+
+        - name: Map each name to its backend
+          oxlorg.opnsense.haproxy_mapfile:
+            name: ingress_routes
+            content: "{% for r in _ingress_routes %}{{ r.service }}.{{ ingress_domain }} {{ r.service }}\n{% endfor %}"
+          notify: Apply HAProxy
+
+        - name: Route by the map
+          oxlorg.opnsense.haproxy_action:
+            name: ingress_routes
+            kind: map_use_backend
+            map_use_backend_file: ingress_routes
+          ignore_errors: "{{ ansible_check_mode }}"
+          notify: Apply HAProxy
+
+        # On the servers address only, so nothing listens on WAN. clients and the tailnet reach
+        # it through their rules.
+        - name: Add the frontend
+          oxlorg.opnsense.haproxy_frontend:
+            name: ingress
+            bind: ["{{ networks.servers.addresses.opnsense }}:443"]
+            ssl_enabled: true
+            ssl_certificates:
+              - "{{ _acme_certs.response.rows | selectattr('description', '==', '*.' ~ ingress_domain) | map(attribute='certRefId') | first | default('') }}"
+            linked_actions: [ingress_routes]
+            forward_for: true
+          ignore_errors: "{{ ansible_check_mode }}"
+          notify: Apply HAProxy
+
+        - name: Turn on HAProxy
+          oxlorg.opnsense.haproxy_general_settings:
+            enabled: true
+          notify: Apply HAProxy
+
   # In this order: the interfaces get their addresses, and dnsmasq stops, before Kea starts.
   handlers:
     - name: Apply the interfaces
@@ -383,3 +507,8 @@
     - name: Apply the rules
       oxlorg.opnsense.reload:
         target: rule
+
+    # Last: the frontend binds the servers address, which the interfaces apply sets.
+    - name: Apply HAProxy
+      oxlorg.opnsense.reload:
+        target: haproxy

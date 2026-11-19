@@ -14,6 +14,8 @@
       ansible.builtin.include_vars:
         dir: "{{ services_root }}"
         files_matching: '\.ya?ml$'
+        # Private Services are gitignored: CI never sees them, and they never reach a committed page.
+        ignore_files: ['\.private\.yaml']
         depth: 1
         name: services_configs
 
@@ -28,11 +30,15 @@
 
     # Per Host, since labels template services_domain in that Host's context. Mirrors traefik's
     # defaultRule in services/traefik.yaml: a router rule's Host() wins, else <container>.<domain>.
+    # A Service with an `ingress:` port is served by the home ingress at <name>.<ingress_domain>.
     - name: Collect Service URLs
       ansible.builtin.set_fact:
         docs_urls: >-
           {%- set urls = [] -%}
           {%- for name in services | default([]) -%}
+          {%- if services_configs[name].ingress is defined -%}
+          {%- set _ = urls.append({'service': name, 'url': 'https://' ~ name ~ '.' ~ ingress_domain}) -%}
+          {%- endif -%}
           {%- for c in services_configs[name].containers | default([]) -%}
           {%- set labels = c.labels | default({}) -%}
           {%- if labels['traefik.enable'] | default('') == 'true' -%}

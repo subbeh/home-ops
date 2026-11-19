@@ -46,7 +46,7 @@ At the console menu:
    ```
 
    Then, at `https://localhost:4443` on the laptop:
-   1. Firewall → Aliases → Add: name `backdoor_ports`, type Port(s), content `22` and `443`. Save, then Apply.
+   1. Firewall → Aliases → Add: name `backdoor_ports`, type Port(s), content `22`, `443` and `8443`. Save, then Apply. The UI is on `443` until step 5.8 moves it to `8443`, and the playbook then drops `443`.
    2. Firewall → Rules → OPT1 → Add, then Save and Apply changes:
 
       | Field                  | Value                  |
@@ -132,17 +132,17 @@ Keep `root` for the console. Every other way in uses a named user.
    | Description            | `Tailnet: UI and SSH`   |
 
    Source is any because the tailnet policy already decides which nodes get this far. This rule only opens OPNsense itself. Tailnet traffic to the Networks behind it, and through the exit node, stays blocked until the playbook's rules land. The playbook adopts this rule by its description. It deletes a `tailnet: UI and SSH` rule, since a floating one by that name once opened the UI on every interface. The mgmt NAT from step 5.6 needs no rule here, because replies match its state. The WAN gets no pass rules, so the UI and API stay closed there.
-8. System → Settings → Administration → Web GUI: add `opnsense.sbbh.cloud` to Alternate Hostnames, then Save. The UI rejects any hostname it doesn't know as a possible DNS rebind attack. That name is the Cloudflare record for the tailnet address, in `terraform/cloudflare/records.auto.tfvars`. Keep the DNS rebind check itself on.
+8. System → Settings → Administration → Web GUI: add `opnsense.sbbh.cloud` to Alternate Hostnames, set TCP port to `8443`, then Save. The UI rejects any hostname it doesn't know as a possible DNS rebind attack. That name is the Cloudflare record for the tailnet address, in `terraform/cloudflare/records.auto.tfvars`. Keep the DNS rebind check itself on. Port `443` is left to the [home ingress](#home-ingress), and the playbook calls the API on `8443`. The page reloads at the new port.
 
 ## 6. Check
 
 From the laptop on the tailnet, with the key and secret from Secrets Manager:
 
 ```sh
-curl -sk -u "$OPNSENSE_API_KEY:$OPNSENSE_API_SECRET" https://<opnsense tailnet name>/api/core/firmware/status
+curl -sk -u "$OPNSENSE_API_KEY:$OPNSENSE_API_SECRET" https://<opnsense tailnet name>:8443/api/core/firmware/status
 ```
 
-`-k` is needed until step 7 points the UI at the ACME cert. After that, drop it and use `https://opnsense.sbbh.cloud`. A laptop on backdoor gets a `10.11.254.x` lease and reaches `https://10.11.254.1`.
+`-k` is needed until step 7 points the UI at the ACME cert. After that, drop it and use `https://opnsense.sbbh.cloud:8443`. A laptop on backdoor gets a `10.11.254.x` lease and reaches `https://10.11.254.1:8443`.
 
 ## 7. UI certificate
 
@@ -150,7 +150,7 @@ The playbook issues the `opnsense.sbbh.cloud` cert through the ACME client, but 
 
 1. Services → ACME Client → Certificates: check `opnsense.sbbh.cloud` shows a successful issue.
 2. System → Settings → Administration → Web GUI → SSL Certificate: pick `opnsense.sbbh.cloud`, then Save. Renewals keep the same entry, and the playbook's restart action reloads the UI.
-3. `curl https://opnsense.sbbh.cloud/api/core/firmware/status` (with the API key) works without `-k`.
+3. `curl https://opnsense.sbbh.cloud:8443/api/core/firmware/status` (with the API key) works without `-k`.
 
 ## 8. Config backup
 
@@ -168,7 +168,19 @@ After a reinstall, the firewall's git history starts empty, so its first push to
 
 The playbook makes an alias for each Network, Pool and address name in `network.yaml`, plus `home` (all of them), and the pass rules in `host_vars/opnsense.yaml`. Everything else is blocked by default. It matches aliases by name and rules by description, and it never deletes what's dropped from those lists, because the collection's purge modules are unstable. To remove a rule, delete it under Firewall → Rules, or add its description to the playbook's removal task. Renaming a rule leaves the old one behind as well.
 
-There's no rollback: OPNsense dropped the filter savepoint API. If a rule change cuts the tailnet, a laptop on opnsense:1 still reaches `https://10.11.10.1` through LAN's anti-lockout rule.
+There's no rollback: OPNsense dropped the filter savepoint API. If a rule change cuts the tailnet, a laptop on opnsense:1 still reaches `https://10.11.10.1:8443` through LAN's anti-lockout rule.
+
+## Home ingress
+
+HAProxy (os-haproxy) serves every home Service at `https://<service>.svc.sbbh.cloud` (`ingress_domain` in `group_vars/all/services.yaml`). The playbook builds it all from the inventory: every Service with an `ingress: {port: N}` key on a `local` Host gets a server, a backend and a line in one map file. The frontend listens on OPNsense's servers address `:443` only, so the WAN never sees it, and clients and the tailnet reach it through their pass rules. One Unbound override answers `*.svc.sbbh.cloud` with that address, and there's no public record. The `*.svc.sbbh.cloud` cert comes from the ACME client, like the UI's, and a renewal restarts HAProxy.
+
+- **A new or moved Service**: Deploy it, run this playbook, and Deploy `gatus`, which checks every route over the tailnet.
+- **Dropped Services**: the map is rewritten, so the name stops routing on the next run, but the server and backend stay until deleted under Services → HAProxy.
+- **Private Services** (`ansible/services/<name>.private.yaml`, gitignored) exist only in the main checkout. The playbook refuses to run from a checkout that lacks one, since it would drop the route.
+- **Direct access**: a Service's published port also answers plain HTTP to clients and the tailnet, since their pass rules allow every Network. Blocking it needs a block rule ahead of those rules, which means giving every rule a sequence.
+- **`--check`**: before os-haproxy is installed, the check skips HAProxy. Before its objects exist, the steps that link to them fail and are ignored.
+
+Moving the UI off `443` on a box that predates this: add `8443` to the `backdoor_ports` alias and Apply, set step 5.8's TCP port, then run the playbook, which drops `443` from the alias.
 
 ## Restore
 

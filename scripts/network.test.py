@@ -125,6 +125,19 @@ class OpnsenseFilters(unittest.TestCase):
         got = [e["name"] for e in network.gatus_endpoints(nets, {"server": {"monitor": False}})]
         self.assertEqual(got, ["router.lan", "tv.iot"])
 
+    def test_ingress_routes(self):
+        hostvars = {"svc": {"services": ["web", "db", "private"]}, "bare": {}}
+        configs = {"web": {"ingress": {"port": 8080}}, "db": {}}  # private's file is absent
+        nets = {"servers": {"addresses": {"svc": "10.0.20.12"}}}
+        routes = network.ingress_routes(hostvars, ["svc", "bare"], configs, nets)
+        self.assertEqual(routes, [{"service": "web", "address": "10.0.20.12", "port": 8080}])
+        self.assertEqual(network.ingress_gatus_endpoints(routes, "svc.example", "100.1.1.1")[0]["url"],
+                         "https://web.svc.example")
+        hostvars["bare"] = {"services": ["web"]}
+        nets["servers"]["addresses"]["bare"] = "10.0.20.13"
+        with self.assertRaises(ValueError):
+            network.ingress_routes(hostvars, ["svc", "bare"], configs, nets)
+
     def test_firewall_aliases(self):
         got = {a["name"]: (a["type"], a["content"]) for a in network.firewall_aliases(self.NETS, {"k8s-lb": {"cidr": "10.8.0.0/24"}})}
         self.assertEqual(got["k8s_lb"], ("network", ["10.8.0.0/24"]))

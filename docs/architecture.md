@@ -15,15 +15,17 @@ covers:
 
 ## Hosts
 
-There's one Host today, `vps`; see [hosts.md](hosts.md). The inventory groups Hosts by location (`remote`, `local`), OS (`debian`) and function (`pve`, `vm`, `k8s`). The function groups are empty placeholders. Services are assigned to individual Hosts only, through `services:` in host vars.
+Services run on `vps` and on `nas-svc` at home; see [hosts.md](hosts.md). The inventory groups Hosts by location (`remote`, `local`), OS (`debian`) and function (`pve`, `vm`, `k8s`). The function groups are empty placeholders. Services are assigned to individual Hosts only, through `services:` in host vars.
 
 ## Network, DNS and TLS
 
-Everything is reachable only over the tailnet.
+Everything is reachable only over the tailnet, and home Services also from the clients Network.
 
 - **Traefik** publishes `:80` and `:443` on the VPS's tailnet address only, and redirects HTTP to HTTPS. Containers opt in with the `traefik.enable` label. A Service's hostname defaults to `<container name>.<services_domain>`; a `traefik.http.routers.<name>.rule` label overrides it (opengym → `gym.`). Traefik's own dashboard is served at `traefik.<services_domain>`. Backends that serve only HTTPS with a self-signed cert (unifi) set `loadbalancer.server.scheme: https` and reference Traefik's `skip-verify@file` serversTransport, defined in its file-provider config.
 - **DNS**: every record lives in the `records` map in `terraform/cloudflare/records.auto.tfvars`, except the DNS-only wildcard `*.vps.sbbh.cloud` → the VPS's tailnet IP, which `terraform/cloudflare/main.tf` adds. The names resolve publicly, but the IP only connects from the tailnet.
 - **TLS**: a wildcard Let's Encrypt cert through a Cloudflare DNS-01 challenge, so nothing has to be reachable from the internet.
+- **Home ingress**: Services on `local` Hosts are served at `https://<service>.<ingress_domain>` (`svc.sbbh.cloud`) by HAProxy on OPNsense, not by Traefik. A Service opts in with `ingress: {port: N}`, the port it publishes on its Host. `ansible/playbooks/opnsense.yaml` generates the routes (the `ingress_routes` filter), the `*.svc.sbbh.cloud` Unbound override and a wildcard cert through the same Cloudflare DNS-01 challenge; see [runbooks/opnsense.md](runbooks/opnsense.md#home-ingress). There's no public record.
+- **Private Services**: a Service whose file must stay out of the public repo is `ansible/services/<name>.private.yaml`, gitignored, so it exists only in the main checkout. Its name and Assignment stay in `inventory.yml`. `just docs` ignores private files and Gatus gets no check for them; deploy them from the main checkout only.
 - `network_mode: host` containers (syncthing) are reached at `host.docker.internal`. aven also publishes its port on the tailnet address for sync clients.
 - **Tailnet policy** (`terraform/tailscale/policy.hujson`, owned in full by Terraform): members reach everything; `tag:ci` (the ephemeral Auto-deploy node) reaches only `vps:443`. `autoApprovers` approve the subnet routes in `tailnet_routes` and the exit node, for admins. The policy `tests` enforce the `tag:ci` limit and that the VPS can ping each routed Network, on every plan.
 
@@ -58,4 +60,4 @@ Backrest (`ansible/services/backrest.yaml`) is a web UI over the same repository
 
 Gatus (`ansible/services/gatus.yaml`) pings Tailscale DNS and the two home routers, pings every address on a routed home Network over the tailnet routes (from `network.yaml`, skipping any marked `monitor: false`), and checks every Service's URL through Traefik, so DNS, TLS and routing are covered too. It is also the dead-man's switch for backups: restic reports to a Gatus external endpoint after every run, and Gatus alerts if no report arrives within the heartbeat interval. Alerts go to Pushover.
 
-A Service declares its own checks under a `gatus:` key (Gatus `endpoints` and `external-endpoints`), as restic does for its heartbeat. Its Deploy writes them to `/opt/data/gatus/config/services/<service>.yaml`, and Gatus merges every file in `/opt/data/gatus/config` and reloads on change. Endpoints without their own `alerts` alert to Pushover. Dropping the key removes the file on the Service's next Deploy. This only works for Services on Gatus's Host, the vps.
+A Service declares its own checks under a `gatus:` key (Gatus `endpoints` and `external-endpoints`), as restic does for its heartbeat. Its Deploy writes them to `/opt/data/gatus/config/services/<service>.yaml`, and Gatus merges every file in `/opt/data/gatus/config` and reloads on change. Endpoints without their own `alerts` alert to Pushover. Dropping the key removes the file on the Service's next Deploy. This only works for Services on Gatus's Host, the vps. Home Services behind the ingress get a generated check instead: `ingress.yaml` holds one HTTPS endpoint per committed route, resolved through OPNsense's Unbound on its tailnet address, so a new route needs a Deploy of gatus.

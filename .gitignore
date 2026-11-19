@@ -7,3 +7,5 @@ kubeconfig
 *.tfstate.*
 .bw-provider-state
 .ansible
+# Private Services, deployed from the main checkout only (docs/architecture.md)
+*.private.yaml
