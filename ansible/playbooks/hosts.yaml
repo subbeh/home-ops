@@ -1,9 +1,29 @@
 ---
 # Base setup shared by every Debian and Ubuntu Host: the core packages in group_vars/debian.yaml.
-# From the laptop only, `--check --diff` first; never Auto-deployed. nas-svc needs a pve.yaml run
-# first, which installs its Python.
+# From the laptop only, `--check --diff` first; never Auto-deployed. Needs the mise env
+# (BWS_ACCESS_TOKEN). nas-svc needs a pve.yaml run first, which installs its Python.
 - name: Configure Hosts
   hosts: debian
+  pre_tasks:
+    # On the controller. A command rather than a pipe lookup so it can retry: the Bitwarden API
+    # fails now and then.
+    - name: Read secrets from Bitwarden Secrets Manager
+      ansible.builtin.command: bws secret list --output json
+      delegate_to: localhost
+      become: false
+      run_once: true
+      register: _bws
+      retries: 3
+      delay: 5
+      until: _bws.rc == 0
+      changed_when: false
+      check_mode: false
+      no_log: true
+
+    - name: Load secrets from Bitwarden Secrets Manager
+      ansible.builtin.set_fact:
+        bws_secrets: "{{ _bws.stdout | from_json | items2dict(key_name='key', value_name='value') }}"
+      no_log: true
   tasks:
     # Without this, installing iperf3 starts a server listening on every interface.
     - name: Keep iperf3 from starting a server daemon
@@ -18,6 +38,14 @@
         name: "{{ core_packages }}"
         update_cache: true
         cache_valid_time: 3600
+
+    # For Semaphore's hosts-update template. lineinfile, not authorized_key: on pve Hosts the file
+    # links to /etc/pve/priv/authorized_keys, and lineinfile writes through the link.
+    - name: Authorize Semaphore's SSH key for the Ansible user
+      ansible.builtin.lineinfile:
+        path: "~{{ ansible_user }}/.ssh/authorized_keys"
+        # Type and key only, plus the comment the line on the vps already has, so it matches.
+        line: "{{ (bws_secrets.SEMAPHORE_SSH_PUBLIC_KEY.split()[:2] + ['semaphore']) | join(' ') }}"
 
     # For root's interactive shells only: scripts never expand aliases. The marker is the old
     # archive role's, so its block on older Hosts is replaced in place.

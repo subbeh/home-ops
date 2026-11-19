@@ -66,7 +66,7 @@ Who holds what, and where it comes from. Everything marked Bitwarden is a Secret
 | `BWS_ACCESS_TOKEN` (laptop machine account) | `.env` | laptop: Ansible, `just tf::` | Read every secret |
 | `SEMAPHORE_BWS_ACCESS_TOKEN` (`semaphore` machine account) | Bitwarden → Semaphore container env | Semaphore tasks | Read the Service secrets |
 | `SEMAPHORE_ACCESS_KEY_ENCRYPTION` | Bitwarden → Semaphore container env | Semaphore | Encrypt its Key Store; never rotate it casually |
-| Semaphore SSH key | Semaphore Key Store; public half in `root`'s `authorized_keys` on the VPS | Semaphore tasks | SSH to the VPS as root |
+| Semaphore SSH key | Semaphore Key Store; public half in `SEMAPHORE_SSH_PUBLIC_KEY`, authorized on every Debian Host by `playbooks/hosts.yaml` | Semaphore tasks | SSH to the Hosts as their `ansible_user` |
 | `SEMAPHORE_API_TOKEN` | Bitwarden → GitHub secret, by `tfe-admin` | deploy workflow | Start and poll Semaphore tasks |
 | `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` (`tag:ci`) | created by the `tailscale` stack → GitHub secrets, by `tfe-admin` | deploy workflow | Join the tailnet; reach only `vps:443` |
 | `TAILSCALE_TERRAFORM_OAUTH_CLIENT_ID` / `_SECRET` | Bitwarden → `tailscale` workspace env, by `tfe-admin` | `tailscale` stack | Write the policy and split DNS, create the CI client |
