@@ -5,6 +5,7 @@ covers:
   - ansible/mod.just
   - ansible/playbooks/hosts.yaml
   - ansible/group_vars/debian.yaml
+  - ansible/playbooks/files/tmux.conf
 ---
 # Deploy Services by hand
 
@@ -43,6 +44,8 @@ A real run (no `--check`) refuses unless the tree is clean and `HEAD` is local `
 ## Host packages
 
 `playbooks/hosts.yaml` installs the core packages in `ansible/group_vars/debian.yaml` (curl, dig, iperf3, tmux, tcpdump, ...) on every Host in the `debian` group, so a new Host gets them too. Packages a role needs for itself stay in that role. It never runs as an Auto-deploy. The iperf3 package is preseeded not to start its server daemon.
+
+It also gives root a shell alias block in `~/.bashrc` (`ll`, `la`, `..`, `ports`, colour for grep/ip/diff) and a `~/.tmux.conf` (`ansible/playbooks/files/tmux.conf`) with the laptop's core keys and prefix `C-s` and an amber status bar naming the Host. Nested in the laptop's tmux, `C-s C-s <key>` drives the Host's; the laptop keeps `C-h`/`C-l`, so switch the Host's windows with `n`/`p`.
 
 ```sh
 just ansible::playbook hosts --check --diff

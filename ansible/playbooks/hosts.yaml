@@ -18,3 +18,33 @@
         name: "{{ core_packages }}"
         update_cache: true
         cache_valid_time: 3600
+
+    # For root's interactive shells only: scripts never expand aliases. The marker is the old
+    # archive role's, so its block on older Hosts is replaced in place.
+    - name: Add the shell aliases to root's .bashrc
+      ansible.builtin.blockinfile:
+        path: /root/.bashrc
+        create: true
+        mode: "0644"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - COMMON ALIASES"
+        block: |
+          alias ll='ls -la --color=auto'
+          alias la='ls -A --color=auto'
+          alias lt='ls -ltra --color=auto'
+          alias l='ls -CF --color=auto'
+          alias ..='cd ..'
+          alias ...='cd ../..'
+          alias df='df -h'
+          alias du='du -h'
+          alias free='free -h'
+          alias ports='ss -tulpn'
+          alias grep='grep --color=auto'
+          alias ip='ip -c'
+          alias diff='diff --color=auto'
+          alias dmesg='dmesg --color=auto'
+
+    - name: Install root's tmux config
+      ansible.builtin.copy:
+        src: tmux.conf
+        dest: /root/.tmux.conf
+        mode: "0644"
