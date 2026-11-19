@@ -25,6 +25,9 @@ copyparty:
           # Trust HAProxy's X-Forwarded-For; a wrong proxy setup bans every client.
           xff-src: lan
           rproxy: 1
+          # HAProxy ends TLS but sends no X-Forwarded-Proto; without this the browser's https
+          # Origin fails copyparty's CORS check and every login is rejected.
+          xf-proto-fb: https
           no-robots
 
         [accounts]
