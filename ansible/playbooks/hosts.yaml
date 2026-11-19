@@ -1,0 +1,20 @@
+---
+# Base setup shared by every Debian and Ubuntu Host: the core packages in group_vars/debian.yaml.
+# From the laptop only, `--check --diff` first; never Auto-deployed. nas-svc needs a pve.yaml run
+# first, which installs its Python.
+- name: Configure Hosts
+  hosts: debian
+  tasks:
+    # Without this, installing iperf3 starts a server listening on every interface.
+    - name: Keep iperf3 from starting a server daemon
+      ansible.builtin.debconf:
+        name: iperf3
+        question: iperf3/start_daemon
+        value: "false"
+        vtype: boolean
+
+    - name: Install the core packages
+      ansible.builtin.apt:
+        name: "{{ core_packages }}"
+        update_cache: true
+        cache_valid_time: 3600

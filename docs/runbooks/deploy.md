@@ -3,6 +3,8 @@ covers:
   - ansible/roles/services/tasks/main.yaml
   - ansible/playbooks/services.yaml
   - ansible/mod.just
+  - ansible/playbooks/hosts.yaml
+  - ansible/group_vars/debian.yaml
 ---
 # Deploy Services by hand
 
@@ -37,6 +39,15 @@ A real run (no `--check`) refuses unless the tree is clean and `HEAD` is local `
 - **traefik**: every Service's URL is briefly down while it's recreated.
 - **New Service with secrets**: add the secrets to `.bws.yaml` first, which the dotfiles bws sync creates in Secrets Manager; the role fails on any missing `bws_secrets.<KEY>`.
 - **Rollback**: revert the commit, then deploy the Service again.
+
+## Host packages
+
+`playbooks/hosts.yaml` installs the core packages in `ansible/group_vars/debian.yaml` (curl, dig, iperf3, tmux, tcpdump, ...) on every Host in the `debian` group, so a new Host gets them too. Packages a role needs for itself stay in that role. It never runs as an Auto-deploy. The iperf3 package is preseeded not to start its server daemon.
+
+```sh
+just ansible::playbook hosts --check --diff
+just ansible::playbook hosts
+```
 
 ## Connectivity check
 

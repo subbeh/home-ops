@@ -23,7 +23,7 @@ jobs:
           ansible-galaxy collection install -r requirements.yml
 
       - name: Syntax check playbooks
-        run: ansible-playbook --syntax-check ansible/playbooks/services.yaml ansible/playbooks/pve.yaml
+        run: ansible-playbook --syntax-check ansible/playbooks/services.yaml ansible/playbooks/pve.yaml ansible/playbooks/hosts.yaml
 
       # The playbook loads these at runtime, so --syntax-check never parses them.
       - name: Load Service definitions

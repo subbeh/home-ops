@@ -1,0 +1,32 @@
+---
+# The core packages playbooks/hosts.yaml installs on every Debian and Ubuntu Host, for debugging
+# on the Host itself. Packages a role needs for itself (pve_setup's Cockpit, nas-svc's Docker)
+# stay in that role. apt-transport-https is left out: apt speaks https itself.
+core_packages:
+  - acl
+  - bash-completion
+  - ca-certificates
+  - curl
+  - dnsutils
+  - ethtool
+  - gnupg
+  - htop
+  - iperf3
+  - iputils-ping
+  - jq
+  - lsb-release
+  - lsof
+  - mtr-tiny
+  - ncdu
+  - net-tools
+  - netcat-openbsd
+  - rsync
+  - sudo
+  - tcpdump
+  - tmux
+  - traceroute
+  - tree
+  - unzip
+  - vim
+  - wget
+  - zip

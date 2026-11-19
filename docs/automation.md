@@ -39,7 +39,7 @@ Every PR also gets a Terraform Cloud check: a speculative plan of each stack the
 
 The check uses no secrets and runs with only `ANSIBLE_CONFIG=ansible/ansible.cfg` set (no mise), the same as Semaphore. It runs:
 
-1. A syntax check of the services and pve playbooks.
+1. A syntax check of the services, pve and hosts playbooks.
 2. A load of every Service definition (the syntax check never parses them).
 3. A check that the generated docs are current.
 4. `renovate-config-validator --strict`.

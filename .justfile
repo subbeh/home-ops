@@ -42,7 +42,7 @@ check:
     bin=$(dirname "$(mise which ansible)")
     cd {{ justfile_directory() }}
     ci() { env -u ANSIBLE_PLAYBOOK_DIR ANSIBLE_CONFIG=ansible/ansible.cfg "$bin/$@"; }
-    ci ansible-playbook --syntax-check ansible/playbooks/services.yaml ansible/playbooks/pve.yaml
+    ci ansible-playbook --syntax-check ansible/playbooks/services.yaml ansible/playbooks/pve.yaml ansible/playbooks/hosts.yaml
     # Its success output is every Service definition, so print it only on failure.
     out=$(ci ansible localhost -m ansible.builtin.include_vars \
       -a '{"dir": "ansible/services", "files_matching": "\\.ya?ml$", "depth": 1}' 2>&1) || { echo "$out"; exit 1; }
