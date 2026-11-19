@@ -141,19 +141,19 @@ devices:
       "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [servers, clients, iot]}
       "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}  # the ap, powered by PoE
       "3": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
-      "4": {kind: ethernet, speed: 1G}
+      "4": {kind: ethernet, speed: 1G, native: iot}
       "5": {kind: ethernet, speed: 1G, native: servers}
-      "6": {kind: ethernet, speed: 1G}
+      "6": {kind: ethernet, speed: 1G, native: iot}
       "7": {kind: ethernet, speed: 1G, native: servers}
-      "8": {kind: ethernet, speed: 1G}
+      "8": {kind: ethernet, speed: 1G, native: iot}
       "9": {kind: ethernet, speed: 1G, native: servers}
-      "10": {kind: ethernet, speed: 1G}
+      "10": {kind: ethernet, speed: 1G, native: iot}
       "11": {kind: ethernet, speed: 1G, native: servers}
-      "12": {kind: ethernet, speed: 1G}
+      "12": {kind: ethernet, speed: 1G, native: iot}
       "13": {kind: ethernet, speed: 1G, native: servers}
-      "14": {kind: ethernet, speed: 1G}
-      "15": {kind: ethernet, speed: 1G}
-      "16": {kind: ethernet, speed: 1G}
+      "14": {kind: ethernet, speed: 1G, native: iot}
+      "15": {kind: ethernet, speed: 1G, native: iot}
+      "16": {kind: ethernet, speed: 1G, native: iot}
 
   k8s-opti-01:
     monitor: false  # until the Host is set up, then drop this
@@ -205,7 +205,6 @@ devices:
 
   # Powered by PoE from unifi-switch:3 through patch-panel:4. A second one would be flex-mini-2.
   flex-mini-1:
-    monitor: false  # until it is adopted in UniFi, then drop this
     kind: switch
     model: Ubiquiti USW Flex Mini
     ports:
@@ -216,7 +215,6 @@ devices:
       "5": {kind: ethernet, speed: 1G, native: clients}
 
   ap:
-    monitor: false  # until it is adopted in UniFi, then drop this
     kind: ap
     model: Ubiquiti U6 Lite
     ports:

@@ -149,19 +149,19 @@ The peer is the Port at the far end, traced through the patch panels. UniFi Port
 | 1 | 1G | mgmt | servers, clients, iot | opnsense:1 via patch-panel:3 |
 | 2 | 1G | mgmt | clients, iot | ap:eth via patch-panel:2 |
 | 3 | 1G | mgmt | clients, iot | flex-mini-1:1 via patch-panel:4 |
-| 4 | 1G |  |  |  |
+| 4 | 1G | iot |  |  |
 | 5 | 1G | servers |  | k8s-nuc:eth-1g via patch-panel:5 |
-| 6 | 1G |  |  |  |
+| 6 | 1G | iot |  |  |
 | 7 | 1G | servers |  | k8s-opti-01:eth-1g via patch-panel:6 |
-| 8 | 1G |  |  |  |
+| 8 | 1G | iot |  |  |
 | 9 | 1G | servers |  | k8s-opti-02:eth-1g via patch-panel:7 |
-| 10 | 1G |  |  |  |
+| 10 | 1G | iot |  |  |
 | 11 | 1G | servers |  | pve-nuc:eth via patch-panel:8 |
-| 12 | 1G |  |  |  |
+| 12 | 1G | iot |  |  |
 | 13 | 1G | servers |  | pve-nas:0 via patch-panel:9 |
-| 14 | 1G |  |  |  |
-| 15 | 1G |  |  |  |
-| 16 | 1G |  |  |  |
+| 14 | 1G | iot |  |  |
+| 15 | 1G | iot |  |  |
+| 16 | 1G | iot |  |  |
 
 ### gl-router-home
 
