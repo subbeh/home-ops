@@ -450,12 +450,15 @@
         - name: Map each name to its backend
           oxlorg.opnsense.haproxy_mapfile:
             name: ingress_routes
+            # The API refuses a map file without one.
+            description: Home ingress routes
             content: "{% for r in _ingress_routes %}{{ r.service }}.{{ ingress_domain }} {{ r.service }}\n{% endfor %}"
           notify: Apply HAProxy
 
         - name: Route by the map
           oxlorg.opnsense.haproxy_action:
             name: ingress_routes
+            description: Home ingress routes
             kind: map_use_backend
             map_use_backend_file: ingress_routes
           ignore_errors: "{{ ansible_check_mode }}"
@@ -466,6 +469,7 @@
         - name: Add the frontend
           oxlorg.opnsense.haproxy_frontend:
             name: ingress
+            description: Home ingress
             bind: ["{{ networks.servers.addresses.opnsense }}:443"]
             ssl_enabled: true
             ssl_certificates:
