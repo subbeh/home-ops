@@ -139,7 +139,7 @@ devices:
     rack: 7
     ports:
       "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [servers, clients, iot]}
-      "2": {kind: ethernet, speed: 1G, native: clients}  # the laptop, when a wired clients connection is needed
+      "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}  # the ap, powered by PoE
       "3": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
       "4": {kind: ethernet, speed: 1G}
       "5": {kind: ethernet, speed: 1G, native: servers}
@@ -203,15 +203,14 @@ devices:
       wan: {kind: ethernet, speed: 1G, mac: ""}
       lan: {kind: ethernet, speed: 1G, native: main, mac: ""}
 
-  # Powered by PoE from unifi-switch:3 through patch-panel:4. Port 2 feeds the ap through an 802.3af
-  # injector, as the Flex Mini has no PoE output. A second one would be flex-mini-2.
+  # Powered by PoE from unifi-switch:3 through patch-panel:4. A second one would be flex-mini-2.
   flex-mini-1:
     monitor: false  # until it is adopted in UniFi, then drop this
     kind: switch
     model: Ubiquiti USW Flex Mini
     ports:
       "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
-      "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
+      "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}  # spare
       "3": {kind: ethernet, speed: 1G, native: iot}
       "4": {kind: ethernet, speed: 1G, native: clients}
       "5": {kind: ethernet, speed: 1G, native: clients}
@@ -221,7 +220,7 @@ devices:
     kind: ap
     model: Ubiquiti U6 Lite
     ports:
-      eth: {kind: ethernet, speed: 1G, mac: ""}
+      eth: {kind: ethernet, speed: 1G, mac: "d0:21:f9:ef:f7:a4"}
 
   shield:
     monitor: false

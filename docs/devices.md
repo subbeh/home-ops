@@ -129,8 +129,8 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 |---|---|---|---|---|
 | 1/front | ethernet |  |  |  |
 | 1/back | ethernet |  |  |  |
-| 2/front | ethernet |  |  |  |
-| 2/back | ethernet |  |  |  |
+| 2/front | ethernet |  |  | unifi-switch:2 |
+| 2/back | ethernet |  |  | ap:eth |
 | 3/front | ethernet |  |  | unifi-switch:1 |
 | 3/back | ethernet |  |  | opnsense:1 |
 | 4/front | ethernet |  |  | unifi-switch:3 |
@@ -157,7 +157,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
 | 1 | ethernet | 1G |  | opnsense:1 via patch-panel:3 |
-| 2 | ethernet | 1G |  |  |
+| 2 | ethernet | 1G |  | ap:eth via patch-panel:2 |
 | 3 | ethernet | 1G |  | flex-mini-1:1 via patch-panel:4 |
 | 4 | ethernet | 1G |  |  |
 | 5 | ethernet | 1G |  | k8s-nuc:eth-1g via patch-panel:5 |
@@ -214,7 +214,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
 | 1 | ethernet | 1G |  | unifi-switch:3 via patch-panel:4 |
-| 2 | ethernet | 1G |  | ap:eth |
+| 2 | ethernet | 1G |  |  |
 | 3 | ethernet | 1G |  | shield:eth |
 | 4 | ethernet | 1G |  |  |
 | 5 | ethernet | 1G |  |  |
@@ -223,7 +223,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
-| eth | ethernet | 1G |  | flex-mini-1:2 |
+| eth | ethernet | 1G | d0:21:f9:ef:f7:a4 | unifi-switch:2 via patch-panel:2 |
 
 ## shield
 

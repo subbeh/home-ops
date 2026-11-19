@@ -39,7 +39,7 @@ A MAC makes the address a DHCP reservation on OPNsense; the rest are static on t
 | opnsense | 10.11.10.1 | opnsense.mgmt.home.sbbh.cloud |  |
 | unifi-switch | 10.11.10.2 | unifi-switch.mgmt.home.sbbh.cloud, unifi-switch.home.sbbh.cloud | 60:22:32:9c:12:55 |
 | flex-mini-1 | 10.11.10.3 | flex-mini-1.mgmt.home.sbbh.cloud, flex-mini-1.home.sbbh.cloud | 6c:63:f8:34:2a:cb |
-| ap | 10.11.10.5 | ap.mgmt.home.sbbh.cloud, ap.home.sbbh.cloud | TODO(you) |
+| ap | 10.11.10.5 | ap.mgmt.home.sbbh.cloud, ap.home.sbbh.cloud | d0:21:f9:ef:f7:a4 |
 
 ### servers
 
@@ -148,7 +148,7 @@ The peer is the Port at the far end, traced through the patch panels. UniFi Port
 | Port | Speed | Native | Tagged | Peer |
 |---|---|---|---|---|
 | 1 | 1G | mgmt | servers, clients, iot | opnsense:1 via patch-panel:3 |
-| 2 | 1G | clients |  |  |
+| 2 | 1G | mgmt | clients, iot | ap:eth via patch-panel:2 |
 | 3 | 1G | mgmt | clients, iot | flex-mini-1:1 via patch-panel:4 |
 | 4 | 1G |  |  |  |
 | 5 | 1G | servers |  | k8s-nuc:eth-1g via patch-panel:5 |
@@ -176,7 +176,7 @@ The peer is the Port at the far end, traced through the patch panels. UniFi Port
 | Port | Speed | Native | Tagged | Peer |
 |---|---|---|---|---|
 | 1 | 1G | mgmt | clients, iot | unifi-switch:3 via patch-panel:4 |
-| 2 | 1G | mgmt | clients, iot | ap:eth |
+| 2 | 1G | mgmt | clients, iot |  |
 | 3 | 1G | iot |  | shield:eth |
 | 4 | 1G | clients |  |  |
 | 5 | 1G | clients |  |  |

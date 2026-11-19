@@ -33,7 +33,7 @@ networks:
       opnsense: 10.11.10.1
       unifi-switch: {addr: 10.11.10.2, mac: "60:22:32:9c:12:55"}
       flex-mini-1: {addr: 10.11.10.3, mac: "6c:63:f8:34:2a:cb"}
-      ap: {addr: 10.11.10.5, mac: "TODO(you)"}
+      ap: {addr: 10.11.10.5, mac: "d0:21:f9:ef:f7:a4"}
 
   servers:
     description: Every Host, including the Proxmox UI and the Talos API
@@ -135,6 +135,8 @@ cables:
   - {a: 'pve-nuc:eth', b: 'patch-panel:8/back', speed: 1G}
   - {a: 'unifi-switch:13', b: 'patch-panel:9/front', speed: 1G}
   - {a: 'pve-nas:0', b: 'patch-panel:9/back', speed: 1G}
+  - {a: 'unifi-switch:2', b: 'patch-panel:2/front', speed: 1G}
+  - {a: 'patch-panel:2/back', b: 'ap:eth', speed: 1G}
 
   # storage at 2.5G, through both panels. The front jumpers are drawn blue, but both ends of
   # each run are 2.5G.
@@ -149,8 +151,7 @@ cables:
   - {a: 'keystone:eth4/back', b: 'switch-2g5:3', speed: 2.5G}
   - {a: 'pve-nas:1', b: 'switch-2g5:4', speed: 2.5G}
 
-  # Off-rack, behind patch-panel:4. The ap is fed by a PoE injector, which doesn't change the Cable.
-  - {a: 'flex-mini-1:2', b: 'ap:eth', speed: 1G}
+  # Off-rack, behind patch-panel:4
   - {a: 'flex-mini-1:3', b: 'shield:eth', speed: 1G}
 
   # KVM: each Host's HDMI and USB on one input, the output to jetkvm
