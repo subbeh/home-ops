@@ -1,0 +1,41 @@
+---
+# Upgrades every package on the Hosts and reboots those that need it. Runs by hand, from
+# Semaphore's "hosts-update" template (setup at the top of services/semaphore.yaml) or the laptop
+# with `--check --diff` first; never scheduled or Auto-deployed. Gatus alerts when an update breaks
+# a Service.
+# shortcut: Debian family only, add a play per OS family when a Host of another one needs updates.
+- name: Update Debian Hosts
+  hosts: debian
+  # One Host at a time: rebooting pve-nas mid-play would take nas-svc, its LXC, down with it.
+  serial: 1
+  # The vps, which runs Semaphore, is listed first in inventory.yml: reversed, it updates last, so
+  # its delayed reboot can't kill a Semaphore task still working on another Host.
+  # shortcut: relies on inventory order, use a group for the Semaphore Host if it ever moves.
+  order: reverse_inventory
+  tasks:
+    # Detached from SSH, so dpkg still finishes when upgrading tailscale drops the session or
+    # upgrading docker-ce restarts dockerd and kills the Semaphore container running this task;
+    # that run ends red, so check it with a re-run or Gatus.
+    - name: Upgrade every package
+      async: 3600
+      poll: 10
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+        autoremove: true
+
+    - name: Check whether a reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Reboot
+      ansible.builtin.reboot:
+      when: reboot_required.stat.exists and 'semaphore' not in services | default([])
+
+    # Semaphore runs on this Host, so rebooting now would kill the task running this playbook.
+    # Schedule it a minute out instead and let the task end green; Gatus reports if it stays down.
+    - name: Schedule a reboot in a minute
+      ansible.builtin.command: shutdown -r +1
+      when: reboot_required.stat.exists and 'semaphore' in services | default([])
+      changed_when: true

@@ -39,7 +39,7 @@ Every PR also gets a Terraform Cloud check: a speculative plan of each stack the
 
 The check uses no secrets and runs with only `ANSIBLE_CONFIG=ansible/ansible.cfg` set (no mise), the same as Semaphore. It runs:
 
-1. A syntax check of the services, pve and hosts playbooks.
+1. A syntax check of the services, pve, hosts and hosts-update playbooks.
 2. A load of every Service definition (the syntax check never parses them).
 3. A check that the generated docs are current.
 4. `renovate-config-validator --strict`.
@@ -68,7 +68,7 @@ The Semaphore project and template IDs aren't secret; they're in the workflow's 
 
 ## Semaphore
 
-Semaphore runs the services playbook for Auto-deploys, at `https://semaphore.vps.sbbh.cloud`.
+Semaphore runs the services playbook for Auto-deploys, and the hosts-update playbook when you start it by hand ([runbooks/deploy.md](runbooks/deploy.md#host-updates)), at `https://semaphore.vps.sbbh.cloud`.
 
 - It's never Auto-deployed itself: recreating its container would kill the running task. Deploy it by hand with `--tags semaphore`. Its Renovate PRs never automerge.
 - It runs one task at a time, so concurrent Auto-deploys queue.

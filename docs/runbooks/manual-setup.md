@@ -51,6 +51,7 @@ After `just ansible::playbook services --tags semaphore`, at `https://semaphore.
 - [x] Template `services`: playbook `ansible/playbooks/services.yaml`, Ansible prompts: Tags. Its project and template IDs are in `.github/workflows/deploy.yaml`.
 - [x] API token (User → Tokens) → `SEMAPHORE_API_TOKEN` in `.bws.yaml`.
 - [x] User `hermes-ops` (Users), in the project's Team as **Task Runner**, so hermes's `ops` Profile can read and start tasks but not change the project. Log in as it: API token (User → Tokens) → `HERMES_OPS_SEMAPHORE_TOKEN` in `.bws.yaml`.
+- [ ] Template `hosts-update`: playbook `ansible/playbooks/hosts-update.yaml`, Ansible prompts: Limit. No schedule. The SSH key must also be in the `authorized_keys` of each other Host's `ansible_user`.
 
 ## Terraform Cloud
 

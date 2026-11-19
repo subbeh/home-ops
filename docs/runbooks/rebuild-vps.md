@@ -10,7 +10,7 @@ Draft. Facts that aren't in this repo are marked TODO.
 
 ## 1. Base system
 
-> TODO(you): OS image (the inventory says `debian`, ADR 0001 says Ubuntu), SSH key for `root`, firewall rules, unattended upgrades.
+> TODO(you): OS image (the inventory says `debian`, ADR 0001 says Ubuntu), SSH key for `root`, firewall rules. Package updates come from the hosts-update playbook ([deploy.md](deploy.md#host-updates)), not unattended upgrades.
 
 - Install Docker and the Docker Python SDK. The role only checks for them, through its preflight, and never installs them.
   > TODO(you): the exact install steps used.
