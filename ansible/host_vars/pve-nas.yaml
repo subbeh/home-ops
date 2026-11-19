@@ -23,7 +23,7 @@ nfs_exports:
 # The Docker LXC Host, created by roles/pve. vmid is <vlan><host number> of its servers address.
 pve_lxc:
   hostname: nas-svc
-  vmid: 2012
+  vmid: 2030
   cores: 4
   memory: 8192
   # local-lvm is the installer's default thin pool on the SSD (ext4 install).

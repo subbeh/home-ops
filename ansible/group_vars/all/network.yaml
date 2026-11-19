@@ -7,8 +7,9 @@
 #   makes it a DHCP reservation on OPNsense; without one it's static on the Device and sits
 #   outside the dhcp range. To record a MAC without a reservation, put it on the Port in
 #   devices.yaml.
-# - Conventions: .1 is the gateway, mgmt .2-.9 is network gear, servers .10-.99 are Hosts
-#   (the same host number on storage), .100-.199 is the DHCP range.
+# - Conventions: .1 is the gateway, mgmt .2-.9 is network gear, .100-.199 is the DHCP range.
+#   servers groups Hosts by kind: .10-.19 Proxmox nodes, .20-.29 bare-metal Hosts, .30-.99
+#   guests (VMs and LXCs). A Host keeps its host number on storage.
 # - DNS: every address on a home Network with a gateway gets <name>.<network>.<home_domain>,
 #   and a name with exactly one such address also gets <name>.<home_domain>.
 home_domain: home.sbbh.cloud
@@ -44,10 +45,10 @@ networks:
       opnsense: 10.11.20.1
       pve-nuc: 10.11.20.10
       pve-nas: 10.11.20.11
-      nas-svc: 10.11.20.12
       k8s-nuc: 10.11.20.21
       k8s-opti-01: 10.11.20.22
       k8s-opti-02: 10.11.20.23
+      nas-svc: 10.11.20.30
 
   clients:
     description: Personal devices, and SSID ST
