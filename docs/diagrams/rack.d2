@@ -210,11 +210,6 @@ off-rack: {
     grid-gap: 8
     "eth": {shape: square; width: 40; style.stroke: "#006EAF"}
   }
-  "shield": {
-    grid-rows: 1
-    grid-gap: 8
-    "eth": {shape: square; width: 40; style.stroke: "#006EAF"}
-  }
 }
 
 off-rack."gl-router-home"."lan" -- rack."5"."switch-3p"."3": {style.stroke: "#006EAF"; style.stroke-width: 2}
@@ -246,7 +241,6 @@ rack."9"."k8s-opti-02"."eth-2g5" -- rack."6"."patch-panel"."12": {style.stroke: 
 rack."6"."patch-panel"."12" -- rack."5"."keystone"."eth4": {style.stroke: "#C2185B"; style.stroke-width: 2}
 rack."5"."keystone"."eth4" -- rack."4"."switch-2g5"."3": {style.stroke: "#C2185B"; style.stroke-width: 2}
 rack."10"."pve-nas"."1" -- rack."4"."switch-2g5"."4": {style.stroke: "#C2185B"; style.stroke-width: 2}
-off-rack."flex-mini-1"."3" -- off-rack."shield"."eth": {style.stroke: "#006EAF"; style.stroke-width: 2}
 rack."1"."opnsense"."hdmi" -- rack."3"."kvm-switch"."1-hdmi": {style.stroke: "#C73500"; style.stroke-width: 2}
 rack."1"."opnsense"."usb" -- rack."3"."kvm-switch"."1-usb": {style.stroke: "#2E7D32"; style.stroke-width: 2}
 rack."4"."pve-nuc"."hdmi" -- rack."3"."kvm-switch"."2-hdmi": {style.stroke: "#C73500"; style.stroke-width: 2}

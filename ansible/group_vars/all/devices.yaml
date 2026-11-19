@@ -211,7 +211,7 @@ devices:
     ports:
       "1": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}
       "2": {kind: ethernet, speed: 1G, native: mgmt, tagged: [clients, iot]}  # spare
-      "3": {kind: ethernet, speed: 1G, native: iot}
+      "3": {kind: ethernet, speed: 1G, native: iot}  # spare
       "4": {kind: ethernet, speed: 1G, native: clients}
       "5": {kind: ethernet, speed: 1G, native: clients}
 
@@ -221,10 +221,3 @@ devices:
     model: Ubiquiti U6 Lite
     ports:
       eth: {kind: ethernet, speed: 1G, mac: "d0:21:f9:ef:f7:a4"}
-
-  shield:
-    monitor: false
-    kind: media
-    model: Nvidia Shield
-    ports:
-      eth: {kind: ethernet, speed: 1G, mac: ""}

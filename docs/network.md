@@ -64,7 +64,6 @@ A MAC makes the address a DHCP reservation on OPNsense; the rest are static on t
 | Name | Address | DNS | MAC |
 |---|---|---|---|
 | opnsense | 10.11.40.1 | opnsense.iot.home.sbbh.cloud |  |
-| shield | 10.11.40.10 | shield.iot.home.sbbh.cloud, shield.home.sbbh.cloud | TODO(you) |
 
 ### backdoor
 
@@ -177,6 +176,6 @@ The peer is the Port at the far end, traced through the patch panels. UniFi Port
 |---|---|---|---|---|
 | 1 | 1G | mgmt | clients, iot | unifi-switch:3 via patch-panel:4 |
 | 2 | 1G | mgmt | clients, iot |  |
-| 3 | 1G | iot |  | shield:eth |
+| 3 | 1G | iot |  |  |
 | 4 | 1G | clients |  |  |
 | 5 | 1G | clients |  |  |

@@ -27,7 +27,6 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | [gl-router-home](#gl-router-home) | router | GL.iNet (TODO(you): model) |  |  |  |
 | [flex-mini-1](#flex-mini-1) | switch | Ubiquiti USW Flex Mini |  |  |  |
 | [ap](#ap) | ap | Ubiquiti U6 Lite |  |  |  |
-| [shield](#shield) | media | Nvidia Shield |  |  |  |
 
 ## opnsense
 
@@ -215,7 +214,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 |---|---|---|---|---|
 | 1 | ethernet | 1G |  | unifi-switch:3 via patch-panel:4 |
 | 2 | ethernet | 1G |  |  |
-| 3 | ethernet | 1G |  | shield:eth |
+| 3 | ethernet | 1G |  |  |
 | 4 | ethernet | 1G |  |  |
 | 5 | ethernet | 1G |  |  |
 
@@ -224,9 +223,3 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
 | eth | ethernet | 1G | d0:21:f9:ef:f7:a4 | unifi-switch:2 via patch-panel:2 |
-
-## shield
-
-| Port | Kind | Speed | MAC | Peer |
-|---|---|---|---|---|
-| eth | ethernet | 1G |  | flex-mini-1:3 |
