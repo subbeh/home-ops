@@ -28,6 +28,7 @@ Secrets reach Secrets Manager through `.bws.yaml`: each key points at a vault it
 
 - [x] Seed `terraform/tailscale/policy.hujson` from the admin console's policy (only when the tailnet existed before this repo managed it).
 - [x] OAuth client for Terraform: Settings → OAuth clients → Generate, scopes **Policy File: Write**, **OAuth Keys: Write** and **Auth Keys: Write** with tag `tag:ci`. The `tailscale` stack creates the CI client, and an OAuth client can only grant scopes and tags it holds itself (otherwise: `actor cannot set scopes (403)`). `tag:ci` only exists once the policy is applied, so on a fresh tailnet apply the policy first, then add Auth Keys.
+- [ ] Give that OAuth client **DNS: Write** too, for the split DNS in `terraform/tailscale/main.tf`; without it the `tailscale` run fails with a 403. If the console won't edit a client's scopes, generate a new one with all four and replace `TAILSCALE_TERRAFORM_OAUTH_CLIENT_ID` / `_SECRET` in Bitwarden, then `just tf::apply tfe-admin`.
 
 ## gl-router-home
 

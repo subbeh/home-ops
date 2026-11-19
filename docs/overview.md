@@ -69,7 +69,7 @@ Who holds what, and where it comes from. Everything marked Bitwarden is a Secret
 | Semaphore SSH key | Semaphore Key Store; public half in `root`'s `authorized_keys` on the VPS | Semaphore tasks | SSH to the VPS as root |
 | `SEMAPHORE_API_TOKEN` | Bitwarden → GitHub secret, by `tfe-admin` | deploy workflow | Start and poll Semaphore tasks |
 | `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` (`tag:ci`) | created by the `tailscale` stack → GitHub secrets, by `tfe-admin` | deploy workflow | Join the tailnet; reach only `vps:443` |
-| `TAILSCALE_TERRAFORM_OAUTH_CLIENT_ID` / `_SECRET` | Bitwarden → `tailscale` workspace env, by `tfe-admin` | `tailscale` stack | Write the policy, create the CI client |
+| `TAILSCALE_TERRAFORM_OAUTH_CLIENT_ID` / `_SECRET` | Bitwarden → `tailscale` workspace env, by `tfe-admin` | `tailscale` stack | Write the policy and split DNS, create the CI client |
 | `CLOUDFLARE_API_TOKEN` | Bitwarden → `cloudflare` workspace env, by `tfe-admin`; also read by traefik | `cloudflare` stack, traefik | Edit DNS; DNS-01 for the wildcard cert |
 | `TFC_API_TOKEN` (user token) | Bitwarden | `just tf::init` / `just tf::apply` | Reach TFC state and manage workspaces |
 | GitHub token | `gh auth token` on the laptop | `tfe-admin` | Write GitHub Actions secrets |

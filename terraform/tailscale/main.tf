@@ -17,7 +17,7 @@ terraform {
 }
 
 # Reads TAILSCALE_OAUTH_CLIENT_ID and TAILSCALE_OAUTH_CLIENT_SECRET from the
-# workspace (see terraform/tfe-admin). The client needs policy_file and oauth_keys, plus
+# workspace (see terraform/tfe-admin). The client needs policy_file, oauth_keys and dns, plus
 # auth_keys with tag:ci: Tailscale only lets it grant scopes and tags it holds itself.
 provider "tailscale" {}
 
@@ -34,6 +34,14 @@ resource "tailscale_acl" "policy" {
   })
   # Seeded from the live policy, so no import is needed.
   overwrite_existing_content = true
+}
+
+# Tailnet devices resolve the home names through OPNsense's Unbound, which holds every record,
+# at home and away; public DNS has none. svc.sbbh.cloud is ingress_domain in services.yaml.
+resource "tailscale_dns_split_nameservers" "home" {
+  for_each    = toset([local.network.home_domain, "svc.sbbh.cloud"])
+  domain      = each.key
+  nameservers = [local.network.networks.tailnet.addresses.opnsense]
 }
 
 # For .github/workflows/deploy.yaml; terraform/tfe-admin copies it into GitHub secrets.
