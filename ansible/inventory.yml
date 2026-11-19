@@ -29,7 +29,7 @@ local:
       # The Docker LXC on pve-nas, created by playbooks/pve.yaml. Proxmox templates ship root only.
       ansible_user: root
       ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
-      services: [whoami, metube]
+      services: [whoami, metube, sts]
 
 # OS groups
 debian:

@@ -20,7 +20,7 @@
       Pass --tags <service> or --tags all to select which services to deploy.
     quiet: true
   vars:
-    _undefined: "{{ services | default([]) | difference(services_configs.keys() | list) }}"
+    _undefined: "{{ services | default([]) | difference(services_configs.keys() | list) | difference(services_private) }}"
     _reserved: "{{ services_configs.keys() | list | intersect(['all', 'always'] + _services_steps) }}"
     _unknown_tags: "{{ ansible_run_tags | difference(['all'] + _services_steps + services_configs.keys() | list) }}"
     _requested: "{{ ansible_run_tags | intersect(services_configs.keys() | list) }}"
@@ -53,7 +53,8 @@
     services_selected: "{{ _assigned if 'all' in ansible_run_tags else _assigned | intersect(_requested) }}"
     services_steps: "{{ _services_steps if _steps | length == 0 else _steps }}"
   vars:
-    _assigned: "{{ services | default([]) }}"
+    # A private Service without its file is skipped.
+    _assigned: "{{ services | default([]) | intersect(services_configs.keys() | list) }}"
     _requested: "{{ ansible_run_tags | intersect(services_configs.keys() | list) }}"
     _steps: "{{ ansible_run_tags | intersect(_services_steps) }}"
 

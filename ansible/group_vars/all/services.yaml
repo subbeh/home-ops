@@ -10,6 +10,9 @@ services_uid: 2000
 services_gid: 2000
 services_timezone: Australia/Melbourne
 services_network: services
+# Assigned Services whose file is <name>.private.yaml: gitignored, so it is only in the main checkout.
+# The services role skips them where the file is missing (Semaphore, CI, worktrees).
+services_private: [sts]
 # The home ingress, HAProxy on OPNsense (playbooks/opnsense.yaml), serves https://<service>.<ingress_domain>
 # for each Service with an `ingress:` port on a local Host.
 ingress_domain: svc.sbbh.cloud
