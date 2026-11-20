@@ -20,6 +20,7 @@ What runs where, and how to change it. Docs describe the current state. One exce
 | [runbooks/opnsense.md](runbooks/opnsense.md) | Installing OPNsense, its manual steps, restoring and upgrading it |
 | [runbooks/manual-setup.md](runbooks/manual-setup.md) | One-time setup outside the repo: consoles, credentials, their order |
 | [runbooks/pve-nas.md](runbooks/pve-nas.md) | Installing Proxmox on pve-nas by hand and importing its data pools |
+| [runbooks/pve-nuc.md](runbooks/pve-nuc.md) | Installing Proxmox on pve-nuc by hand |
 
 ## Keeping docs current
 

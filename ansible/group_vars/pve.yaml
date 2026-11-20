@@ -2,7 +2,7 @@
 # Proxmox VE Hosts, configured by playbooks/pve.yaml.
 
 # Proxmox runs as root and ships without sudo. The home-ops key goes in root's authorized_keys
-# by hand after the install so the first run can connect (docs/runbooks/pve-nas.md); from then
+# by hand after the install so the first run can connect (docs/runbooks/pve-*.md); from then
 # on the playbook keeps it there.
 ansible_user: root
 ansible_become: false

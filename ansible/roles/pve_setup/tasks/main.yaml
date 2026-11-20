@@ -1,5 +1,7 @@
 ---
+# A Host without a storage address (pve-nuc has one NIC) skips this and the storage bridge.
 - name: Require the storage Port's device name
+  when: inventory_hostname in networks.storage.addresses
   ansible.builtin.assert:
     that: port_devices['1'] | default('') | length > 0
     fail_msg: Set port_devices["1"] in host_vars/{{ inventory_hostname }}.yaml from `ip -br link` on the Host.
@@ -109,34 +111,37 @@
     validate: sshd -t -f %s
   notify: Reload SSH
 
-# The installer writes a bare stanza for every NIC; the block below holds Port 1's, with its MTU.
-- name: Remove the installer's stanza for Port 1
-  ansible.builtin.replace:
-    path: /etc/network/interfaces
-    regexp: '^iface {{ port_devices[''1''] }} inet manual\n(?!\s+mtu)\n?'
-  notify: Reload network
+- name: Put the storage Network on Port 1
+  when: inventory_hostname in networks.storage.addresses
+  block:
+    # The installer writes a bare stanza for every NIC; the block below holds Port 1's, with its MTU.
+    - name: Remove the installer's stanza for Port 1
+      ansible.builtin.replace:
+        path: /etc/network/interfaces
+        regexp: '^iface {{ port_devices[''1''] }} inet manual\n(?!\s+mtu)\n?'
+      notify: Reload network
 
-# In the main file, not interfaces.d, so the Proxmox UI lists vmbr1 for guests. Leave it out of
-# the UI's network editor: a rewrite there can drop the markers and duplicate the block.
-- name: Put the storage address on vmbr1 over Port 1
-  ansible.builtin.blockinfile:
-    path: /etc/network/interfaces
-    marker: "# {mark} ANSIBLE MANAGED: storage"
-    # Jumbo frames on both: every storage hop must take them (test with `ping -M do -s 8972` to a
-    # storage peer), else the whole storage Network goes back to 1500.
-    block: |
-      iface {{ port_devices['1'] }} inet manual
-          mtu 9000
+    # In the main file, not interfaces.d, so the Proxmox UI lists vmbr1 for guests. Leave it out of
+    # the UI's network editor: a rewrite there can drop the markers and duplicate the block.
+    - name: Put the storage address on vmbr1 over Port 1
+      ansible.builtin.blockinfile:
+        path: /etc/network/interfaces
+        marker: "# {mark} ANSIBLE MANAGED: storage"
+        # Jumbo frames on both: every storage hop must take them (test with `ping -M do -s 8972` to a
+        # storage peer), else the whole storage Network goes back to 1500.
+        block: |
+          iface {{ port_devices['1'] }} inet manual
+              mtu 9000
 
-      auto vmbr1
-      iface vmbr1 inet static
-          address {{ networks.storage.addresses[inventory_hostname] }}/{{ networks.storage.cidr | split('/') | last }}
-          bridge-ports {{ port_devices['1'] }}
-          bridge-stp off
-          bridge-fd 0
-          mtu 9000
-      # storage is unrouted, so no gateway.
-  notify: Reload network
+          auto vmbr1
+          iface vmbr1 inet static
+              address {{ networks.storage.addresses[inventory_hostname] }}/{{ networks.storage.cidr | split('/') | last }}
+              bridge-ports {{ port_devices['1'] }}
+              bridge-stp off
+              bridge-fd 0
+              mtu 9000
+          # storage is unrouted, so no gateway.
+      notify: Reload network
 
 - name: Read the Proxmox users, roles and ACLs
   ansible.builtin.command: pveum {{ item }} list --output-format json
