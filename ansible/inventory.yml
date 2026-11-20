@@ -33,6 +33,11 @@ local:
       ansible_user: root
       ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
       services: [whoami, metube, sts, copyparty]
+    nuc-svc:
+      # The Docker LXC on pve-nuc, created by playbooks/pve.yaml.
+      ansible_user: root
+      ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
+      services: []
 
 # OS groups
 debian:
@@ -41,6 +46,7 @@ debian:
     pve-nuc:
     pve-nas:
     nas-svc:
+    nuc-svc:
 
 # Functional groups
 pve:

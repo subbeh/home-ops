@@ -1,0 +1,21 @@
+---
+# Read by ansible/playbooks/pve.yaml. Names only, never IPs: addresses come from
+# group_vars/all/network.yaml.
+
+# The Docker LXC Host, created by roles/pve. vmid is <vlan><host number> of its servers address.
+pve_lxc:
+  hostname: nuc-svc
+  vmid: 2031
+  # Half of pve-nuc's 4c/8t and 16 GB, leaving room for a VM next to it.
+  cores: 4
+  memory: 8192
+  # local-lvm is the installer's default thin pool on the NVMe (ext4 install).
+  disk: local-lvm:20
+  # Applied with pct set on every run, so a change reaches the existing container; each must
+  # read back the same in `pct config`. mp0's Host directory is created owned by the container's
+  # root (uid 100000 on the Host).
+  options:
+    features: nesting=1
+    # shortcut: on the root fs (85G free) since pve-nuc has no data pool, move it to an LV from
+    # local-lvm when it fills.
+    mp0: /var/lib/app_data/nuc-svc,mp={{ services_data_dir }}

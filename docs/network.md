@@ -52,6 +52,7 @@ A MAC makes the address a DHCP reservation on OPNsense; the rest are static on t
 | k8s-opti-01 | 10.11.20.22 | k8s-opti-01.servers.home.sbbh.cloud, k8s-opti-01.home.sbbh.cloud |  |
 | k8s-opti-02 | 10.11.20.23 | k8s-opti-02.servers.home.sbbh.cloud, k8s-opti-02.home.sbbh.cloud |  |
 | nas-svc | 10.11.20.30 | nas-svc.servers.home.sbbh.cloud, nas-svc.home.sbbh.cloud |  |
+| nuc-svc | 10.11.20.31 | nuc-svc.servers.home.sbbh.cloud, nuc-svc.home.sbbh.cloud |  |
 
 ### clients
 

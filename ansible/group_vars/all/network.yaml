@@ -49,6 +49,7 @@ networks:
       k8s-opti-01: 10.11.20.22
       k8s-opti-02: 10.11.20.23
       nas-svc: 10.11.20.30
+      nuc-svc: 10.11.20.31
 
   clients:
     description: Personal devices, and SSID ST

@@ -1,7 +1,7 @@
 ---
 # Base setup shared by every Debian and Ubuntu Host: the core packages in group_vars/debian.yaml.
 # From the laptop only, `--check --diff` first; never Auto-deployed. Needs the mise env
-# (BWS_ACCESS_TOKEN). nas-svc needs a pve.yaml run first, which installs its Python.
+# (BWS_ACCESS_TOKEN). nas-svc and nuc-svc need a pve.yaml run first, which installs their Python.
 - name: Configure Hosts
   hosts: debian
   pre_tasks:

@@ -31,8 +31,8 @@
       when: pve_lxc is defined
 
 # Docker from Docker's apt repo, plus the Python SDK the services role checks for.
-- name: Install Docker in nas-svc
-  hosts: nas-svc
+- name: Install Docker in the LXC Hosts
+  hosts: nas-svc:nuc-svc
   gather_facts: false
   tasks:
     # The Debian template may lack Python, which every other module needs.
