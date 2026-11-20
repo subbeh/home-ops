@@ -22,6 +22,9 @@ local:
       ansible_host: opnsense.sbbh.cloud
       # Configured through its API from the controller, never over SSH.
       ansible_connection: local
+    pve-nuc:
+      # Its servers address in group_vars/all/network.yaml.
+      ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
     pve-nas:
       # Its servers address in group_vars/all/network.yaml.
       ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
@@ -35,12 +38,14 @@ local:
 debian:
   hosts:
     vps:
+    pve-nuc:
     pve-nas:
     nas-svc:
 
 # Functional groups
 pve:
   hosts:
+    pve-nuc:
     pve-nas:
 
 vm:

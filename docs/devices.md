@@ -14,7 +14,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 | [opnsense](#opnsense) | router | Topton N5105 | 1 | yes | N5105 4c/4t, 16 GB, 256 GB NVMe |
 | [jetkvm](#jetkvm) | kvm | JetKVM | 2 |  |  |
 | [kvm-switch](#kvm-switch) | kvm-switch | Steetek 8 Port HDMI KVM Switch | 3 |  |  |
-| [pve-nuc](#pve-nuc) | server | Intel NUC 8 | 4 |  | i5-8259U 4c/8t, 16 GB, 1 TB NVMe |
+| [pve-nuc](#pve-nuc) | server | Intel NUC 8 | 4 | yes | i5-8259U 4c/8t, 16 GB, 1 TB NVMe |
 | [switch-2g5](#switch-2g5) | switch | Horaco 5 Port 2.5GbE | 4 |  |  |
 | [k8s-nuc](#k8s-nuc) | server | Intel NUC 12 Pro | 5 |  | i7-1260P 12c/16t, 64 GB, 512 GB SSD, 512 GB NVMe |
 | [keystone](#keystone) | patch-panel |  | 5 |  |  |
@@ -74,7 +74,7 @@ From [`ansible/group_vars/all/devices.yaml`](../ansible/group_vars/all/devices.y
 
 | Port | Kind | Speed | MAC | Peer |
 |---|---|---|---|---|
-| eth | ethernet | 1G |  | unifi-switch:11 via patch-panel:8 |
+| eth | ethernet | 1G | 94:c6:91:a5:37:5b | unifi-switch:11 via patch-panel:8 |
 | hdmi | hdmi |  |  | kvm-switch:2-hdmi |
 | usb | usb |  |  | kvm-switch:2-usb |
 

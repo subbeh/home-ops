@@ -59,13 +59,12 @@ devices:
       out-usb: {kind: usb}
 
   pve-nuc:
-    monitor: false  # until the Host is set up, then drop this
     kind: server
     model: Intel NUC 8
     rack: 4
     specs: {cpu: i5-8259U 4c/8t, memory: 16 GB, disks: [1 TB NVMe]}
     ports:
-      eth: {kind: ethernet, speed: 1G, mac: ""}
+      eth: {kind: ethernet, speed: 1G, mac: "94:c6:91:a5:37:5b"}
       hdmi: {kind: hdmi}
       usb: {kind: usb}
 
