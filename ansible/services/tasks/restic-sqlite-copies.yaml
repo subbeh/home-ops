@@ -1,0 +1,15 @@
+---
+# Copies every live SQLite db at :55, so restic's backup on the hour holds a consistent copy of
+# each; see restic.yaml and docs/runbooks/restore-backup.md#restore-a-sqlite-db. On the Host, as
+# root: restic-backup's image has no sqlite3, and it mounts /opt/data read-only, which can't
+# safely read a WAL-mode db that is being written to.
+- name: restic | Install sqlite3
+  ansible.builtin.apt:
+    name: sqlite3
+    cache_valid_time: 3600
+
+- name: restic | Copy SQLite dbs hourly
+  ansible.builtin.cron:
+    name: restic sqlite copies
+    minute: "55"
+    job: /usr/local/sbin/restic-sqlite-copies 2>&1 | logger -t restic-sqlite-copies

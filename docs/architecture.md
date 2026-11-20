@@ -50,6 +50,7 @@ Each Service keeps its state in `/opt/data/<service>` (`services_data_dir`), own
 
 restic backs up all of `/opt/data` and `/opt/workspace` every hour, on the hour, to a dedicated Hetzner Storage Box sub-account over SFTP (`ansible/services/restic.yaml`). It excludes restic's own SSH key.
 
+- **SQLite**: at :55 a root cron on the Host writes a consistent copy of every SQLite db under `/opt/data` to `/opt/data/restic/sqlite`, since a plain file copy can tear a db in WAL mode. Its own Gatus heartbeat alerts when a copy fails; restoring one: [runbooks/restore-backup.md](runbooks/restore-backup.md#restore-a-sqlite-db).
 - **Retention**: forget runs after every backup, treats all snapshots as one group (the container's hostname changes on every recreate), and keeps 12 hourly, 7 daily, 4 weekly and 6 monthly snapshots.
 - **Prune**: daily at 04:30, in its own container.
 - **Check**: monthly, reading 5% of the data, in its own container.

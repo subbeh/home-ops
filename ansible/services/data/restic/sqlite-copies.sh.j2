@@ -1,0 +1,39 @@
+#!/bin/bash
+# Writes a consistent copy of every live SQLite db under {{ services_data_dir }} to
+# {{ services_data_dir }}/restic/sqlite, for restic's backup on the hour: a plain file copy can catch
+# a WAL-mode db and its -wal at different moments. Runs as root, from restic.yaml's post-task cron.
+set -uo pipefail
+
+data={{ services_data_dir }}
+out=$data/restic/sqlite
+failed=()
+
+# Rebuilt each run, so a removed db's copy goes too; older copies stay in earlier snapshots.
+rm -rf "$out.new"
+mkdir -p "$out.new"
+
+# Leaves out the copies themselves, synced files (any archives in them are not live) and the
+# NSS cert stores Chromium keeps under each Hermes home.
+while IFS= read -r -d '' db; do
+  rel=${db#"$data"/}
+  header=$(head -c 15 "$db" | tr -d '\0') || { failed+=("$rel"); continue; }
+  [[ $header == "SQLite format 3" ]] || continue
+  dest=$out.new/$rel
+  mkdir -p "$(dirname "$dest")"
+  # The online backup API reads one snapshot of the db and its -wal. As root, SQLite gives any
+  # -shm or -wal it creates the db file's owner.
+  sqlite3 -cmd ".timeout 30000" "$db" ".backup '$dest'" || { rm -f "$dest"; failed+=("$rel"); }
+done < <(find "$data" -xdev \( -path "$out" -o -path "$out.new" -o -path "$data/syncthing/data" -o -name .pki \) -prune \
+  -o -type f \( -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' \) -print0)
+
+rm -rf "$out"
+mv "$out.new" "$out"
+
+if [[ ${failed[*]} ]]; then
+  echo "sqlite copies failed: ${failed[*]}" >&2
+  query="success=false&error=$(jq -rn --arg e "copy failed: ${failed[*]}" '$e|@uri')"
+else
+  query="success=true"
+fi
+curl -fsS -X POST -H "Authorization: Bearer {{ bws_secrets.GATUS_EXTERNAL_TOKEN }}" \
+  "https://status.{{ services_domain }}/api/v1/endpoints/backups_sqlite-copies/external?$query"

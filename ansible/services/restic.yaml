@@ -24,6 +24,19 @@ restic:
           - type: pushover
             description: "restic hourly backup hasn't checked in"
             send-on-resolved: true
+      # The SQLite copies before each backup push here; see tasks/restic-sqlite-copies.yaml.
+      - name: sqlite-copies
+        group: backups
+        token: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
+        heartbeat:
+          interval: 1h
+        alerts:
+          - type: pushover
+            description: "SQLite copies before the restic backup failed or didn't run"
+            send-on-resolved: true
+
+  tasks:
+    post: [restic-sqlite-copies.yaml]
 
   files:
     - dest: "{{ services_data_dir }}/restic/ssh/id_ed25519"
@@ -45,6 +58,10 @@ restic:
           StrictHostKeyChecking accept-new
           UserKnownHostsFile /run/secrets/.ssh/known_hosts
       mode: "0600"
+    # Outside the data dir: root's cron runs it, so the apps user must not be able to replace it.
+    - dest: /usr/local/sbin/restic-sqlite-copies
+      src: restic/sqlite-copies.sh.j2
+      mode: "0700"
 
   containers:
     # BACKUP_CRON, PRUNE_CRON and CHECK_CRON are mutually exclusive within one
@@ -61,8 +78,9 @@ restic:
         RESTIC_REPOSITORY: sftp:storagebox:restic/vps
         RESTIC_PASSWORD: "{{ restic_password }}"
         RESTIC_BACKUP_SOURCES: /data /workspace
-        # Excludes this service's own ssh key/known_hosts from the backup.
-        RESTIC_BACKUP_ARGS: "--one-file-system --exclude-caches --exclude /data/restic"
+        # Excludes this service's own ssh key/known_hosts from the backup, but keeps the SQLite
+        # copies in /data/restic/sqlite.
+        RESTIC_BACKUP_ARGS: "--one-file-system --exclude-caches --exclude /data/restic/ssh"
         # Forget is cheap and runs after every backup; restic-prune reclaims the space.
         # --group-by tags: no snapshot has tags, so the keep rules span the whole repo. The
         # default (host,paths) splits it, as the hostname changes whenever the container is recreated.
