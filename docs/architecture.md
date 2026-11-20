@@ -16,7 +16,7 @@ covers:
 
 ## Hosts
 
-Services run on `vps` and on `nas-svc` at home; see [hosts.md](hosts.md). The inventory groups Hosts by location (`remote`, `local`), OS (`debian`) and function (`pve`, `vm`, `k8s`). The function groups are empty placeholders. Services are assigned to individual Hosts only, through `services:` in host vars.
+Services run on `vps` and, at home, on the Docker LXCs `nas-svc` (on pve-nas) and `nuc-svc` (on pve-nuc); see [hosts.md](hosts.md). The inventory groups Hosts by location (`remote`, `local`), OS (`debian`) and function (`pve`, `vm`, `k8s`). `pve` holds the Proxmox Hosts; `vm` and `k8s` are empty placeholders. Services are assigned to individual Hosts only, through `services:` in host vars.
 
 ## Network, DNS and TLS
 

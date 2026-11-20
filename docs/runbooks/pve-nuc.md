@@ -24,6 +24,4 @@ The only way in until Proxmox is up is the console: kvm-switch input 2 (pve-nuc 
 
 ## Hand-over
 
-The runbook ends here. `ansible/playbooks/pve.yaml` takes over: packages, Cockpit, SSH settings and the API user. It also creates nuc-svc, the Docker LXC (`pve_lxc` in `ansible/host_vars/pve-nuc.yaml`). pve-nuc has no storage address or NFS exports, so the playbook skips those. Don't set any of it by hand.
-
-Then join the cluster by hand, from pve-nas's runbook: [Form the cluster](pve-nas.md#5-form-the-cluster).
+The runbook ends here. Join the cluster by hand first ([pve-cluster.md](pve-cluster.md)): joining needs pve-nuc empty. Then `ansible/playbooks/pve.yaml` takes over: packages, SSH settings, the API user and nuc-svc, the Docker LXC (`pve_lxc` in `ansible/host_vars/pve-nuc.yaml`). pve-nuc has no storage address, data pools or NFS exports, so the playbook skips the storage bridge, Cockpit and the exports. Don't set any of it by hand.

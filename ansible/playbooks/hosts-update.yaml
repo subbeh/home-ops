@@ -6,7 +6,8 @@
 # shortcut: Debian family only, add a play per OS family when a Host of another one needs updates.
 - name: Update Debian Hosts
   hosts: debian
-  # One Host at a time: rebooting pve-nas mid-play would take nas-svc, its LXC, down with it.
+  # One Host at a time: rebooting a Proxmox Host mid-play would take its LXC (nas-svc, nuc-svc)
+  # down with it, and while pve-nas reboots pve-nuc's /etc/pve is read-only.
   serial: 1
   # The vps, which runs Semaphore, is listed first in inventory.yml: reversed, it updates last, so
   # its delayed reboot can't kill a Semaphore task still working on another Host.
