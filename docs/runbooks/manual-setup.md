@@ -23,7 +23,7 @@ Secrets reach Secrets Manager through `.bws.yaml`: each key points at a vault it
 - [x] `SEMAPHORE_BWS_ACCESS_TOKEN`: Secrets Manager → Machine accounts → New (`semaphore`) → Projects: Can read on the Service secrets → Access tokens → Create.
 - [x] `TAILSCALE_TERRAFORM_OAUTH_CLIENT_ID` / `_SECRET`: see Tailscale below.
 - [x] `SEMAPHORE_API_TOKEN`: see Semaphore below.
-- [ ] `SEMAPHORE_SSH_PUBLIC_KEY`: the public half of the SSH key in Semaphore's Key Store, which `playbooks/hosts.yaml` authorizes on every Debian Host.
+- [x] `SEMAPHORE_SSH_PUBLIC_KEY`: the public half of the SSH key in Semaphore's Key Store, which `playbooks/hosts.yaml` authorizes on every Debian Host.
 
 ## Tailscale
 

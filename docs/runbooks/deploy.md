@@ -55,7 +55,7 @@ just ansible::playbook hosts
 
 ## Host updates
 
-`playbooks/hosts-update.yaml` runs `apt` update, dist-upgrade and autoremove on every Host in the `debian` group, one Host at a time with the vps last, and reboots a Host only when `/var/run/reboot-required` exists. The vps runs Semaphore, so it gets `shutdown -r +1` instead of a waited-on reboot, and the task ends green before the vps goes down. The upgrade runs detached from SSH, so it finishes even when upgrading docker-ce restarts the Semaphore container mid-task; that task ends red, so re-run it or check Gatus. Other OS families aren't covered yet. Nothing schedules it: start the Semaphore template `hosts-update` (pick a Host under Limit), or run it from the laptop. Gatus alerts if an update breaks a Service.
+`playbooks/hosts-update.yaml` runs `apt` update, dist-upgrade and autoremove on every Host in the `debian` group, one Host at a time with the vps last, and reboots a Host only when `/var/run/reboot-required` exists (Ubuntu's update-notifier creates it) or `/boot` holds a newer kernel than the running one (nothing creates that file on Debian). LXCs have no kernel of their own, so they never reboot for one. The vps runs Semaphore, so it gets `shutdown -r +1` instead of a waited-on reboot, and the task ends green before the vps goes down. The upgrade runs detached from SSH, so it finishes even when upgrading docker-ce restarts the Semaphore container mid-task; that task ends red, so re-run it or check Gatus. Other OS families aren't covered yet. Nothing schedules it: start the Semaphore template `hosts-update` (pick a Host under Limit), or run it from the laptop. Gatus alerts if an update breaks a Service.
 
 ```sh
 just ansible::playbook hosts-update --limit vps --check --diff

@@ -25,18 +25,26 @@
         upgrade: dist
         autoremove: true
 
+    # Ubuntu's update-notifier creates /var/run/reboot-required, but nothing on Debian does
+    # (reboot-notifier would pull in an MTA), so a kernel newer than the running one counts too.
+    # LXCs have no kernel in /boot, so they never reboot for one. Exits 0 when a reboot is due.
     - name: Check whether a reboot is required
-      ansible.builtin.stat:
-        path: /var/run/reboot-required
+      ansible.builtin.shell: >-
+        test -e /var/run/reboot-required ||
+        { k=$(ls /boot/vmlinuz-* 2>/dev/null | sort -V | tail -1);
+        [ -n "$k" ] && [ "$k" != "/boot/vmlinuz-$(uname -r)" ]; }
       register: reboot_required
+      changed_when: false
+      failed_when: false
+      check_mode: false
 
     - name: Reboot
       ansible.builtin.reboot:
-      when: reboot_required.stat.exists and 'semaphore' not in services | default([])
+      when: reboot_required.rc == 0 and 'semaphore' not in services | default([])
 
     # Semaphore runs on this Host, so rebooting now would kill the task running this playbook.
     # Schedule it a minute out instead and let the task end green; Gatus reports if it stays down.
     - name: Schedule a reboot in a minute
       ansible.builtin.command: shutdown -r +1
-      when: reboot_required.stat.exists and 'semaphore' in services | default([])
+      when: reboot_required.rc == 0 and 'semaphore' in services | default([])
       changed_when: true
