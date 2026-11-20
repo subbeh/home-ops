@@ -85,11 +85,12 @@
         mode: "0644"
         content: ""
 
+# Its packages by name, not autoremove: that would also take any other auto-installed package,
+# old proxmox-kernel-* versions included.
 - name: Remove Cockpit from a Host without data pools
   ansible.builtin.apt:
-    name: [cockpit, cockpit-files]
+    name: [cockpit, cockpit-files, cockpit-system, cockpit-bridge, cockpit-ws]
     state: absent
-    autoremove: true
   when: nfs_exports is not defined
 
 # shortcut: powersave assumes the intel_pstate driver, where it scales with load; under
