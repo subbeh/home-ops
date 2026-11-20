@@ -83,8 +83,41 @@ lsblk -f                      # every data disk and partition still matches the 
 
 Look at a few files in each mount to see the data is there. Then reboot and run the checks again: the pools and the fstab mount must come back by themselves.
 
+## 5. Form the cluster
+
+Once pve-nuc runs Proxmox ([pve-nuc.md](pve-nuc.md)), the two form one cluster, once, by hand: the pve playbook doesn't create, join or check it. corosync runs over servers, since pve-nuc has no storage Port. pve-nas gets 2 votes and pve-nuc 1, so pve-nas stays quorate on its own and a pve-nuc outage costs nothing.
+
+pve-nuc must hold no guests, since joining replaces its `/etc/pve` with the cluster's. Its Proxmox users go too, but pve-nas has the same API user.
+
+On pve-nas:
+
+```sh
+pvecm create home-ops --link0 10.11.20.11
+```
+
+On pve-nuc:
+
+```sh
+pvecm add 10.11.20.11 --link0 10.11.20.10
+```
+
+The join goes through pve-nas's API: it asks for pve-nas's root password and to confirm its certificate fingerprint, so SSH password logins stay off.
+
+Then on pve-nas, give it its second vote. `corosync.conf` is shared by both nodes and applies as soon as it changes, so edit a copy inside `/etc/pve` and move it into place:
+
+```sh
+cp /etc/pve/corosync.conf /root/corosync.conf.bak
+cp /etc/pve/corosync.conf /etc/pve/corosync.conf.new
+# in the copy: set quorum_votes: 2 in pve-nas's node block, and raise totem's config_version by 1
+mv /etc/pve/corosync.conf.new /etc/pve/corosync.conf
+```
+
+Check on both nodes: `pvecm status` shows `Quorate: Yes`, `Expected votes: 3` and `Total votes: 3`, with pve-nas at 2 votes.
+
+While pve-nas is down, pve-nuc's `/etc/pve` is read-only: its guests keep running, but none can be started or changed until `pvecm expected 1` on pve-nuc. A rebuilt pve-nuc rejoins the same way, after `pvecm delnode pve-nuc` on pve-nas.
+
 ## Hand-over
 
-The runbook ends here. The pve-nas Ansible playbook (a separate task) takes over: the storage NIC, packages, users, SSH settings, NFS exports and the cluster. Don't set those by hand.
+The runbook ends here. The pve-nas Ansible playbook (a separate task) takes over: the storage NIC, packages, users, SSH settings and NFS exports. Don't set those by hand.
 
 To browse and edit the pools from a browser, open Cockpit's Files app at `https://pve-nas.home.sbbh.cloud:9090` and log in as root with the Proxmox UI's password. The playbook installs it on the Host rather than in nas-svc: the pools hold files owned by root, 1000, 2000 and 2001, and nas-svc's unprivileged idmap would show most of them as `nobody`.
