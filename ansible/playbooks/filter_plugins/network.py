@@ -188,10 +188,11 @@ def gatus_endpoints(networks, devices):
 def ingress_routes(hostvars, hosts, services_configs, networks):
     """A route per Service with an `ingress:` port assigned to one of hosts: the home ingress
     (HAProxy on OPNsense) forwards <service>.<ingress_domain> to that port on the Host's servers
-    address. An assigned Service without a file is skipped: a private one's is only in the main
-    checkout."""
+    address, and Gatus checks its `check` path (default the root). An assigned Service without a
+    file is skipped: a private one's is only in the main checkout."""
     routes = [{"service": name, "address": networks["servers"]["addresses"][host],
-               "port": services_configs[name]["ingress"]["port"]}
+               "port": services_configs[name]["ingress"]["port"],
+               "check": services_configs[name]["ingress"].get("check", "")}
               for host in hosts
               for name in hostvars[host].get("services") or []
               if "ingress" in (services_configs.get(name) or {})]
@@ -204,7 +205,7 @@ def ingress_routes(hostvars, hosts, services_configs, networks):
 def ingress_gatus_endpoints(routes, domain, resolver):
     """An HTTPS Gatus endpoint per ingress route. The names have no public record, so Gatus asks
     OPNsense's Unbound at resolver."""
-    return [{"name": r["service"], "group": "ingress", "url": f"https://{r['service']}.{domain}",
+    return [{"name": r["service"], "group": "ingress", "url": f"https://{r['service']}.{domain}{r['check']}",
              "client": {"dns-resolver": f"tcp://{resolver}:53"}, "conditions": ["[STATUS] == 200"],
              "alerts": [{"type": "pushover", "send-on-resolved": True}]}
             for r in routes]

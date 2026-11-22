@@ -12,9 +12,12 @@ crawl4ai:
 
   no_log: true
 
-  # HAProxy on OPNsense forwards crawl4ai.<ingress_domain> to this published port.
+  # HAProxy on OPNsense forwards crawl4ai.<ingress_domain> to this published port. Gatus checks
+  # /health, the one keyless route that answers 200: / redirects to an http:// URL, since HAProxy
+  # sends no X-Forwarded-Proto.
   ingress:
     port: 11235
+    check: /health
 
   containers:
     - image: unclecode/crawl4ai:0.9.5
