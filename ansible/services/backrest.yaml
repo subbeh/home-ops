@@ -5,7 +5,7 @@
 #
 # One-time setup in the UI (https://backups.vps.sbbh.cloud):
 #   1. Create the login user on first launch.
-#   2. Add Repo: URI sftp:storagebox:restic/vps, password left empty, env var
+#   2. Add Repo: URI sftp:storagebox:vps, password left empty, env var
 #      RESTIC_PASSWORD=${RESTIC_VPS_PASSWORD} (expanded from this container's env, so the
 #      password stays out of config.json), SFTP fields empty. Auto-initialize and
 #      auto-unlock off; prune and check schedules Disabled, since resticker runs them.

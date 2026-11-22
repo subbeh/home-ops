@@ -1,6 +1,6 @@
 ---
 # Backs up each Host's /opt/data (and the synced workspace, where syncthing runs) to two
-# repositories of its own: sftp:storagebox:restic/<host>, on one dedicated Hetzner Storage Box
+# repositories of its own: sftp:storagebox:<host>, on one dedicated Hetzner Storage Box
 # sub-account, and sftp:nas:/<host>, in pve-nas's restic chroot (restic_sftp in host_vars), both over
 # SFTP, using mazzolino/restic (https://github.com/djmaze/resticker). Create the sub-account in the
 # Hetzner Robot console (keep it separate from the laptop's); its login, SSH key and the
@@ -14,7 +14,7 @@ restic:
   vars:
     # One password for every repository.
     restic_password: "{{ bws_secrets.RESTIC_PASSWORD }}"
-    restic_repository: sftp:storagebox:restic/{{ inventory_hostname }}
+    restic_repository: sftp:storagebox:{{ inventory_hostname }}
     # pve-nas's copy.
     restic_nas_repository: sftp:nas:/{{ inventory_hostname }}
     # Gatus runs on the vps. There, the container reaches it over the services network; the home

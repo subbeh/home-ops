@@ -7,7 +7,7 @@ covers:
 ---
 # Restore Service data from restic
 
-Each Host restic runs on has its own repository, `sftp:storagebox:restic/<host>` (`vps`, `nas-svc`, `nuc-svc`), all on one Hetzner Storage Box sub-account. Its credentials are in Bitwarden Secrets Manager: `RESTIC_SSH_USER` and `RESTIC_SSH_KEY` for the sub-account, and `RESTIC_PASSWORD`, the one password of every repository. Each Host also has a second repository on pve-nas, `sftp:nas:/<host>`, written at :15 by `restic-nas-backup`. It holds the same data, so restore from it when the Storage Box is out of reach: use `restic-nas-backup` and `sftp:nas:/<host>` in place of `restic-backup` and the Storage Box repository below. Run the commands on the Host whose data you restore. Snapshot paths start with `/data/`, which is `/opt/data` on the Host (e.g. `/data/karakeep`), or, on the vps, `/workspace/`, which is `/opt/workspace`. Snapshots from before the workspace moved hold it at `/data/syncthing/data/workspace`.
+Each Host restic runs on has its own repository, `sftp:storagebox:<host>` (`vps`, `nas-svc`, `nuc-svc`), all on one Hetzner Storage Box sub-account. Its credentials are in Bitwarden Secrets Manager: `RESTIC_SSH_USER` and `RESTIC_SSH_KEY` for the sub-account, and `RESTIC_PASSWORD`, the one password of every repository. Each Host also has a second repository on pve-nas, `sftp:nas:/<host>`, written at :15 by `restic-nas-backup`. It holds the same data, so restore from it when the Storage Box is out of reach: use `restic-nas-backup` and `sftp:nas:/<host>` in place of `restic-backup` and the Storage Box repository below. Run the commands on the Host whose data you restore. Snapshot paths start with `/data/`, which is `/opt/data` on the Host (e.g. `/data/karakeep`), or, on the vps, `/workspace/`, which is `/opt/workspace`. Snapshots from before the workspace moved hold it at `/data/syncthing/data/workspace`.
 
 > TODO(you): none of the restore commands below have been run end to end yet. Run them once against a test path and fix this page.
 
@@ -29,7 +29,7 @@ docker exec restic-backup restic ls latest /data/<service>
 
    ```sh
    docker run --rm --entrypoint restic \
-     -e RESTIC_REPOSITORY=sftp:storagebox:restic/<host> \
+     -e RESTIC_REPOSITORY=sftp:storagebox:<host> \
      -e RESTIC_PASSWORD="$(bws secret list -o json | jq -r '.[] | select(.key=="RESTIC_PASSWORD").value')" \
      -v /opt/data/restic/ssh:/run/secrets/.ssh \
      -v /opt/data/restic/ssh/config:/root/.ssh/config:ro \
