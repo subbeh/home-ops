@@ -1,39 +1,27 @@
 ---
-# Backs up /opt/data and the synced workspace to a dedicated Hetzner Storage Box
-# sub-account over SFTP, using mazzolino/restic (https://github.com/djmaze/resticker).
-# Create the sub-account in the Hetzner Robot console (keep it separate from the
-# laptop's); its login, SSH key and the repository password reach Secrets Manager
-# through the dotfiles bws sync.
+# Backs up each Host's /opt/data (and the synced workspace, where syncthing runs) to two
+# repositories of its own: sftp:storagebox:restic/<host>, on one dedicated Hetzner Storage Box
+# sub-account, and sftp:nas:/<host>, in pve-nas's restic chroot (restic_sftp in host_vars), both over
+# SFTP, using mazzolino/restic (https://github.com/djmaze/resticker). Create the sub-account in the
+# Hetzner Robot console (keep it separate from the laptop's); its login, SSH key and the
+# repositories' password reach Secrets Manager through the dotfiles bws sync. Each Host pushes to
+# its heartbeats in gatus.yaml's backups.yaml, so a new Host needs a gatus Deploy too.
 restic:
   description: Hourly encrypted backups of /opt/data and the workspace to a Hetzner Storage Box
 
   no_log: true
 
   vars:
-    restic_password: "{{ bws_secrets.RESTIC_VPS_PASSWORD }}"
-
-  # Dead-man's switch: restic-backup's POST_COMMANDS push here after every run.
-  gatus:
-    external-endpoints:
-      - name: restic-backup
-        group: backups
-        token: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
-        heartbeat:
-          interval: 1h
-        alerts:
-          - type: pushover
-            description: "restic hourly backup hasn't checked in"
-            send-on-resolved: true
-      # The SQLite copies before each backup push here; see tasks/restic-sqlite-copies.yaml.
-      - name: sqlite-copies
-        group: backups
-        token: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
-        heartbeat:
-          interval: 1h
-        alerts:
-          - type: pushover
-            description: "SQLite copies before the restic backup failed or didn't run"
-            send-on-resolved: true
+    # One password for every repository.
+    restic_password: "{{ bws_secrets.RESTIC_PASSWORD }}"
+    restic_repository: sftp:storagebox:restic/{{ inventory_hostname }}
+    # pve-nas's copy.
+    restic_nas_repository: sftp:nas:/{{ inventory_hostname }}
+    # The workspace only exists where syncthing syncs it.
+    restic_workspace: "{{ 'syncthing' in services }}"
+    # Gatus runs on the vps. There, the container reaches it over the services network; the home
+    # Hosts go through OPNsense to its tailnet address (Unbound override and NAT in opnsense.md).
+    restic_gatus_url: "{{ 'http://gatus:8080' if 'gatus' in services else 'https://status.' ~ hostvars['vps'].services_domain }}"
 
   tasks:
     post: [restic-sqlite-copies.yaml]
@@ -41,14 +29,19 @@ restic:
   files:
     - dest: "{{ services_data_dir }}/restic/ssh/id_ed25519"
       # OpenSSH rejects a private key without its trailing newline.
-      content: "{{ bws_secrets.RESTIC_VPS_SSH_KEY | trim }}\n"
+      content: "{{ bws_secrets.RESTIC_SSH_KEY | trim }}\n"
       mode: "0600"
     - dest: "{{ services_data_dir }}/restic/ssh/config"
       content: |
         Host storagebox
-          HostName {{ bws_secrets.RESTIC_VPS_SSH_USER }}.your-storagebox.de
-          User {{ bws_secrets.RESTIC_VPS_SSH_USER }}
+          HostName {{ bws_secrets.RESTIC_SSH_USER }}.your-storagebox.de
+          User {{ bws_secrets.RESTIC_SSH_USER }}
           Port 23
+        # pve-nas, by address: the vps reaches it over the tailnet route.
+        Host nas
+          HostName {{ networks.servers.addresses['pve-nas'] }}
+          User restic
+        Host *
           IdentityFile /run/secrets/.ssh/id_ed25519
           IdentitiesOnly yes
           # No password fallback: every failed login counts towards the Storage Box's IP block.
@@ -70,14 +63,13 @@ restic:
     # lock, so they start at :30, clear of the hourly backup at :00.
     - name: restic-backup
       image: mazzolino/restic:1.8.2@sha256:685293a0bc77eb054b74b207561e7d2eda6cfc910984c5a93db8f253055118e2
-      volumes:
-        - "/opt/data:/data:ro"
-        - "{{ services_workspace_dir }}:/workspace:ro"
-        - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
+      volumes: >-
+        {{ ['/opt/data:/data:ro', services_data_dir ~ '/restic/ssh:/run/secrets/.ssh']
+           + ([services_workspace_dir ~ ':/workspace:ro'] if restic_workspace else []) }}
       env:
-        RESTIC_REPOSITORY: sftp:storagebox:restic/vps
+        RESTIC_REPOSITORY: "{{ restic_repository }}"
         RESTIC_PASSWORD: "{{ restic_password }}"
-        RESTIC_BACKUP_SOURCES: /data /workspace
+        RESTIC_BACKUP_SOURCES: "/data{{ ' /workspace' if restic_workspace else '' }}"
         # Excludes this service's own ssh key/known_hosts from the backup, but keeps the SQLite
         # copies in /data/restic/sqlite.
         RESTIC_BACKUP_ARGS: "--one-file-system --exclude-caches --exclude /data/restic/ssh"
@@ -87,22 +79,45 @@ restic:
         RESTIC_FORGET_ARGS: "--group-by tags --keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
         # go-cron, with a leading seconds field: every hour, on the hour.
         BACKUP_CRON: "0 0 * * * *"
-        # Gatus's dead-man's-switch for this schedule; see `gatus:` above.
+        # Gatus's dead-man's-switch for this schedule, in gatus.yaml's backups.yaml.
         GATUS_TOKEN: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
+        GATUS_URL: "{{ restic_gatus_url }}/api/v1/endpoints/backups_restic-backup-{{ inventory_hostname }}/external"
         # "|| true": this runs under `set -e`, and a failed push must never be able
         # to stop the script before it clears /run/lock/backup.lock, or every run
         # after a Gatus hiccup silently skips as "already running" forever.
         POST_COMMANDS_SUCCESS: |-
-          curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "http://gatus:8080/api/v1/endpoints/backups_restic-backup/external?success=true" || true
+          curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "${GATUS_URL}?success=true" || true
         POST_COMMANDS_FAILURE: |-
-          curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "http://gatus:8080/api/v1/endpoints/backups_restic-backup/external?success=false&error=backup+failed" || true
+          curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "${GATUS_URL}?success=false&error=backup+failed" || true
+
+    # The second copy, on pve-nas: at :15, clear of the backup to the Storage Box. Forget prunes
+    # right away, since prune is cheap on a local disk, so it needs no prune container.
+    - name: restic-nas-backup
+      image: mazzolino/restic:1.8.2@sha256:685293a0bc77eb054b74b207561e7d2eda6cfc910984c5a93db8f253055118e2
+      volumes: >-
+        {{ ['/opt/data:/data:ro', services_data_dir ~ '/restic/ssh:/run/secrets/.ssh']
+           + ([services_workspace_dir ~ ':/workspace:ro'] if restic_workspace else []) }}
+      env:
+        RESTIC_REPOSITORY: "{{ restic_nas_repository }}"
+        RESTIC_PASSWORD: "{{ restic_password }}"
+        RESTIC_BACKUP_SOURCES: "/data{{ ' /workspace' if restic_workspace else '' }}"
+        RESTIC_BACKUP_ARGS: "--one-file-system --exclude-caches --exclude /data/restic/ssh"
+        RESTIC_FORGET_ARGS: "--prune --group-by tags --keep-hourly 12 --keep-daily 7 --keep-weekly 4 --keep-monthly 6"
+        BACKUP_CRON: "0 15 * * * *"
+        GATUS_TOKEN: "{{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
+        GATUS_URL: "{{ restic_gatus_url }}/api/v1/endpoints/backups_restic-nas-backup-{{ inventory_hostname }}/external"
+        # "|| true": see restic-backup.
+        POST_COMMANDS_SUCCESS: |-
+          curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "${GATUS_URL}?success=true" || true
+        POST_COMMANDS_FAILURE: |-
+          curl -fsS -X POST -H "Authorization: Bearer ${GATUS_TOKEN}" "${GATUS_URL}?success=false&error=backup+failed" || true
 
     - name: restic-prune
       image: mazzolino/restic:1.8.2@sha256:685293a0bc77eb054b74b207561e7d2eda6cfc910984c5a93db8f253055118e2
       volumes:
         - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
       env:
-        RESTIC_REPOSITORY: sftp:storagebox:restic/vps
+        RESTIC_REPOSITORY: "{{ restic_repository }}"
         RESTIC_PASSWORD: "{{ restic_password }}"
         SKIP_INIT: "true"
         PRUNE_CRON: "0 30 4 * * *"
@@ -112,9 +127,21 @@ restic:
       volumes:
         - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
       env:
-        RESTIC_REPOSITORY: sftp:storagebox:restic/vps
+        RESTIC_REPOSITORY: "{{ restic_repository }}"
         RESTIC_PASSWORD: "{{ restic_password }}"
         # Only restic-backup is allowed to initialize the repository.
         SKIP_INIT: "true"
         RESTIC_CHECK_ARGS: "--read-data-subset=5%"
         CHECK_CRON: "0 30 5 1 * *"
+
+    - name: restic-nas-check
+      image: mazzolino/restic:1.8.2@sha256:685293a0bc77eb054b74b207561e7d2eda6cfc910984c5a93db8f253055118e2
+      volumes:
+        - "{{ services_data_dir }}/restic/ssh:/run/secrets/.ssh"
+      env:
+        RESTIC_REPOSITORY: "{{ restic_nas_repository }}"
+        RESTIC_PASSWORD: "{{ restic_password }}"
+        SKIP_INIT: "true"
+        RESTIC_CHECK_ARGS: "--read-data-subset=5%"
+        # An hour after restic-check, at :30 like it, clear of both backups.
+        CHECK_CRON: "0 30 6 1 * *"

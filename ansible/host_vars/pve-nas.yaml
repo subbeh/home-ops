@@ -11,7 +11,11 @@ port_devices:
 # its CIDR.
 nfs_exports:
   - {path: /data/hdd0/pub, networks: [servers, clients]}
-  - {path: /data/hdd0/backups, networks: [servers]}
+  # Not to servers: it holds restic's repositories (restic_sftp below), and no_root_squash would let
+  # root on any servers Host change them past the chroot.
+  # shortcut: clients keep rw,no_root_squash, so a client device (ST Wi-Fi included) still can,
+  # move the chroot outside every export (e.g. /data/hdd0/restic) once clients aren't trusted.
+  - {path: /data/hdd0/backups, networks: [clients]}
   - {path: /data/hdd1/media, networks: [storage, servers]}
   - {path: /data/nvme/media, networks: [storage, servers]}
   - {path: /data/nvme/downloads, networks: [storage, servers]}
@@ -19,6 +23,12 @@ nfs_exports:
   - path: /data/nvme/k8s
     networks: [storage]
     options: rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000
+
+# The second restic repository of each Host restic runs on (services/restic.yaml), served over
+# SFTP to the restic user, chrooted here. The key is RESTIC_SSH_KEY's public half.
+restic_sftp:
+  path: /data/hdd0/backups/restic
+  authorized_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIPAm/mt6mIco1hSF1NypPI9J9QTAmYKGVLIk6bs1Xvx restic
 
 # The Docker LXC Host, created by roles/pve. vmid is <vlan><host number> of its servers address.
 pve_lxc:

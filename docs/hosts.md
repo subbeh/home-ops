@@ -5,8 +5,8 @@ From [`ansible/inventory.yml`](../ansible/inventory.yml). Services are assigned 
 
 | Host | Groups | Tailnet | Services domain | Services |
 |---|---|---|---|---|
-| nas-svc | debian, local |  |  | whoami, metube, sts, copyparty |
-| nuc-svc | debian, local |  |  | crawl4ai |
+| nas-svc | debian, local |  |  | whoami, metube, sts, copyparty, restic |
+| nuc-svc | debian, local |  |  | crawl4ai, restic |
 | opnsense | local | opnsense.sbbh.cloud (100.66.175.26) |  |  |
 | pve-nas | debian, local, pve |  |  |  |
 | pve-nuc | debian, local, pve |  |  |  |

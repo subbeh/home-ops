@@ -123,6 +123,68 @@
     validate: sshd -t -f %s
   notify: Reload SSH
 
+# restic on each Host writes its second repository here, as sftp:nas:/<host>. The chroot keeps its
+# key out of the rest of the pools; sshd needs the chroot dir and every parent owned by root and
+# writable by no one else, so restic only writes in the per-Host dirs below it.
+- name: Serve restic repositories over SFTP
+  when: restic_sftp is defined
+  block:
+    - name: Add the restic user
+      ansible.builtin.user:
+        name: restic
+        system: true
+        shell: /usr/sbin/nologin
+        home: "{{ restic_sftp.path }}"
+        create_home: false
+
+    # Not recursive: the dirs inside keep their owners (uid 1000 had /data/hdd0/backups, so it can
+    # no longer add new dirs at its top). Higher parents are already root's.
+    - name: Give the restic chroot's parent to root
+      ansible.builtin.file:
+        path: "{{ restic_sftp.path | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Create the restic chroot
+      ansible.builtin.file:
+        path: "{{ restic_sftp.path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Create a repository dir per Host restic runs on
+      ansible.builtin.file:
+        path: "{{ restic_sftp.path }}/{{ item }}"
+        state: directory
+        owner: restic
+        group: restic
+        mode: "0700"
+      loop: "{{ groups['all'] | map('extract', hostvars) | selectattr('services', 'defined') | selectattr('services', 'contains', 'restic') | map(attribute='inventory_hostname') }}"
+
+    # Outside the chroot and owned by root, so the restic user can't add keys of its own.
+    - name: Authorize restic's key
+      ansible.builtin.copy:
+        dest: /etc/ssh/restic_authorized_keys
+        mode: "0644"
+        content: "restrict {{ restic_sftp.authorized_key }}\n"
+
+    # A Match block in an Include'd file ends with the file, so it can't swallow sshd_config's own
+    # settings that follow the Include.
+    - name: Chroot the restic user to SFTP
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/restic.conf
+        mode: "0644"
+        content: |
+          Match User restic
+            AuthorizedKeysFile /etc/ssh/restic_authorized_keys
+            ChrootDirectory {{ restic_sftp.path }}
+            ForceCommand internal-sftp
+        validate: sshd -t -f %s
+      notify: Reload SSH
+
 - name: Put the storage Network on Port 1
   when: inventory_hostname in networks.storage.addresses
   block:

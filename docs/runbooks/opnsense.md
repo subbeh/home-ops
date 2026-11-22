@@ -117,7 +117,9 @@ Keep `root` for the console. Every other way in uses a named user.
    | Translate Source IP | left empty (the default, interface address) |
    | Description         | `mgmt to the tailnet, for UniFi adoption`   |
 
-   The rest of Translation keeps its defaults. The interface address rewrites the source of mgmt traffic to OPNsense's own tailnet address, and maps the replies back. Automatic NAT only covers interfaces with a gateway, which leaves tailscale out. UniFi gear adopts through the VPS, which only sees OPNsense's tailnet address.
+   Then add a second rule the same way, with Source `SERVERS net` and Description `servers to the tailnet, for backup heartbeats`.
+
+   The rest of Translation keeps its defaults. The interface address rewrites the source of mgmt and servers traffic to OPNsense's own tailnet address, and maps the replies back. Automatic NAT only covers interfaces with a gateway, which leaves tailscale out. UniFi gear adopts through the VPS, and nas-svc and nuc-svc push their backup heartbeats to Gatus on it; the VPS only sees OPNsense's tailnet address, which the tailnet policy lets in as a member device.
 7. Firewall → Rules → TAILSCALE → Add, then Save and Apply changes:
 
    | Field                  | Value                   |
@@ -131,7 +133,7 @@ Keep `root` for the console. Every other way in uses a named user.
    | Destination port range | `backdoor_ports`        |
    | Description            | `Tailnet: UI and SSH`   |
 
-   Source is any because the tailnet policy already decides which nodes get this far. This rule only opens OPNsense itself. Tailnet traffic to the Networks behind it, and through the exit node, stays blocked until the playbook's rules land. The playbook adopts this rule by its description. It deletes a `tailnet: UI and SSH` rule, since a floating one by that name once opened the UI on every interface. The mgmt NAT from step 5.6 needs no rule here, because replies match its state. The WAN gets no pass rules, so the UI and API stay closed there.
+   Source is any because the tailnet policy already decides which nodes get this far. This rule only opens OPNsense itself. Tailnet traffic to the Networks behind it, and through the exit node, stays blocked until the playbook's rules land. The playbook adopts this rule by its description. It deletes a `tailnet: UI and SSH` rule, since a floating one by that name once opened the UI on every interface. The mgmt and servers NAT from step 5.6 needs no rule here, because replies match its state. The WAN gets no pass rules, so the UI and API stay closed there.
 8. System → Settings → Administration → Web GUI: add `opnsense.sbbh.cloud` to Alternate Hostnames, set TCP port to `8443`, then Save. The UI rejects any hostname it doesn't know as a possible DNS rebind attack. That name is the Cloudflare record for the tailnet address, in `terraform/cloudflare/records.auto.tfvars`. Keep the DNS rebind check itself on. Port `443` is left to the [home ingress](#home-ingress), and the playbook calls the API on `8443`. The page reloads at the new port.
 
 ## 6. Check

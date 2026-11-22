@@ -1,6 +1,6 @@
 ---
-# Status dashboard, plus a dead-man's-switch for restic's hourly backup: restic
-# pushes to its "external endpoint" (declared in restic.yaml) after every run, and Gatus
+# Status dashboard, plus a dead-man's-switch for restic's hourly backups: restic on each Host
+# pushes to its "external endpoints" (in backups.yaml below) after every run, and Gatus
 # alerts if a push doesn't arrive within the heartbeat interval. Services declare their
 # own endpoints under `gatus:`, merged in from services_gatus_dir. See https://github.com/TwiN/gatus
 gatus:
@@ -55,6 +55,40 @@ gatus:
     # A ping per home address, from network.yaml: see the gatus_endpoints filter.
     - dest: "{{ services_gatus_dir }}/home.yaml"
       content: "{{ {'endpoints': networks | gatus_endpoints(devices)} | to_nice_yaml(indent=2) }}"
+    # The backup heartbeats of each Host restic is assigned to: its backups (Storage Box and
+    # pve-nas) and its SQLite copies push here (restic.yaml), so a new restic Host needs a Deploy of gatus.
+    - dest: "{{ services_gatus_dir }}/backups.yaml"
+      content: |
+        external-endpoints:
+        {% for host in groups['all'] if 'restic' in hostvars[host].services | default([]) %}
+          - name: restic-backup-{{ host }}
+            group: backups
+            token: {{ bws_secrets.GATUS_EXTERNAL_TOKEN | to_json }}
+            heartbeat:
+              interval: 1h
+            alerts:
+              - type: pushover
+                description: "restic hourly backup on {{ host }} hasn't checked in"
+                send-on-resolved: true
+          - name: restic-nas-backup-{{ host }}
+            group: backups
+            token: {{ bws_secrets.GATUS_EXTERNAL_TOKEN | to_json }}
+            heartbeat:
+              interval: 1h
+            alerts:
+              - type: pushover
+                description: "restic hourly backup to pve-nas on {{ host }} hasn't checked in"
+                send-on-resolved: true
+          - name: sqlite-copies-{{ host }}
+            group: backups
+            token: {{ bws_secrets.GATUS_EXTERNAL_TOKEN | to_json }}
+            heartbeat:
+              interval: 1h
+            alerts:
+              - type: pushover
+                description: "SQLite copies before the restic backup on {{ host }} failed or didn't run"
+                send-on-resolved: true
+        {% endfor %}
     # An HTTPS check per home ingress route: see the ingress_routes filter. Private Services are
     # left out, since Semaphore's Auto-deploys can't see their files and would drop them.
     - dest: "{{ services_gatus_dir }}/ingress.yaml"

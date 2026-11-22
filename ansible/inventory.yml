@@ -32,12 +32,12 @@ local:
       # The Docker LXC on pve-nas, created by playbooks/pve.yaml. Proxmox templates ship root only.
       ansible_user: root
       ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
-      services: [whoami, metube, sts, copyparty]
+      services: [whoami, metube, sts, copyparty, restic]
     nuc-svc:
       # The Docker LXC on pve-nuc, created by playbooks/pve.yaml.
       ansible_user: root
       ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
-      services: [crawl4ai]
+      services: [crawl4ai, restic]
 
 # OS groups
 debian:

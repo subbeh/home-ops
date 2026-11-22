@@ -51,4 +51,4 @@ just ansible::playbook services --tags all --limit vps
 
 - **Semaphore**: see [manual-setup.md](manual-setup.md). If `/opt/data/semaphore` was restored, its Key Store decrypts with the same `SEMAPHORE_ACCESS_KEY_ENCRYPTION` and nothing needs doing. Otherwise follow the setup at the top of `ansible/services/semaphore.yaml`. Either way, the SSH key in its Key Store must be in the new `root`'s `authorized_keys`.
 - **aven**: only on a fresh database. Run the setup at the top of `ansible/services/aven.yaml`.
-- Watch Gatus for the next hourly restic heartbeat.
+- Watch Gatus for the next hourly `restic-backup-vps` heartbeat.

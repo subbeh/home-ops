@@ -40,6 +40,9 @@ rules:
   - {network: mgmt, destination: internet, description: "mgmt: the internet"}
   # UniFi adoption: OPNsense masquerades this out of its tailscale interface (runbook).
   - {network: mgmt, destination: vps, port: unifi_ports, protocol: TCP/UDP, description: "mgmt: the UniFi controller"}
+  # Backup heartbeats to Gatus (services/restic.yaml). OPNsense masquerades this out of its tailscale
+  # interface too (runbook).
+  - {network: servers, destination: vps, port: "443", protocol: TCP, description: "servers: Gatus on the vps"}
   - {network: iot, destination: internet, description: "iot: the internet"}
   - {network: backdoor, destination: (self), port: backdoor_ports, protocol: TCP, description: "backdoor: UI and SSH",}
 

@@ -35,5 +35,6 @@ if [[ ${failed[*]} ]]; then
 else
   query="success=true"
 fi
+# Gatus runs on the vps; on the home Hosts its name resolves through OPNsense's Unbound override.
 curl -fsS -X POST -H "Authorization: Bearer {{ bws_secrets.GATUS_EXTERNAL_TOKEN }}" \
-  "https://status.{{ services_domain }}/api/v1/endpoints/backups_sqlite-copies/external?$query"
+  "https://status.{{ hostvars['vps'].services_domain }}/api/v1/endpoints/backups_sqlite-copies-{{ inventory_hostname }}/external?$query"

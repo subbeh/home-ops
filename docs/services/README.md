@@ -17,7 +17,7 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 | [karakeep](../../ansible/services/karakeep.yaml) | Bookmark manager with full-text search and page archiving |  |  |  |
 | [metube](../../ansible/services/metube.yaml) | yt-dlp web UI that downloads into the media share | nas-svc | [metube.svc.sbbh.cloud](https://metube.svc.sbbh.cloud) |  |
 | [opengym](../../ansible/services/opengym.yaml) | Workout tracker | vps | [gym.vps.sbbh.cloud](https://gym.vps.sbbh.cloud) |  |
-| [restic](../../ansible/services/restic.yaml) | Hourly encrypted backups of /opt/data and the workspace to a Hetzner Storage Box | vps |  |  |
+| [restic](../../ansible/services/restic.yaml) | Hourly encrypted backups of /opt/data and the workspace to a Hetzner Storage Box | nas-svc, nuc-svc, vps |  |  |
 | [searxng](../../ansible/services/searxng.yaml) | SearXNG metasearch, the web search backend for Hermes | vps |  |  |
 | [semaphore](../../ansible/services/semaphore.yaml) | Ansible UI that runs Auto-deploys | vps | [semaphore.vps.sbbh.cloud](https://semaphore.vps.sbbh.cloud) |  |
 | [syncthing](../../ansible/services/syncthing.yaml) | File sync between devices | vps | [syncthing.vps.sbbh.cloud](https://syncthing.vps.sbbh.cloud) |  |

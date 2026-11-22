@@ -24,6 +24,9 @@
       # name `unifi.` and never appends the DHCP domain; an empty host makes the record the domain.
       - {hostname: "", domain: unifi, value: "{{ networks.tailnet.addresses.vps }}"}
       - {hostname: opnsense, domain: "{{ home_domain }}", value: "{{ networks.mgmt.addresses.opnsense }}"}
+      # Gatus on the VPS, for the backup heartbeats from the home Hosts (services/restic.yaml). The
+      # public record points at the tailnet address too, but Unbound's rebind check drops it.
+      - {hostname: status, domain: vps.sbbh.cloud, value: "{{ networks.tailnet.addresses.vps }}"}
       # The home ingress: HAProxy answers every name and knows the routes. Under its own domain,
       # since a wildcard on home_domain would hide the names above.
       - {hostname: "*", domain: "{{ ingress_domain }}", value: "{{ networks.servers.addresses.opnsense }}"}

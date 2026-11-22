@@ -1,8 +1,9 @@
 ---
 # Configures the Proxmox VE Hosts after the manual install (docs/runbooks/pve-*.md): apt
-# sources, microcode, Cockpit, SSH, the storage bridge, the API user and the NFS exports. Then
-# creates the Host's LXC (pve_lxc in host_vars) and installs Docker in it. From the laptop only:
-# always `--check --diff` first, and never Auto-deployed. Needs the mise env (BWS_ACCESS_TOKEN).
+# sources, microcode, Cockpit, SSH, the restic SFTP chroot, the storage bridge, the API user and
+# the NFS exports. Then creates the Host's LXC (pve_lxc in host_vars) and installs Docker in it.
+# From the laptop only: always `--check --diff` first, and never Auto-deployed. Needs the mise
+# env (BWS_ACCESS_TOKEN).
 - name: Configure Proxmox VE
   hosts: pve
   pre_tasks:
