@@ -23,7 +23,7 @@ A **Key set** is a named group of secrets a Profile may get. [`hermes.yaml`](../
 | Key set | BWS keys | Lands in `.env` as |
 |---|---|---|
 | `model` | `HERMES_OPENCODE_GO_API_KEY`, `HERMES_LANGFUSE_PUBLIC_KEY`, `HERMES_LANGFUSE_SECRET_KEY` | `OPENCODE_GO_API_KEY`, `HERMES_LANGFUSE_PUBLIC_KEY`, `HERMES_LANGFUSE_SECRET_KEY` (plus `HERMES_LANGFUSE_CAPTURE`, not a secret) |
-| `web` | `HERMES_TAVILY_API_KEY`, `HERMES_FIRECRAWL_API_KEY` | `TAVILY_API_KEY` for page reads, `FIRECRAWL_API_KEY` as an unused fallback (plus `SEARXNG_URL`, not a secret: [README.md](README.md#web-search-and-page-reads)) |
+| `web` | `CRAWL4AI_API_TOKEN`, `HERMES_TAVILY_API_KEY`, `HERMES_FIRECRAWL_API_KEY` | `CRAWL4AI_API_TOKEN` for page reads through the crawl4ai plugin, `TAVILY_API_KEY` and `FIRECRAWL_API_KEY` as unused fallbacks (plus `SEARXNG_URL` and `CRAWL4AI_URL`, not secrets: [README.md](README.md#web-search-and-page-reads)) |
 | `aven` | `AVEN_MCP_TOKEN` | `AVEN_MCP_TOKEN`, the bearer token for the aven MCP server ([README.md](README.md#tasks-over-mcp)) |
 | `opengym` | `HERMES_OPENGYM_MCP_TOKEN` | `OPENGYM_MCP_TOKEN`, a scoped openGym token that writes only Workouts and Plans & routines for the openGym MCP server ([README.md](README.md#workouts-over-mcp)) |
 | `googlehealth` | `HERMES_GOOGLE_HEALTH_CLIENT_ID`, `HERMES_GOOGLE_HEALTH_CLIENT_SECRET`, `HERMES_GOOGLE_HEALTH_REFRESH_TOKEN` | `GOOGLE_HEALTH_CLIENT_ID`, `GOOGLE_HEALTH_CLIENT_SECRET`, `GOOGLE_HEALTH_REFRESH_TOKEN`: health's own Google Cloud OAuth client and the refresh token for read-only Fitbit data, read by the googlehealth plugin ([profiles.md](profiles.md#the-health-profile)) |

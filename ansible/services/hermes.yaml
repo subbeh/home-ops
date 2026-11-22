@@ -106,11 +106,14 @@
 #      and background_review, `hermes -p <name> config set auxiliary.<task>.provider opencode-go`
 #      and `... auxiliary.<task>.model deepseek-v4.1-flash`; `auxiliary.compression.reasoning_effort
 #      low`; and `auxiliary.vision` the same way on glm-5.3-flash. `docker restart hermes` after.
-#  15. Web backends, for default, researcher, writer and reviewer
+#  15. Web backends, for every Profile with the web Key set
 #      (docs/services/hermes/README.md#web-search-and-page-reads):
 #      `hermes -p <name> config set web.search_backend searxng` and
-#      `... web.extract_backend tavily`, so searches go to the searxng Service and only page
-#      reads spend Tavily credits. Without the pins, autodetect picks one paid backend for both.
+#      `... web.extract_backend crawl4ai`, so searches go to the searxng Service and page reads to
+#      the crawl4ai Service on nuc-svc. Without the pins, autodetect picks one paid backend for both.
+#      The crawl4ai backend is a plugin, shipped below into each of those Profiles' plugins dirs:
+#      after the Deploy that first copies it, `hermes -p <name> plugins enable crawl4ai` for each,
+#      then `docker restart hermes`. Back to Tavily: pin `web.extract_backend tavily` again.
 #  16. Default cron job quota-alerts (docs/services/hermes/kanban.md#quota-alerts): every 15 min the
 #      quota-alerts.py script, shipped below, posts its own notices with no model call.
 #      `hermes cron create "every 15m" --name quota-alerts --script quota-alerts.py --no-agent
@@ -223,9 +226,13 @@ hermes:
         HERMES_LANGFUSE_SECRET_KEY: "{{ bws_secrets.HERMES_LANGFUSE_SECRET_KEY }}"
         HERMES_LANGFUSE_CAPTURE: metadata
       web:
-        # Page reads (web.extract_backend tavily): the free tier's monthly credits.
+        # Page reads (web.extract_backend crawl4ai): the crawl4ai Service through the home ingress,
+        # read by the crawl4ai plugin. The name resolves through etc_hosts below.
+        CRAWL4AI_URL: "https://crawl4ai.{{ ingress_domain }}"
+        CRAWL4AI_API_TOKEN: "{{ bws_secrets.CRAWL4AI_API_TOKEN }}"
+        # The fallback page-read backend: re-pin web.extract_backend tavily if crawl4ai is down.
         TAVILY_API_KEY: "{{ bws_secrets.HERMES_TAVILY_API_KEY }}"
-        # The old page-read backend, unused while the pins name tavily; a fallback if its free tier goes.
+        # The old page-read backend, unused while the pins name another; a last fallback.
         FIRECRAWL_API_KEY: "{{ bws_secrets.HERMES_FIRECRAWL_API_KEY }}"
         # The searxng Service, over the services network; used once web.search_backend pins it.
         SEARXNG_URL: http://searxng:8080
@@ -293,6 +300,20 @@ hermes:
     # In health's own plugins dir, so no other Profile can load the Google Health tools.
     - dest: "{{ services_data_dir }}/hermes/data/profiles/health/plugins/googlehealth"
       src: hermes/googlehealth
+    # The crawl4ai web_extract backend, in each web Profile's own plugins dir (default's is the
+    # data dir's): a Profile loads plugins only from there. ops has no web tools, so none.
+    - dest: "{{ services_data_dir }}/hermes/data/plugins/crawl4ai"
+      src: hermes/crawl4ai
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/orchestrator/plugins/crawl4ai"
+      src: hermes/crawl4ai
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/researcher/plugins/crawl4ai"
+      src: hermes/crawl4ai
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/writer/plugins/crawl4ai"
+      src: hermes/crawl4ai
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/reviewer/plugins/crawl4ai"
+      src: hermes/crawl4ai
+    - dest: "{{ services_data_dir }}/hermes/data/profiles/health/plugins/crawl4ai"
+      src: hermes/crawl4ai
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/actions-failures.py"
       src: hermes/actions-failures.py
     - dest: "{{ services_data_dir }}/hermes/data/profiles/ops/scripts/homelab-incidents.py"
@@ -315,6 +336,9 @@ hermes:
       # kanban.max_in_progress (docs/services/hermes/safety.md#resource-limits).
       memory: 2g
       cpus: 1.5
+      # Home ingress names have no public record; like Gatus, reach HAProxy on OPNsense over the
+      # tailnet's subnet route.
+      etc_hosts: "{{ {'crawl4ai.' ~ ingress_domain: networks.servers.addresses.opnsense} }}"
       labels:
         traefik.enable: "true"
         traefik.http.services.hermes.loadbalancer.server.port: "9119"

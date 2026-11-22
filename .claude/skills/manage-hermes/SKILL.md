@@ -49,7 +49,7 @@ Default's skills live in `/opt/data/skills/<category>/<name>/SKILL.md` (the focu
 ## Plugins
 
 - **Upstream plugins**: `hermes [-p <profile>] plugins install <name> --yes-deps --enable`, then restart. They live in the data dir, so they survive a Deploy.
-- **Repo plugins** (homelab, googlehealth): the hermes Deploy copies them into the Profile's `plugins/`. Enable once with `hermes -p <profile> plugins enable <name>`, then restart. Check one before shipping with `hermes plugins doctor <path> --ci` and `just docs-test`.
+- **Repo plugins** (homelab, googlehealth, crawl4ai): the hermes Deploy copies them into the Profile's `plugins/`. Enable once with `hermes -p <profile> plugins enable <name>`, then restart. Check one before shipping with `hermes plugins doctor <path> --ci` and `just docs-test`.
 
 ## Restart or Deploy
 

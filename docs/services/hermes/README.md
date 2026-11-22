@@ -38,7 +38,7 @@ covers:
 - **Tasks**: the default Profile reads and changes your aven tasks over MCP. See [Tasks over MCP](#tasks-over-mcp).
 - **Workouts**: the default and health Profiles read your openGym workouts, routines and weigh-ins, log workouts and write routines, over MCP. See [Workouts over MCP](#workouts-over-mcp).
 - **Vault**: a folder of markdown notes, synced with the laptop and mounted at `/vault`, where default and the Kanban Profiles keep their notes and the health Profile reads your records in `health/` and keeps its coach log in `health/coach/`, with an hourly git history. See [vault.md](vault.md).
-- **Web**: web search goes to the `searxng` Service, and page reads go to Tavily. See [Web search and page reads](#web-search-and-page-reads).
+- **Web**: web search goes to the `searxng` Service, and page reads go to the `crawl4ai` Service on nuc-svc. See [Web search and page reads](#web-search-and-page-reads).
 
 Why one container and not one per bot: the vps has little memory free, and each extra gateway costs about 400 MiB. So every new bot is a new Profile, never a new container. The price is weaker isolation between Profiles, covered in [safety.md](safety.md).
 
@@ -82,14 +82,16 @@ Hermes has two web tools, and each goes to its own backend:
 | Tool | Backend | Why |
 |---|---|---|
 | `web_search` | The `searxng` Service ([`searxng.yaml`](../../../ansible/services/searxng.yaml)) at `http://searxng:8080` | Free. Searches were about three quarters of the Firecrawl credits, at about 2 credits each |
-| `web_extract` (page reads) | Tavily's hosted API | SearXNG only searches and can't fetch pages. Tavily's free tier gives about 1,000 credits a month, at about 1 credit per 5 pages. Firecrawl's free credits ran out mid-goal, and a self-hosted Firecrawl needs 8 GB+ and five containers, more than the vps has. A reader on the vps itself would fetch from a datacenter IP, which Cloudflare-fronted sites block |
+| `web_extract` (page reads) | The `crawl4ai` Service ([`crawl4ai.yaml`](../../../ansible/services/crawl4ai.yaml)) on nuc-svc, at `https://crawl4ai.svc.sbbh.cloud` | Free, and it fetches from the home IP: a reader on the vps would fetch from a datacenter IP, which Cloudflare-fronted sites block. Tavily's free tier (about 1,000 credits a month) is the fallback. A self-hosted Firecrawl was the other option, but it needs seven containers, more memory than nuc-svc has, and a proxy for auth |
 
-- **Where it's set**: each searching Profile (default, researcher, writer, reviewer, and health through its clone of default) pins `web.search_backend: searxng` and `web.extract_backend: tavily` in its `config.yaml` (setup step 15 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). `SEARXNG_URL` reaches each Profile's `.env` through the `web` Key set ([keys.md](keys.md)).
-- **The pins matter**: without them Hermes autodetects one backend for both tools, and a paid key wins over `SEARXNG_URL`. The Firecrawl key still reaches each Profile, unused, as a fallback if Tavily's free tier goes.
+- **Where it's set**: every Profile with the `web` Key set (default, orchestrator, researcher, writer, reviewer and health) pins `web.search_backend: searxng` and `web.extract_backend: crawl4ai` in its `config.yaml` (setup step 15 in [`hermes.yaml`](../../../ansible/services/hermes.yaml)'s header). `SEARXNG_URL`, `CRAWL4AI_URL` and `CRAWL4AI_API_TOKEN` reach each Profile's `.env` through the `web` Key set ([keys.md](keys.md)).
+- **The crawl4ai plugin**: Hermes has no built-in Crawl4AI backend, so a community plugin adds one. It's kept in the repo at [`ansible/services/data/hermes/crawl4ai/`](../../../ansible/services/data/hermes/crawl4ai/), pinned to a reviewed commit, and each Deploy copies it into every web Profile's own `plugins/` dir. It sends each URL to the Service's `/md` endpoint with the Bearer token and refuses private addresses first.
+- **Reaching it**: home ingress names have no public record. The hermes container maps `crawl4ai.svc.sbbh.cloud` to HAProxy on OPNsense in its `etc_hosts` and reaches it over the tailnet's subnet route, the same way Gatus does.
+- **The pins matter**: without them Hermes autodetects one backend for both tools, and a paid key wins over `SEARXNG_URL`. A pin is strict, with no automatic fallback: when crawl4ai is down, `web_extract` fails until you pin `web.extract_backend tavily` again. The Tavily and Firecrawl keys still reach each Profile for that.
 - **Internal only**: `searxng` has no Traefik route. Only containers on the services network reach it.
 - **Engines**: `ansible/services/data/searxng/settings.yml` keeps a short engine list. Some engines block datacenter IPs like the vps's; drop one that keeps showing in a response's `unresponsive_engines`.
 - **No keyless vendors**: every Profile sets `web.keyless_fallback: false` (setup step 17). Otherwise a Profile without a backend or key, or a failed call, would spread queries across the free tiers of Exa, Parallel, Firecrawl and Keenable.
-- **Credits**: Tavily's credits move only for page reads; check them in its dashboard. When they run out, `web_extract` fails and workers can only search.
+- **Credits**: none while page reads go to crawl4ai. Tavily's credits move only when it's pinned again; check them in its dashboard.
 
 ## Planning and focus skills
 

@@ -1,0 +1,27 @@
+---
+# Page reader for Hermes's web_extract and Claude Code's MCP tools: fetches from the home IP,
+# which Cloudflare-fronted sites block less than the vps's datacenter one
+# (docs/services/hermes/README.md#web-search-and-page-reads).
+# Every LAN and tailnet client reaches the home ingress, so the server's own Bearer token gates
+# every route but /health, the MCP endpoints included; without one it refuses to start.
+# It refuses internal URLs by default (CRAWL4AI_ALLOW_INTERNAL_URLS), so it can't be used to
+# reach the home Networks; leave that off.
+# See https://github.com/unclecode/crawl4ai/blob/main/deploy/docker/README.md
+crawl4ai:
+  description: Crawl4AI page reader that turns web pages into markdown for Hermes and Claude Code
+
+  no_log: true
+
+  # HAProxy on OPNsense forwards crawl4ai.<ingress_domain> to this published port.
+  ingress:
+    port: 11235
+
+  containers:
+    - image: unclecode/crawl4ai:0.9.5
+      ports:
+        - "11235:11235"
+      # Upstream asks 4 GB for the container and a 1 GB /dev/shm for Chromium; nuc-svc has 8 GB.
+      memory: 4g
+      shm_size: 1g
+      env:
+        CRAWL4AI_API_TOKEN: "{{ bws_secrets.CRAWL4AI_API_TOKEN }}"

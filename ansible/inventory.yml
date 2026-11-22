@@ -37,7 +37,7 @@ local:
       # The Docker LXC on pve-nuc, created by playbooks/pve.yaml.
       ansible_user: root
       ansible_host: "{{ networks.servers.addresses[inventory_hostname] }}"
-      services: []
+      services: [crawl4ai]
 
 # OS groups
 debian:
