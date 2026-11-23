@@ -122,6 +122,7 @@ class OpnsenseFilters(unittest.TestCase):
         got = {e["name"]: e["url"] for e in network.gatus_endpoints(nets, {"server": {}})}
         self.assertEqual(got, {"router.lan": "icmp://10.0.0.1", "server.lan": "icmp://10.0.0.150",
                                "tv.iot": "icmp://10.0.4.5"})  # storage is unrouted
+        self.assertEqual({e["group"] for e in network.gatus_endpoints(nets, {"server": {}})}, {"network"})
         got = [e["name"] for e in network.gatus_endpoints(nets, {"server": {"monitor": False}})]
         self.assertEqual(got, ["router.lan", "tv.iot"])
 
@@ -136,6 +137,7 @@ class OpnsenseFilters(unittest.TestCase):
                                   {"service": "api", "address": "10.0.20.12", "port": 9000, "check": "/health"}])
         self.assertEqual([e["url"] for e in network.ingress_gatus_endpoints(routes, "svc.example", "100.1.1.1")],
                          ["https://web.svc.example", "https://api.svc.example/health"])
+        self.assertEqual({e["group"] for e in network.ingress_gatus_endpoints(routes, "svc.example", "100.1.1.1")}, {"home"})
         hostvars["bare"] = {"services": ["web"]}
         nets["servers"]["addresses"]["bare"] = "10.0.20.13"
         with self.assertRaises(ValueError):

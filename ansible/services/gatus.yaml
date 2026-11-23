@@ -114,7 +114,7 @@ gatus:
     endpoints:
       # Only proves Traefik routes here: a stopped Gatus can't alert about itself.
       - name: gatus
-        group: services
+        group: vps
         url: "https://status.{{ services_domain }}/health"
         conditions:
           - "[STATUS] == 200"

@@ -90,7 +90,7 @@ traefik:
   gatus:
     endpoints:
       - name: traefik
-        group: services
+        group: vps
         url: "https://traefik.{{ services_domain }}/dashboard/"
         conditions:
           - "[STATUS] == 200"

@@ -43,7 +43,7 @@ backrest:
   gatus:
     endpoints:
       - name: backrest
-        group: services
+        group: vps
         url: "https://backups.{{ services_domain }}/"
         conditions:
           - "[STATUS] == 200"

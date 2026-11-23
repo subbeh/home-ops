@@ -177,7 +177,7 @@ def gatus_endpoints(networks, devices):
     """An ICMP Gatus endpoint per address on a routed Network, named like its DNS name, unless
     the address or its Device says `monitor: false`. Gatus runs on the vps, so these ping over
     the tailnet routes."""
-    return [{"name": f"{name}.{net}", "group": "home", "url": f"icmp://{_addr(value)}", "interval": "5m",
+    return [{"name": f"{name}.{net}", "group": "network", "url": f"icmp://{_addr(value)}", "interval": "5m",
              "conditions": ["[CONNECTED] == true"], "alerts": [{"type": "pushover", "send-on-resolved": True}]}
             for net, spec in _routed(networks).items()
             for name, value in (spec.get("addresses") or {}).items()
@@ -205,7 +205,7 @@ def ingress_routes(hostvars, hosts, services_configs, networks):
 def ingress_gatus_endpoints(routes, domain, resolver):
     """An HTTPS Gatus endpoint per ingress route. The names have no public record, so Gatus asks
     OPNsense's Unbound at resolver."""
-    return [{"name": r["service"], "group": "ingress", "url": f"https://{r['service']}.{domain}{r['check']}",
+    return [{"name": r["service"], "group": "home", "url": f"https://{r['service']}.{domain}{r['check']}",
              "client": {"dns-resolver": f"tcp://{resolver}:53"}, "conditions": ["[STATUS] == 200"],
              "alerts": [{"type": "pushover", "send-on-resolved": True}]}
             for r in routes]

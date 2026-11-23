@@ -105,7 +105,7 @@ unifi:
   gatus:
     endpoints:
       - name: unifi
-        group: services
+        group: vps
         url: "https://unifi.{{ services_domain }}/status"
         conditions:
           - "[STATUS] == 200"

@@ -30,7 +30,7 @@ syncthing:
   gatus:
     endpoints:
       - name: syncthing
-        group: services
+        group: vps
         url: "https://syncthing.{{ services_domain }}/rest/noauth/health"
         conditions:
           - "[STATUS] == 200"

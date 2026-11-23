@@ -64,14 +64,14 @@ aven:
       # No health route: the app's JSON 404 shows it answered; Traefik's own 404 for a
       # missing container is plain text.
       - name: aven
-        group: services
+        group: vps
         url: "https://aven.{{ services_domain }}/"
         conditions:
           - "[STATUS] == 404"
           - "[BODY].error == not-found"
       # Without the token it answers 401, which shows the server is up; sync health isn't checked.
       - name: aven-mcp
-        group: services
+        group: vps
         url: "http://aven-mcp:3747/mcp"
         conditions:
           - "[STATUS] == 401"

@@ -29,7 +29,7 @@ dufs:
     endpoints:
       # Open without a login; / answers 401.
       - name: dufs
-        group: services
+        group: vps
         url: "https://dufs.{{ services_domain }}/__dufs__/health"
         conditions:
           - "[STATUS] == 200"

@@ -72,7 +72,7 @@ semaphore:
   gatus:
     endpoints:
       - name: semaphore
-        group: services
+        group: vps
         url: "https://semaphore.{{ services_domain }}/api/ping"
         conditions:
           - "[STATUS] == 200"

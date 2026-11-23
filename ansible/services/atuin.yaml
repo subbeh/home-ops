@@ -67,14 +67,14 @@ atuin:
   gatus:
     endpoints:
       - name: atuin
-        group: services
+        group: vps
         url: "https://atuin.{{ services_domain }}/healthz"
         conditions:
           - "[STATUS] == 200"
       # No health route: the app's JSON 404 shows it answered; Traefik's own 404 for a
       # missing container is plain text.
       - name: atuin-ai
-        group: services
+        group: vps
         url: "https://atuin-ai.{{ services_domain }}/"
         conditions:
           - "[STATUS] == 404"

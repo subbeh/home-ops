@@ -27,7 +27,7 @@ searxng:
   gatus:
     endpoints:
       - name: searxng
-        group: services
+        group: vps
         url: http://searxng:8080/healthz
         conditions:
           - "[STATUS] == 200"

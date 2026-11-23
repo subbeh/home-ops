@@ -53,7 +53,7 @@ karakeep:
   gatus:
     endpoints:
       - name: karakeep
-        group: services
+        group: vps
         url: "https://{{ karakeep_url }}/api/health"
         conditions:
           - "[STATUS] == 200"

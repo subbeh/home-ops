@@ -45,7 +45,7 @@ The schema is the services role (`ansible/roles/services/tasks/`). Existing Serv
   gatus:                      # optional: Gatus checks, only on the vps
     endpoints:
       - name: <name>
-        group: services
+        group: vps
         url: "https://<name>.{{ services_domain }}"
         conditions: ["[STATUS] == 200"]
 ```

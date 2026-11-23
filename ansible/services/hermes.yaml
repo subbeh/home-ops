@@ -367,13 +367,13 @@ hermes:
     endpoints:
       # Every other path redirects to the login page.
       - name: hermes
-        group: services
+        group: vps
         url: "https://hermes.{{ services_domain }}/login"
         conditions:
           - "[STATUS] == 200"
       # The gateway's own port (8642) listens on loopback only; the dashboard reports its state.
       - name: hermes-gateway
-        group: services
+        group: vps
         url: "https://hermes.{{ services_domain }}/api/status"
         conditions:
           - "[STATUS] == 200"
