@@ -29,23 +29,22 @@
 # to run everywhere, since "Skip hosts without selected services" below no-ops the rest.
 - name: Require an explicit host limit when a service spans multiple hosts
   ansible.builtin.assert:
-    that: ansible_limit is defined or _affected_hosts | length <= 1
+    that: ansible_limit is defined or _spanning | length == 0
     fail_msg: >-
-      Refusing to run without --limit <host>: {{ _tag_services | join(', ') }} is
-      assigned to multiple hosts ({{ _affected_hosts | join(', ') }}).
+      Refusing to run without --limit <host>, since these services are assigned to
+      multiple hosts: {% for s, h in _spanning.items() %}{{ s }} ({{ h | join(', ') }}){{ '; ' if not loop.last }}{% endfor %}.
     quiet: true
   vars:
     _tag_services: "{{ services_configs.keys() | list if 'all' in ansible_run_tags else ansible_run_tags | intersect(services_configs.keys() | list) }}"
-    _affected_hosts: >-
-      {{ ansible_play_hosts_all
-         | map('extract', hostvars, 'services')
-         | map('default', [], true)
-         | map('intersect', _tag_services)
-         | map('length')
-         | zip(ansible_play_hosts_all)
-         | selectattr('0', 'greaterthan', 0)
-         | map(attribute='1')
-         | list }}
+    # Each selected service with the play hosts it is assigned to, kept when there is more than one.
+    _spanning: >-
+      {%- set out = {} -%}
+      {%- for s in _tag_services -%}
+      {%- set h = [] -%}
+      {%- for host in ansible_play_hosts_all if s in hostvars[host].services | default([], true) -%}{%- set _ = h.append(host) -%}{%- endfor -%}
+      {%- if h | length > 1 -%}{%- set _ = out.update({s: h}) -%}{%- endif -%}
+      {%- endfor -%}
+      {{ out }}
 
 # --tags all selects every assigned service; --tags <service> selects just that one.
 - name: Select services and steps

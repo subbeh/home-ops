@@ -55,7 +55,7 @@ Only merged Renovate Version Bumps Auto-deploy. Hand edits are always deployed b
 
 Known limits:
 
-- A Service assigned to more than one Host makes the run fail, since the playbook then requires `--limit`.
+- A bumped Service assigned to more than one Host (today only restic) makes the run fail, since the playbook then requires `--limit`. Bumps of single-Host Services on different Hosts deploy together.
 - Semaphore clones `main` when the task starts, so a push that lands in between rides along.
 - There's no automatic rollback: revert the PR and deploy by hand.
 

@@ -31,7 +31,7 @@ A real run (no `--check`) refuses unless the tree is clean and `HEAD` is local `
 | `--tags all` (or no tags) | every Service assigned to each Host |
 
 - A tag that is neither a Service nor a Step fails the run (typo protection). So does a Step tag on its own.
-- A Service assigned to more than one Host needs `--limit <host>`.
+- Selecting a Service assigned to more than one Host (today only restic, and so every `--tags all` run) needs `--limit <host>`. Single-Host Services on different Hosts run together without it.
 - Every Deploy pulls images and **recreates** the selected containers, even when nothing changed.
 - Every Deploy that touches containers then removes every image no container uses (`docker image prune -a`), so a stopped Service's image is re-pulled on its next Deploy.
 
