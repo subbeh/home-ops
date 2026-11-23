@@ -48,6 +48,10 @@ restic:
           AddressFamily inet
           StrictHostKeyChecking accept-new
           UserKnownHostsFile /run/secrets/.ssh/known_hosts
+          # A stalled SFTP session fails within ~2 min instead of hanging past the next hourly runs.
+          ConnectTimeout 30
+          ServerAliveInterval 30
+          ServerAliveCountMax 4
       mode: "0600"
     # Outside the data dir: root's cron runs it, so the apps user must not be able to replace it.
     - dest: /usr/local/sbin/restic-sqlite-copies

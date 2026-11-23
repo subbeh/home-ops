@@ -13,7 +13,8 @@ rm -rf "$out.new"
 mkdir -p "$out.new"
 
 # Leaves out the copies themselves, synced files (any archives in them are not live) and the
-# NSS cert stores Chromium keeps under each Hermes home.
+# NSS cert stores and throwaway browser caches Chromium keeps under each Hermes home and Profile
+# (its dbs there vanish or lock mid-copy).
 while IFS= read -r -d '' db; do
   rel=${db#"$data"/}
   header=$(head -c 15 "$db" | tr -d '\0') || { failed+=("$rel"); continue; }
@@ -23,7 +24,7 @@ while IFS= read -r -d '' db; do
   # The online backup API reads one snapshot of the db and its -wal. As root, SQLite gives any
   # -shm or -wal it creates the db file's owner.
   sqlite3 -cmd ".timeout 30000" "$db" ".backup '$dest'" || { rm -f "$dest"; failed+=("$rel"); }
-done < <(find "$data" -xdev \( -path "$out" -o -path "$out.new" -o -path "$data/syncthing/data" -o -name .pki \) -prune \
+done < <(find "$data" -xdev \( -path "$out" -o -path "$out.new" -o -path "$data/syncthing/data" -o -name .pki -o -path '*/cache/browser' \) -prune \
   -o -type f \( -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' \) -print0)
 
 rm -rf "$out"
