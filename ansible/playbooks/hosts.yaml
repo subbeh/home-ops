@@ -4,6 +4,9 @@
 # (BWS_ACCESS_TOKEN). nas-svc and nuc-svc need a pve.yaml run first, which installs their Python.
 - name: Configure Hosts
   hosts: debian
+  vars:
+    # One iperf3 server per box: an LXC guest shares its node's NIC, so the node serves for both.
+    _iperf3_serve: "{{ ansible_virtualization_type != 'lxc' }}"
   pre_tasks:
     # On the controller. A command rather than a pipe lookup so it can retry: the Bitwarden API
     # fails now and then.
@@ -47,7 +50,7 @@
     - name: Create the iperf3 drop-in directory
       ansible.builtin.file:
         path: /etc/systemd/system/iperf3.service.d
-        state: directory
+        state: "{{ 'directory' if _iperf3_serve else 'absent' }}"
         mode: "0755"
 
     - name: Bind the iperf3 server to the Host's servers or tailnet address
@@ -59,13 +62,14 @@
           ExecStart=
           ExecStart=/usr/bin/iperf3 --server --interval 0 --bind {{ networks.servers.addresses[inventory_hostname] | default(networks.tailnet.addresses[inventory_hostname]) }}
       register: _iperf3_bind
+      when: _iperf3_serve
 
     - name: Run the iperf3 server
       ansible.builtin.systemd_service:
         name: iperf3
-        enabled: true
-        state: "{{ 'restarted' if _iperf3_bind is changed else 'started' }}"
-        daemon_reload: "{{ _iperf3_bind is changed }}"
+        enabled: "{{ _iperf3_serve }}"
+        state: "{{ 'stopped' if not _iperf3_serve else 'restarted' if _iperf3_bind is changed else 'started' }}"
+        daemon_reload: "{{ _iperf3_bind is changed or not _iperf3_serve }}"
 
     # For Semaphore's hosts-update template. lineinfile, not authorized_key: on pve Hosts the file
     # links to /etc/pve/priv/authorized_keys, and lineinfile writes through the link.
