@@ -419,10 +419,10 @@
       notify: Apply the rules
 
     # The home ingress: HAProxy routes https://<service>.<ingress_domain>, and each of its
-    # `aliases`, through one map file to the Service's port on its Host. A server or backend dropped from the routes stays until
-    # deleted by hand, but the map is rewritten, so its name stops routing at once. A --check run
-    # skips this before the plugin is installed, and its links to objects it would create fail,
-    # ignored.
+    # `aliases`, through one map file to the Service's port on its Host. A server or backend
+    # dropped from the routes stays until deleted by hand, but the map is rewritten, so its name
+    # stops routing at once. A --check run skips this before the plugin is installed, and its
+    # links to objects it would create fail, ignored.
     # shortcut: the published ports also answer plain HTTP to clients and the tailnet directly,
     # since their pass rules allow every Network. Every rule here has sequence 1, the floor, so a
     # block ahead of them means renumbering them all: do that when a Service must be reachable
