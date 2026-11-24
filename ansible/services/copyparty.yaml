@@ -11,9 +11,11 @@ copyparty:
 
   no_log: true
 
-  # HAProxy on OPNsense forwards copyparty.<ingress_domain> to this published port.
+  # HAProxy on OPNsense forwards copyparty.<ingress_domain>, and files.<ingress_domain> as the
+  # short name for the home file manager, to this published port.
   ingress:
     port: 3923
+    aliases: [files]
 
   files:
     - dest: "{{ services_data_dir }}/copyparty/cfg/copyparty.conf"

@@ -174,7 +174,7 @@ There's no rollback: OPNsense dropped the filter savepoint API. If a rule change
 
 ## Home ingress
 
-HAProxy (os-haproxy) serves every home Service at `https://<service>.svc.sbbh.cloud` (`ingress_domain` in `group_vars/all/services.yaml`). The playbook builds it all from the inventory: every Service with an `ingress: {port: N}` key on a `local` Host gets a server, a backend and a line in one map file. The frontend listens on OPNsense's servers address `:443` only, so the WAN never sees it, and clients and the tailnet reach it through their pass rules. One Unbound override answers `*.svc.sbbh.cloud` with that address, and there's no public record. The `*.svc.sbbh.cloud` cert comes from the ACME client, like the UI's, and a renewal restarts HAProxy.
+HAProxy (os-haproxy) serves every home Service at `https://<service>.svc.sbbh.cloud` (`ingress_domain` in `group_vars/all/services.yaml`). The playbook builds it all from the inventory: every Service with an `ingress: {port: N}` key on a `local` Host gets a server, a backend and a line in one map file, plus a line per name in its `aliases`. The frontend listens on OPNsense's servers address `:443` only, so the WAN never sees it, and clients and the tailnet reach it through their pass rules. One Unbound override answers `*.svc.sbbh.cloud` with that address, and there's no public record. The `*.svc.sbbh.cloud` cert comes from the ACME client, like the UI's, and a renewal restarts HAProxy.
 
 - **A new or moved Service**: Deploy it, run this playbook, and Deploy `gatus`, which checks every route over the tailnet.
 - **Dropped Services**: the map is rewritten, so the name stops routing on the next run, but the server and backend stay until deleted under Services → HAProxy.

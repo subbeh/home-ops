@@ -187,18 +187,21 @@ def gatus_endpoints(networks, devices):
 
 def ingress_routes(hostvars, hosts, services_configs, networks):
     """A route per Service with an `ingress:` port assigned to one of hosts: the home ingress
-    (HAProxy on OPNsense) forwards <service>.<ingress_domain> to that port on the Host's servers
-    address, and Gatus checks its `check` path (default the root). An assigned Service without a
-    file is skipped: a private one's is only in the main checkout."""
+    (HAProxy on OPNsense) forwards <service>.<ingress_domain>, and <alias>.<ingress_domain> for
+    each of its `aliases`, to that port on the Host's servers address, and Gatus checks its
+    `check` path (default the root) on the first name. An assigned Service without a file is
+    skipped: a private one's is only in the main checkout."""
     routes = [{"service": name, "address": networks["servers"]["addresses"][host],
                "port": services_configs[name]["ingress"]["port"],
-               "check": services_configs[name]["ingress"].get("check", "")}
+               "check": services_configs[name]["ingress"].get("check", ""),
+               "names": [name] + services_configs[name]["ingress"].get("aliases", [])}
               for host in hosts
               for name in hostvars[host].get("services") or []
               if "ingress" in (services_configs.get(name) or {})]
-    names = [r["service"] for r in routes]
+    names = [n for r in routes for n in r["names"]]
     if len(names) != len(set(names)):
-        raise ValueError(f"routed from more than one Host: {sorted({n for n in names if names.count(n) > 1})}")
+        raise ValueError(f"ingress names routed twice (a Service on more than one Host, or a taken alias): "
+                         f"{sorted({n for n in names if names.count(n) > 1})}")
     return routes
 
 

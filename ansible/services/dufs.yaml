@@ -17,6 +17,8 @@ dufs:
       labels:
         traefik.enable: "true"
         traefik.http.services.dufs.loadbalancer.server.port: "5000"
+        # files.<domain> too, the short name for the vps's file manager.
+        traefik.http.routers.dufs.rule: "Host(`dufs.{{ services_domain }}`) || Host(`files.{{ services_domain }}`)"
       volumes:
         - "{{ services_data_dir }}:/data"
       env:

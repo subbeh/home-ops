@@ -130,14 +130,19 @@ class OpnsenseFilters(unittest.TestCase):
         hostvars = {"svc": {"services": ["web", "db", "private"]}, "bare": {}}
         hostvars["svc"]["services"].append("api")
         configs = {"web": {"ingress": {"port": 8080}}, "db": {},  # private's file is absent
-                   "api": {"ingress": {"port": 9000, "check": "/health"}}}
+                   "api": {"ingress": {"port": 9000, "check": "/health", "aliases": ["files"]}}}
         nets = {"servers": {"addresses": {"svc": "10.0.20.12"}}}
         routes = network.ingress_routes(hostvars, ["svc", "bare"], configs, nets)
-        self.assertEqual(routes, [{"service": "web", "address": "10.0.20.12", "port": 8080, "check": ""},
-                                  {"service": "api", "address": "10.0.20.12", "port": 9000, "check": "/health"}])
+        self.assertEqual(routes, [{"service": "web", "address": "10.0.20.12", "port": 8080, "check": "", "names": ["web"]},
+                                  {"service": "api", "address": "10.0.20.12", "port": 9000, "check": "/health",
+                                   "names": ["api", "files"]}])
         self.assertEqual([e["url"] for e in network.ingress_gatus_endpoints(routes, "svc.example", "100.1.1.1")],
                          ["https://web.svc.example", "https://api.svc.example/health"])
         self.assertEqual({e["group"] for e in network.ingress_gatus_endpoints(routes, "svc.example", "100.1.1.1")}, {"home"})
+        configs["web"]["ingress"]["aliases"] = ["api"]  # an alias taking another Service's name
+        with self.assertRaises(ValueError):
+            network.ingress_routes(hostvars, ["svc", "bare"], configs, nets)
+        del configs["web"]["ingress"]["aliases"]
         hostvars["bare"] = {"services": ["web"]}
         nets["servers"]["addresses"]["bare"] = "10.0.20.13"
         with self.assertRaises(ValueError):

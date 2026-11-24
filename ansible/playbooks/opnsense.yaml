@@ -418,8 +418,8 @@
         - "tailnet: UI and SSH"
       notify: Apply the rules
 
-    # The home ingress: HAProxy routes https://<service>.<ingress_domain> through one map file to
-    # the Service's port on its Host. A server or backend dropped from the routes stays until
+    # The home ingress: HAProxy routes https://<service>.<ingress_domain>, and each of its
+    # `aliases`, through one map file to the Service's port on its Host. A server or backend dropped from the routes stays until
     # deleted by hand, but the map is rewritten, so its name stops routing at once. A --check run
     # skips this before the plugin is installed, and its links to objects it would create fail,
     # ignored.
@@ -455,7 +455,7 @@
             name: ingress_routes
             # The API refuses a map file without one.
             description: Home ingress routes
-            content: "{% for r in _ingress_routes %}{{ r.service }}.{{ ingress_domain }} {{ r.service }}\n{% endfor %}"
+            content: "{% for r in _ingress_routes %}{% for n in r.names %}{{ n }}.{{ ingress_domain }} {{ r.service }}\n{% endfor %}{% endfor %}"
           notify: Apply HAProxy
 
         - name: Route by the map
