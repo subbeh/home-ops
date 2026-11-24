@@ -11,7 +11,7 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 | [copyparty](../../ansible/services/copyparty.yaml) | Web file manager for nas-svc's Service data and the media share | nas-svc | [copyparty.svc.sbbh.cloud](https://copyparty.svc.sbbh.cloud) |  |
 | [crawl4ai](../../ansible/services/crawl4ai.yaml) | Crawl4AI page reader that turns web pages into markdown for Hermes and Claude Code | nuc-svc | [crawl4ai.svc.sbbh.cloud](https://crawl4ai.svc.sbbh.cloud) |  |
 | [docker-socket-proxy](../../ansible/services/docker-socket-proxy.yaml) | Docker socket proxy that lets hermes list containers and read their logs | vps |  |  |
-| [dufs](../../ansible/services/dufs.yaml) | Web file manager for the Service data on the Host | vps | [dufs.vps.sbbh.cloud](https://dufs.vps.sbbh.cloud) |  |
+| [dufs](../../ansible/services/dufs.yaml) | Web file manager for the Host's Service data and synced workspace | vps | [dufs.vps.sbbh.cloud](https://dufs.vps.sbbh.cloud) |  |
 | [gatus](../../ansible/services/gatus.yaml) | Status dashboard, plus the dead-man's switch for restic backups | vps | [status.vps.sbbh.cloud](https://status.vps.sbbh.cloud) |  |
 | [hermes](../../ansible/services/hermes.yaml) | Hermes Agent, a personal assistant on OpenCode Go reached over Discord | vps | [hermes.vps.sbbh.cloud](https://hermes.vps.sbbh.cloud) | [hermes/](hermes/README.md) |
 | [karakeep](../../ansible/services/karakeep.yaml) | Bookmark manager with full-text search and page archiving |  |  |  |

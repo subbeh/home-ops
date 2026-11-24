@@ -1,14 +1,17 @@
 ---
-# Web file manager over the Host's Service data: browse, download, upload and edit without SSH.
+# Web file manager over the Host's /opt: the Service data (data/) and the synced workspace
+# (workspace/). Browse, download, upload and edit without SSH.
 # Runs as root (the image's default) so it can read every Service's data dir, whatever its owner
 # (apps 2000, semaphore 1001, aven 65532, root). Uploads and files it creates or rewrites come
 # out root:root, which a non-root Service may then not write: chown them back after.
+# Under workspace/ that stalls syncthing (it runs as apps), which then can't update or delete
+# them: `chown -R 2000:2000 /opt/workspace` on the Host after editing there.
 # Its own login stays on, admin only, because /opt/data holds secrets (restic SSH key,
 # Semaphore config) and every tailnet device can reach Traefik.
 # DUFS_ADMIN_PASSWORD: letters and digits only, since @ : , | delimit DUFS_AUTH's rules.
 # See https://github.com/sigoden/dufs
 dufs:
-  description: Web file manager for the Service data on the Host
+  description: Web file manager for the Host's Service data and synced workspace
 
   no_log: true
 
@@ -20,7 +23,7 @@ dufs:
         # files.<domain> too, the short name for the vps's file manager.
         traefik.http.routers.dufs.rule: "Host(`dufs.{{ services_domain }}`) || Host(`files.{{ services_domain }}`)"
       volumes:
-        - "{{ services_data_dir }}:/data"
+        - "/opt:/data"
       env:
         DUFS_SERVE_PATH: /data
         DUFS_AUTH: "admin:{{ bws_secrets.DUFS_ADMIN_PASSWORD }}@/:rw"
