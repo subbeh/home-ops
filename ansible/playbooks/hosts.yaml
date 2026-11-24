@@ -25,8 +25,9 @@
         bws_secrets: "{{ _bws.stdout | from_json | items2dict(key_name='key', value_name='value') }}"
       no_log: true
   tasks:
-    # Without this, installing iperf3 starts a server listening on every interface.
-    - name: Keep iperf3 from starting a server daemon
+    # Without this, installing iperf3 starts a server listening on every interface, before the
+    # drop-in below binds it. The packaged unit keeps the server running from then on.
+    - name: Keep iperf3's install from starting its server
       ansible.builtin.debconf:
         name: iperf3
         question: iperf3/start_daemon
@@ -38,6 +39,33 @@
         name: "{{ core_packages }}"
         update_cache: true
         cache_valid_time: 3600
+
+    # Home Hosts bind their servers address, which the tailnet also reaches through OPNsense's
+    # subnet route; the vps binds its tailnet address, since its firewall accepts everything. The
+    # packaged unit (Debian and Ubuntu) has Restart=always and RestartSec=15, so it retries the bind
+    # until tailscaled is up without tripping the default start limit (5 starts in 10s).
+    - name: Create the iperf3 drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/iperf3.service.d
+        state: directory
+        mode: "0755"
+
+    - name: Bind the iperf3 server to the Host's servers or tailnet address
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/iperf3.service.d/bind.conf
+        mode: "0644"
+        content: |
+          [Service]
+          ExecStart=
+          ExecStart=/usr/bin/iperf3 --server --interval 0 --bind {{ networks.servers.addresses[inventory_hostname] | default(networks.tailnet.addresses[inventory_hostname]) }}
+      register: _iperf3_bind
+
+    - name: Run the iperf3 server
+      ansible.builtin.systemd_service:
+        name: iperf3
+        enabled: true
+        state: "{{ 'restarted' if _iperf3_bind is changed else 'started' }}"
+        daemon_reload: "{{ _iperf3_bind is changed }}"
 
     # For Semaphore's hosts-update template. lineinfile, not authorized_key: on pve Hosts the file
     # links to /etc/pve/priv/authorized_keys, and lineinfile writes through the link.

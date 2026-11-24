@@ -9,6 +9,7 @@ plugins:
   - os-acme-client
   - os-git-backup
   - os-haproxy  # the home ingress
+  - os-iperf  # the iperf3 server, see playbooks/opnsense.yaml
 
 # The OS device behind each Port in devices.yaml: on the Topton, Port N is igcN.
 port_devices:
@@ -43,6 +44,10 @@ rules:
   # Backup heartbeats to Gatus (services/restic.yaml). OPNsense masquerades this out of its tailscale
   # interface too (runbook).
   - {network: servers, destination: vps, port: "443", protocol: TCP, description: "servers: Gatus on the vps"}
+  # iperf3, which every Host serves on 5201 (playbooks/hosts.yaml and opnsense.yaml). clients and
+  # the tailnet reach it through their every-Network rules.
+  - {network: servers, destination: (self), port: "5201", protocol: TCP/UDP, description: "servers: iperf3 on OPNsense"}
+  - {network: servers, destination: vps, port: "5201", protocol: TCP/UDP, description: "servers: iperf3 on the vps"}
   - {network: iot, destination: internet, description: "iot: the internet"}
   - {network: backdoor, destination: (self), port: backdoor_ports, protocol: TCP, description: "backdoor: UI and SSH",}
 

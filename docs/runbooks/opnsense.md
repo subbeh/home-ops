@@ -184,6 +184,10 @@ HAProxy (os-haproxy) serves every home Service at `https://<service>.svc.sbbh.cl
 
 Moving the UI off `443` on a box that predates this: add `8443` to the `backdoor_ports` alias and Apply, set step 5.8's TCP port, then run the playbook, which drops `443` from the alias.
 
+## iperf3
+
+os-iperf runs an iperf3 server on `5201`, so any Host can measure throughput to OPNsense. The plugin can't bind an address, so it listens on every interface; the WAN stays closed because it has no pass rules. clients and the tailnet reach it through their every-Network rules, and servers through its own rule. Each playbook run starts the server job when none is listening. A reboot stops it until the next run; start it by hand under Interfaces → Diagnostics → Iperf Server in the meantime. Before os-iperf is installed, `--check` skips it.
+
 ## Restore
 
 1. Reinstall as in steps 1 and 2.

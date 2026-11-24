@@ -487,6 +487,32 @@
             enabled: true
           notify: Apply HAProxy
 
+    # os-iperf can't bind an address, so its server listens on every interface; WAN stays closed
+    # because it has no pass rules. A check run before the plugin is installed skips this.
+    # shortcut: a reboot stops the job until the next run, upgrade when iperf3 is needed right
+    # after a reboot (a cron or boot hook that starts it).
+    - name: Read the iperf3 server jobs
+      oxlorg.opnsense.raw:
+        url: iperf/instance/search_jobs
+      register: _iperf_jobs
+      when: not (ansible_check_mode and _plugins is changed)
+
+    - name: Start an iperf3 server on 5201
+      oxlorg.opnsense.raw:
+        url: iperf/instance/set
+        action: post
+        data:
+          instance: {port: "5201"}
+      register: _iperf_set
+      changed_when: true
+      failed_when: (_iperf_set.response.status | default('ok')) != 'ok'
+      when:
+        - _iperf_jobs is not skipped
+        # A job that a reboot stopped reads as stopped; the port may come back as a string.
+        - >-
+          5201 not in (_iperf_jobs.response.rows | selectattr('status', 'in', ['listening', 'running'])
+          | map(attribute='port') | map('int'))
+
   # In this order: the interfaces get their addresses, and dnsmasq stops, before Kea starts.
   handlers:
     - name: Apply the interfaces
