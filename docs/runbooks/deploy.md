@@ -33,7 +33,7 @@ A real run (no `--check`) refuses unless the tree is clean and `HEAD` is local `
 - A tag that is neither a Service nor a Step fails the run (typo protection). So does a Step tag on its own.
 - Selecting a Service assigned to more than one Host (today only restic, and so every `--tags all` run) needs `--limit <host>`. Single-Host Services on different Hosts run together without it.
 - Every Deploy pulls images and **recreates** the selected containers, even when nothing changed.
-- Every Deploy that touches containers then removes every image no container uses (`docker image prune -a`), so a stopped Service's image is re-pulled on its next Deploy.
+- Every Deploy that touches containers then removes, by ID, every image no container (running or stopped) was created from, so a removed Service's image is re-pulled on its next Deploy. Not `docker image prune -a`: with the containerd image store it keeps an old image whose tag a container's `tag@digest` reference still names.
 
 ## Special cases
 

@@ -1,0 +1,14 @@
+---
+# Clears the package caches nothing else bounds, daily at 04:20, clear of restic's runs. Hermes's
+# plugin manager points uv at cache/uv for plugin deps, and agents run CI's
+# `npx --package renovate@latest` validator, which adds a ~200 MB _npx entry per Renovate version
+# (2.9 GB and 2.3 GB by 2026-11-23). Installed plugins keep running: uv hardlinks into their venvs.
+- name: hermes | Clear package caches daily
+  ansible.builtin.cron:
+    name: hermes package caches
+    user: "{{ services_user }}"
+    hour: "4"
+    minute: "20"
+    job: >-
+      rm -rf {{ services_data_dir }}/hermes/data/cache/uv {{ services_data_dir }}/hermes/data/.npm
+      {{ services_data_dir }}/hermes/data/profiles/*/home/.npm

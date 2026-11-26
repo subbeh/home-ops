@@ -126,11 +126,25 @@
   vars:
     service: "{{ services_configs[services_name] | default({}, true) | combine({'name': services_name}) }}"
 
-# Every Deploy pulls, so replaced versions pile up until the disk fills. Removes every
-# image no container uses (`docker image prune -a`); a Deploy re-pulls what it needs.
-- name: Remove unused images
-  community.docker.docker_prune:
+# Every Deploy pulls, so replaced versions pile up until the disk fills. Not docker_prune: with
+# the containerd image store, `docker image prune -a` keeps an old image whose tag a container's
+# tag@digest reference still names (unifi's 10.6.109 after a digest bump). So this removes, by ID,
+# every image no container (running or stopped) was created from; a Deploy re-pulls what it needs.
+- name: List images and containers
+  community.docker.docker_host_info:
     images: true
-    images_filters:
-      dangling: false
+    containers: true
+    containers_all: true
+    verbose_output: true
+  register: _docker_inventory
+  when: services_need_docker
+
+- name: Remove unused images
+  community.docker.docker_image_remove:
+    name: "{{ item }}"
+    # An image with several tags can't be removed by ID without it; no container uses these.
+    force: true
+  loop: >-
+    {{ _docker_inventory.images | default([]) | map(attribute='Id')
+       | difference(_docker_inventory.containers | default([]) | map(attribute='ImageID')) }}
   when: services_need_docker

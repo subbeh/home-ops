@@ -1,0 +1,16 @@
+---
+# Every 15 min, root pushes its root disk use to the disk/disk-<host> external endpoint (gatus.yaml):
+# failure over the threshold, so three bad pushes alert. Through Traefik, since the Host can't
+# reach the services network. No `%` in the job: cron reads it as a newline.
+- name: gatus | Push disk use every 15 min
+  ansible.builtin.cron:
+    name: gatus disk check
+    minute: "*/15"
+    job: >-
+      used=$(df --output=pcent / | tail -1 | tr -dc 0-9);
+      if [ "$used" -lt {{ gatus_disk_threshold }} ]; then q=success=true; else q="success=false&error=${used}+percent+used"; fi;
+      curl -fsS -X POST -H "Authorization: Bearer {{ bws_secrets.GATUS_EXTERNAL_TOKEN }}"
+      "https://status.{{ services_domain }}/api/v1/endpoints/disk_disk-{{ inventory_hostname }}/external?$q"
+      2>&1 | logger -t gatus-disk
+  # The job holds the token.
+  no_log: true

@@ -8,6 +8,13 @@ gatus:
 
   no_log: true
 
+  vars:
+    # Percent used. On the vps's 38 GB disk this leaves about 5.7 GB, room for one Hermes image pull.
+    gatus_disk_threshold: 85
+
+  tasks:
+    post: [gatus-disk.yaml]
+
   files:
     - dest: "{{ services_data_dir }}/gatus/data"
     - dest: "{{ services_gatus_dir }}/config.yaml"
@@ -89,6 +96,20 @@ gatus:
                 description: "SQLite copies before the restic backup on {{ host }} failed or didn't run"
                 send-on-resolved: true
         {% endfor %}
+    # Root disk use on Gatus's own Host, pushed by the cron in tasks/gatus-disk.yaml. The heartbeat
+    # also alerts when the pushes stop.
+    - dest: "{{ services_gatus_dir }}/disk.yaml"
+      content: |
+        external-endpoints:
+          - name: disk-{{ inventory_hostname }}
+            group: disk
+            token: {{ bws_secrets.GATUS_EXTERNAL_TOKEN | to_json }}
+            heartbeat:
+              interval: 1h
+            alerts:
+              - type: pushover
+                description: "root disk on {{ inventory_hostname }} is over {{ gatus_disk_threshold }}% used, or its check stopped"
+                send-on-resolved: true
     # An HTTPS check per home ingress route: see the ingress_routes filter. Private Services are
     # left out, since Semaphore's Auto-deploys can't see their files and would drop them.
     - dest: "{{ services_gatus_dir }}/ingress.yaml"

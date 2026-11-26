@@ -282,7 +282,7 @@ hermes:
       health: [model, web, opengym, googlehealth, coachlog]
 
   tasks:
-    post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml, hermes-config-history.yaml, hermes-vault-history.yaml]
+    post: [hermes-profile-keys.yaml, hermes-kanban-notices.yaml, hermes-config-history.yaml, hermes-vault-history.yaml, hermes-cache-clean.yaml]
 
   files:
     - dest: "{{ services_data_dir }}/hermes/data"
