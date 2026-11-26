@@ -102,6 +102,8 @@
           alias ip='ip -c'
           alias diff='diff --color=auto'
           alias dmesg='dmesg --color=auto'
+          # Refuse to replace a file, with an error: --update=none-fail needs coreutils 9.5+, -n fails the same way only on 9.2-9.4 (the vps).
+          if mv --update=none-fail --version >/dev/null 2>&1; then alias mv='mv --update=none-fail'; else alias mv='mv -n'; fi
 
     - name: Install root's tmux config
       ansible.builtin.copy:
