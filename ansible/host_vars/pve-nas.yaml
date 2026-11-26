@@ -19,6 +19,10 @@ nfs_exports:
   - {path: /data/hdd1/media, networks: [storage, servers]}
   - {path: /data/nvme/media, networks: [storage, servers]}
   - {path: /data/nvme/downloads, networks: [storage, servers]}
+  # The same three to clients, root squashed so a client device's root can't act as root here.
+  - {path: /data/hdd1/media, networks: [clients], options: "rw,sync,no_subtree_check,root_squash"}
+  - {path: /data/nvme/media, networks: [clients], options: "rw,sync,no_subtree_check,root_squash"}
+  - {path: /data/nvme/downloads, networks: [clients], options: "rw,sync,no_subtree_check,root_squash"}
   # Kubernetes volumes: every client's writes land as uid 1000.
   - path: /data/nvme/k8s
     networks: [storage]
