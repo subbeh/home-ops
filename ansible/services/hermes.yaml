@@ -92,6 +92,7 @@
 #      "Create Private Threads": Hermes then falls back to a seed message, whose thread is public.
 #  13. Default cron job morning-brief (docs/services/hermes/profiles.md): the morning-brief skill,
 #      written beside the focus skills, reads the weather location and news topics from USER.md.
+#      Its references/news-sources.md allows only `?format=j1` on the wttr.in URL: wttr.in rejects `timezone=` with ERR003.
 #      `hermes cron create "30 6 * * *" "Write today's morning brief." --name morning-brief
 #      --skill morning-brief --deliver discord` (the home channel; the container's TZ is local).
 #      With cron.mirror_delivery on, a Discord cron run opens a thread; the brief needs no reply
