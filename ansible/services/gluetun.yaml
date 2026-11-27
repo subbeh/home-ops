@@ -1,0 +1,56 @@
+---
+# Sends the internet traffic of the Services that join it out through ProtonVPN, not the home IP.
+# Docker NATs every container to the Host's one address, so OPNsense can't route a Service apart.
+# See https://github.com/qdm12/gluetun-wiki
+#
+# Proton setup, once: in Proton's dashboard, Downloads > WireGuard configuration, create a config
+# for GNU/Linux with NAT-PMP off. Its PrivateKey works for every Proton server, so the server picked
+# there doesn't matter. Save the key as the field wg-sg-private-key on the protonvpn.com vault
+# item; the dotfiles repo's .bws.yaml syncs it to Secrets Manager as PROTONVPN_WIREGUARD_PRIVATE_KEY.
+#
+# Host setup: the Host needs /dev/net/tun. nas-svc's LXC gets it as dev1 in pve-nas's pve_lxc
+# options, which only applies once the LXC restarts. Kernel WireGuard is used when the module is
+# loaded on the Proxmox node, else gluetun falls back to its userspace one.
+#
+# Joining a Service: give its containers `network_mode: container:gluetun` and drop their `ports:`;
+# assign it to gluetun's Host. Then:
+# - Ports: gluetun publishes the `ingress:` port of every Service on its Host that joins it
+#   (services_joined, set by roles/services/tasks/containers.yaml just before its containers;
+#   undefined earlier, hence the default), so home ingress is unchanged.
+#   Its firewall already accepts input on its Docker network, so FIREWALL_INPUT_PORTS stays unset.
+# - Restarts: a joined container loses its network when gluetun is recreated, which every Deploy and
+#   Auto-deploy does; the services role then recreates the joined Services' containers too.
+# - LAN access: FIREWALL_OUTBOUND_SUBNETS routes replies to the home Networks (HAProxy on OPNsense
+#   included) and the tailnet out the Docker network instead of the tunnel.
+# - Host: a joined Service on a Host without gluetun fails its Deploy with "No such container:
+#   gluetun". gluetun is assigned to one Host, so the host-limit guard doesn't apply; on a second
+#   Host, Deploys would need --limit like any Service on several Hosts. It sits before its joined
+#   Services in the Host's list, so --tags all creates it first.
+#
+# Kill switch: gluetun's firewall drops everything but the tunnel and those subnets, so a joined
+# Service never falls back to the home IP. Lookups go through gluetun's own DNS (DNS over TLS
+# through the tunnel, its default).
+gluetun:
+  description: ProtonVPN tunnel whose network namespace Services join to leave through Proton
+
+  no_log: true
+
+  # gluetun's health server: 200 while the tunnel works, 500 when it doesn't. Its ingress route gives
+  # it a Gatus check that alerts when the tunnel or gluetun is down.
+  ingress:
+    port: 9999
+
+  containers:
+    - image: ghcr.io/qdm12/gluetun:v3.41.3@sha256:fa19cc76b2af13d57a8d3dc3066f2ada061b1c761b8aecf989b3877c0486e027
+      capabilities: [NET_ADMIN]
+      devices:
+        - /dev/net/tun:/dev/net/tun
+      ports: "{{ (services_joined | default([]) | map('extract', services_configs) | selectattr('ingress', 'defined') | map(attribute='ingress.port') | list + [9999]) | map('regex_replace', '^(.*)$', '\\1:\\1') | list }}"
+      env:
+        VPN_SERVICE_PROVIDER: protonvpn
+        VPN_TYPE: wireguard
+        WIREGUARD_PRIVATE_KEY: "{{ bws_secrets.PROTONVPN_WIREGUARD_PRIVATE_KEY }}"
+        SERVER_COUNTRIES: Singapore
+        FIREWALL_OUTBOUND_SUBNETS: "{{ (tailnet_routes.opnsense.routes + [networks.tailnet.cidr]) | join(',') }}"
+        # Default 127.0.0.1:9999, unreachable through the published port.
+        HEALTH_SERVER_ADDRESS: ":9999"

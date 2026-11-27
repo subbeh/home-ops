@@ -52,3 +52,5 @@ pve_lxc:
     # The iGPU's render node, for hardware video transcoding. Root-owned in the container, which
     # suits root containers; a Service lists it in its container's `devices` too.
     dev0: /dev/dri/renderD128
+    # For gluetun's tunnel.
+    dev1: /dev/net/tun

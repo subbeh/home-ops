@@ -5,7 +5,7 @@
 metube:
   description: yt-dlp web UI that downloads into the media share
 
-  # HAProxy on OPNsense forwards metube.<ingress_domain> to this published port.
+  # HAProxy on OPNsense forwards metube.<ingress_domain> to this port, which gluetun publishes.
   ingress:
     port: 8081
 
@@ -17,8 +17,8 @@ metube:
   containers:
     # The image's own healthcheck curls the UI every 30s.
     - image: ghcr.io/alexta69/metube:2026.11.24@sha256:c423654da5b9d29b02a8092713607b906d63d17fd7e0a2f52228218a0d3e2a7b
-      ports:
-        - "8081:8081"
+      # Its traffic leaves through ProtonVPN: see gluetun.yaml.
+      network_mode: container:gluetun
       volumes:
         # pve-nas's /data/hdd1/media, through nas-svc's mp1. Downloads land as host uid 102000
         # (services_uid in the LXC); the folder is 0777.

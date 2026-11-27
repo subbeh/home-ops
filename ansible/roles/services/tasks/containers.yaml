@@ -7,6 +7,19 @@
     fail_msg: "{{ service.name }}: every container needs a unique name when a service has more than one"
     quiet: true
 
+# The other Services on this Host with a container in one of this Service's network namespaces
+# (network_mode: container:<name>). A Service that publishes their ports reads this, e.g. gluetun.
+- name: "{{ service.name }} | Find joined Services"
+  ansible.builtin.set_fact:
+    services_joined: >-
+      {%- set modes = service.containers | map(attribute='name', default=service.name) | map('regex_replace', '^', 'container:') | list -%}
+      {%- set out = [] -%}
+      {%- for s in services | default([], true) if s != service.name and s in services_configs
+            and services_configs[s].containers | default([]) | map(attribute='network_mode', default='') | intersect(modes) -%}
+      {%- set _ = out.append(s) -%}
+      {%- endfor -%}
+      {{ out }}
+
 - name: "{{ service.name }} | Containers"
   community.docker.docker_container: "{{ _container }}"
   no_log: "{{ service.no_log | default(false) }}"
@@ -21,3 +34,15 @@
     _base: >-
       {{ services_container_defaults if container.network_mode is not defined
          else services_container_defaults | dict2items | rejectattr('key', 'equalto', 'networks') | items2dict }}
+
+# A joined container loses its network when the container it joins is recreated, which every
+# Deploy does, so recreate theirs too. shortcut: the joined Service's `vars:` aren't set here, so its
+# containers can't use them; include service.yaml instead once one does.
+# A static name: a templated one renders before the loop var exists.
+- name: Recreate joined Services
+  ansible.builtin.include_tasks: containers.yaml
+  loop: "{{ services_joined }}"
+  loop_control:
+    loop_var: services_joined_name
+  vars:
+    service: "{{ services_configs[services_joined_name] | combine({'name': services_joined_name}) }}"

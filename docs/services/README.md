@@ -13,6 +13,7 @@ Every Service defined in [`ansible/services/`](../../ansible/services/). Version
 | [docker-socket-proxy](../../ansible/services/docker-socket-proxy.yaml) | Docker socket proxy that lets hermes list containers and read their logs | vps |  |  |
 | [dufs](../../ansible/services/dufs.yaml) | Web file manager for the Host's Service data and synced workspace | vps | [dufs.vps.sbbh.cloud](https://dufs.vps.sbbh.cloud) |  |
 | [gatus](../../ansible/services/gatus.yaml) | Status dashboard, plus the dead-man's switch for restic backups | vps | [status.vps.sbbh.cloud](https://status.vps.sbbh.cloud) |  |
+| [gluetun](../../ansible/services/gluetun.yaml) | ProtonVPN tunnel whose network namespace Services join to leave through Proton | nas-svc | [gluetun.svc.sbbh.cloud](https://gluetun.svc.sbbh.cloud) |  |
 | [hermes](../../ansible/services/hermes.yaml) | Hermes Agent, a personal assistant on OpenCode Go reached over Discord | vps | [hermes.vps.sbbh.cloud](https://hermes.vps.sbbh.cloud) | [hermes/](hermes/README.md) |
 | [karakeep](../../ansible/services/karakeep.yaml) | Bookmark manager with full-text search and page archiving |  |  |  |
 | [metube](../../ansible/services/metube.yaml) | yt-dlp web UI that downloads into the media share | nas-svc | [metube.svc.sbbh.cloud](https://metube.svc.sbbh.cloud) |  |
