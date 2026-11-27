@@ -20,6 +20,9 @@
 #   Its firewall already accepts input on its Docker network, so FIREWALL_INPUT_PORTS stays unset.
 # - Restarts: a joined container loses its network when gluetun is recreated, which every Deploy and
 #   Auto-deploy does; the services role then recreates the joined Services' containers too.
+#   shortcut: a restart outside a Deploy (a crash, `docker restart gluetun`) also cuts them off,
+#   which their ingress checks in Gatus catch; `docker restart <joined container>` fixes it. Add an
+#   autoheal sidecar if that ever happens unattended.
 # - LAN access: FIREWALL_OUTBOUND_SUBNETS routes replies to the home Networks (HAProxy on OPNsense
 #   included) and the tailnet out the Docker network instead of the tunnel.
 # - Host: a joined Service on a Host without gluetun fails its Deploy with "No such container:
