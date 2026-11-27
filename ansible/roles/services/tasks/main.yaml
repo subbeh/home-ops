@@ -49,11 +49,12 @@
 # --tags all selects every assigned service; --tags <service> selects just that one.
 - name: Select services and steps
   ansible.builtin.set_fact:
-    services_selected: "{{ _assigned if 'all' in ansible_run_tags else _assigned | intersect(_requested) }}"
+    services_selected: "{{ _assigned if 'all' in ansible_run_tags else _assigned | select('in', _requested) | list }}"
     services_steps: "{{ _services_steps if _steps | length == 0 else _steps }}"
   vars:
-    # A private Service without its file is skipped.
-    _assigned: "{{ services | default([]) | intersect(services_configs.keys() | list) }}"
+    # A private Service without its file is skipped. select, not intersect: intersect goes through a
+    # set, and the Host's order is the Deploy order (gluetun before the Services that join it).
+    _assigned: "{{ services | default([]) | select('in', services_configs) | list }}"
     _requested: "{{ ansible_run_tags | intersect(services_configs.keys() | list) }}"
     _steps: "{{ ansible_run_tags | intersect(_services_steps) }}"
 
