@@ -231,7 +231,8 @@ hermes:
         # read by the crawl4ai plugin. The name resolves through etc_hosts below.
         CRAWL4AI_URL: "https://crawl4ai.{{ ingress_domain }}"
         CRAWL4AI_API_TOKEN: "{{ bws_secrets.CRAWL4AI_API_TOKEN }}"
-        # The fallback page-read backend: re-pin web.extract_backend tavily if crawl4ai is down.
+        # The crawl4ai plugin retries blocked page reads through Tavily; re-pin
+        # web.extract_backend tavily if crawl4ai can't be reached.
         TAVILY_API_KEY: "{{ bws_secrets.HERMES_TAVILY_API_KEY }}"
         # The old page-read backend, unused while the pins name another; a last fallback.
         FIRECRAWL_API_KEY: "{{ bws_secrets.HERMES_FIRECRAWL_API_KEY }}"

@@ -47,7 +47,7 @@ check:
     out=$(ci ansible localhost -m ansible.builtin.include_vars \
       -a '{"dir": "ansible/services", "files_matching": "\\.ya?ml$", "depth": 1}' 2>&1) || { echo "$out"; exit 1; }
 
-# Self-test the docs-covers and worktree-setup hooks, the network filters and the hermes homelab plugin
+# Self-test the docs-covers and worktree-setup hooks, the network filters and the hermes plugins and scripts
 [group('docs')]
 docs-test:
     {{ justfile_directory() }}/scripts/docs-covers.test.sh
@@ -55,6 +55,7 @@ docs-test:
     python3 -I {{ justfile_directory() }}/scripts/network.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-homelab.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-googlehealth.test.py
+    python3 -I {{ justfile_directory() }}/scripts/hermes-crawl4ai.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-homelab-incidents.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-quota-alerts.test.py
     python3 -I {{ justfile_directory() }}/scripts/hermes-go-usage.test.py

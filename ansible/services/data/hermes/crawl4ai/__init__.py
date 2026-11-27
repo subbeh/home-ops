@@ -1,4 +1,5 @@
-# Vendored unchanged from https://github.com/mblauser/hermes-plugin-crawl4ai at 6eb0842 (MIT), reviewed before shipping.
+# Vendored from https://github.com/mblauser/hermes-plugin-crawl4ai at 6eb0842 (MIT), reviewed before shipping.
+# Changed here: provider.py reads through /crawl with stealth and retries a blocked read through Tavily.
 """Crawl4ai web extract plugin — standalone, auto-loaded."""
 
 from __future__ import annotations
