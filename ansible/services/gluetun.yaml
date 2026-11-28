@@ -54,6 +54,10 @@ gluetun:
         VPN_TYPE: wireguard
         WIREGUARD_PRIVATE_KEY: "{{ bws_secrets.PROTONVPN_WIREGUARD_PRIVATE_KEY }}"
         SERVER_COUNTRIES: Singapore
+        # Keeps it off Proton's free servers (SG-FREE#n), which drop to ~0.1 MB/s after ~20 min of
+        # downloading, and off Secure Core. Every paid non-Secure-Core server is a streaming one, and
+        # gluetun's PREMIUM_ONLY doesn't support protonvpn.
+        STREAM_ONLY: "on"
         FIREWALL_OUTBOUND_SUBNETS: "{{ (tailnet_routes.opnsense.routes + [networks.tailnet.cidr]) | join(',') }}"
         # Default 127.0.0.1:9999, unreachable through the published port; 9999 is taken on nas-svc.
         HEALTH_SERVER_ADDRESS: ":9998"
