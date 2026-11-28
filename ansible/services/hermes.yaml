@@ -328,7 +328,7 @@ hermes:
       src: hermes/github-updates.py
 
   containers:
-    - image: nousresearch/hermes-agent:v0.23.3@sha256:3e9fe4c6ef36490f43aa0d0d80f9df64e9c92a576eee3042f1a97c8813c05355
+    - image: nousresearch/hermes-agent:v0.23.4@sha256:ef0650d523ee1b5ab32c779acabc446d9936869a9932591553688a62bcf0c42f
       command: [gateway, run]
       # Kanban claims carry the hostname, and the dispatcher reclaims dead workers only for its own
       # host; the default (the container ID) changes on each recreate, leaving cards to the 15m TTL.
