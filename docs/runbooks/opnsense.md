@@ -180,6 +180,7 @@ HAProxy (os-haproxy) serves every home Service at `https://<service>.svc.sbbh.cl
 - **Dropped Services**: the map is rewritten, so the name stops routing on the next run, but the server and backend stay until deleted under Services → HAProxy.
 - **Private Services** (`ansible/services/<name>.private.yaml`, gitignored) exist only in the main checkout. The playbook refuses to run from a checkout that lacks one, since it would drop the route.
 - **Direct access**: a Service's published port also answers plain HTTP to clients and the tailnet, since their pass rules allow every Network. Blocking it needs a block rule ahead of those rules, which means giving every rule a sequence.
+- **Websockets**: HAProxy's defaults carry `timeout tunnel 1h`, so an idle upgraded connection stays open for an hour instead of being cut at the 30s client and server timeouts.
 - **`--check`**: before os-haproxy is installed, the check skips HAProxy. Before its objects exist, the steps that link to them fail and are ignored.
 
 Moving the UI off `443` on a box that predates this: add `8443` to the `backdoor_ports` alias and Apply, set step 5.8's TCP port, then run the playbook, which drops `443` from the alias.

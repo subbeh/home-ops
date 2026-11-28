@@ -482,6 +482,14 @@
           ignore_errors: "{{ ansible_check_mode }}"
           notify: Apply HAProxy
 
+        # Without a tunnel timeout an upgraded websocket falls back to the 30s client and server
+        # timeouts, so an idle one is cut with no close frame. The module's other timeouts are its
+        # defaults, which are the plugin's own.
+        - name: Keep upgraded connections open while idle
+          oxlorg.opnsense.haproxy_general_defaults:
+            custom_options: timeout tunnel 1h
+          notify: Apply HAProxy
+
         - name: Turn on HAProxy
           oxlorg.opnsense.haproxy_general_settings:
             enabled: true
